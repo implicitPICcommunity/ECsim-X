@@ -1,0 +1,72 @@
+#include <iomanip>
+#include "ecPic3D.h"
+#include "MyClock.h"
+
+MyClock *clocks;
+
+using namespace ecPic3D;
+
+int main(int argc, char **argv) {
+
+  ecPic3D::c_Solver KCode;
+  bool b_err = false;
+
+  
+
+  /* ------------------------------ */
+  /* 0- Initialize the solver class */
+  /* ------------------------------ */
+
+  KCode.Init(argc, argv);
+  KCode.InjectBoundaryParticles();
+
+  /* ------------ */
+  /* 1- Main loop */
+  /* ------------ */
+  for (int i = KCode.FirstCycle(); i <= KCode.LastCycle(); i++) {
+
+    if (KCode.get_myrank() == 0) cout << " ======= Cycle " << i << " ======= " << endl;
+
+    /* ----------------------------------------------------- */
+    /* 2- Calculate fields and move particles                */
+    /*    Exit if there is a memory issue with the particles */
+    /* ----------------------------------------------------- */
+    KCode.GatherMoments();
+    KCode.CalculateField();
+    b_err = KCode.ParticlesMover();
+    if ( b_err) i = KCode.LastCycle() + 1;
+
+    /* --------------- */
+    /* 3- Output files */
+    /* --------------- */
+
+    clocks->start(9);
+    //KCode.WriteOutputASCII(i);
+    KCode.WriteOutput(i);
+    KCode.WriteConserved(i);
+    KCode.WriteRestart(i);
+    clocks->stop(9);
+
+  }
+
+
+  KCode.Finalize();
+
+  // Profiling:
+  std::cout << "################################################" << std::endl
+            << "Initialization                : " << clocks->get(0) << " s" << std::endl
+            << "Moments Gathering             : " << clocks->get(1) << " s" << std::endl
+            << " +- B interp. centers->nodes  : " << clocks->get(2) << " s" << std::endl
+            << " +- B interp. nodes->particles: " << clocks->get(3) << " s" << std::endl
+            << " +- Charge density            : " << clocks->get(4) << " s" << std::endl
+            << " +- Implicit Current          : " << clocks->get(5) << " s" << std::endl
+            << " +- Mass matrix               : " << clocks->get(6) << " s" << std::endl
+            << " +- Communications            : " << clocks->get(11)<< " s" << std::endl
+            << "Field Calculation             : " << clocks->get(7) << " s" << std::endl
+            << "Particle Mover                : " << clocks->get(8) << " s" << std::endl
+            << "Writing                       : " << clocks->get(9) << " s" << std::endl
+            << std::endl << "  Total          : " << clocks->get(10) << " s" << std::endl;
+
+
+  return 0;
+}

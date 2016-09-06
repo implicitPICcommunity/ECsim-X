@@ -1,0 +1,14 @@
+Mon Aug 29 10:17:48 CEST 2016
+
+  iPic3D-ECIMM: version of iPic3D with the algorithm of Energy Conserving Implicit Moment Method.
+  Fully Electromagnetic.
+
+  Modifications from Ver2:
+
+  Parallel Output 
+  Code cleaned: test, ASCII output
+  
+  Mass matrix optimization: Only 14 elements are computed.
+  Some clocks are included to profile the code
+
+  Diego Gonzalez

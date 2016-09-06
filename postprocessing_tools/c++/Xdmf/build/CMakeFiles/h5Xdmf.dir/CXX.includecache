@@ -1,0 +1,40 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/diego/2016/iPic3D/iPic3D-ECIMM/postprocessing_tools/c++/Xdmf/ConfigFile.cpp
+ConfigFile.h
+/home/diego/2016/iPic3D/iPic3D-ECIMM/postprocessing_tools/c++/Xdmf/ConfigFile.h
+
+/home/diego/2016/iPic3D/iPic3D-ECIMM/postprocessing_tools/c++/Xdmf/ConfigFile.h
+string
+-
+map
+-
+iostream
+-
+fstream
+-
+sstream
+-
+
+/home/diego/2016/iPic3D/iPic3D-ECIMM/postprocessing_tools/c++/Xdmf/h5Xdmf.cpp
+fstream
+-
+iostream
+-
+iomanip
+-
+string
+-
+cstdlib
+-
+sstream
+-
+ConfigFile.h
+/home/diego/2016/iPic3D/iPic3D-ECIMM/postprocessing_tools/c++/Xdmf/ConfigFile.h
+
