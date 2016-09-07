@@ -30,13 +30,11 @@ public:
   }
   
   void start(int i) {
-    MPI_Barrier(MPI_COMM_WORLD);
     active[i] = true;
     t[i] = MPI_Wtime();
   }
 
   void stop(int i) {
-    MPI_Barrier(MPI_COMM_WORLD);
     if (active[i]) {
       double t1 = MPI_Wtime();
       t[i] = t1 - t[i];

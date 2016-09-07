@@ -88,7 +88,24 @@ class EMfields3D                // :public Field
     void addJyh(double weight[][2][2], int X, int Y, int Z);
     void addJzh(double weight[][2][2], int X, int Y, int Z);
 
-    void setZero_Test3();
+
+    /*! Perfect conductor boundary conditions LEFT wall */
+    void perfectConductorLeft(double ***imageX, double ***imageY, double ***imageZ, double ***vectorX, double ***vectorY, double ***vectorZ, int dir, Grid * grid);
+    /*! Perfect conductor boundary conditions RIGHT wall */
+    void perfectConductorRight(double ***imageX, double ***imageY, double ***imageZ, double ***vectorX, double ***vectorY, double ***vectorZ, int dir, Grid * grid);
+    /*! Perfect conductor boundary conditions for source LEFT wall */
+    void perfectConductorLeftS(double ***vectorX, double ***vectorY, double ***vectorZ, int dir);
+    /*! Perfect conductor boundary conditions for source RIGHT wall */
+    void perfectConductorRightS(double ***vectorX, double ***vectorY, double ***vectorZ, int dir);
+
+    /*! Calculate the sysceptibility tensor on the boundary */
+    void sustensorRightX(double **susxx, double **susyx, double **suszx);
+    void sustensorLeftX (double **susxx, double **susyx, double **suszx);
+    void sustensorRightY(double **susxy, double **susyy, double **suszy);
+    void sustensorLeftY (double **susxy, double **susyy, double **suszy);
+    void sustensorRightZ(double **susxz, double **susyz, double **suszz);
+    void sustensorLeftZ (double **susxz, double **susyz, double **suszz);
+
 
     /*! get Electric Field component X defined on node(indexX,indexY,indexZ) */
     double &getEx(int indexX, int indexY, int indexZ) const;

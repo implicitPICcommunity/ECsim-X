@@ -50,10 +50,14 @@ int main(int argc, char **argv) {
   }
 
 
+  int myrank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
   KCode.Finalize();
 
+
   // Profiling:
-  std::cout << "################################################" << std::endl
+  if (myrank == 0) {
+    std::cout << "################################################" << std::endl
             << "Initialization                : " << clocks->get(0) << " s" << std::endl
             << "Moments Gathering             : " << clocks->get(1) << " s" << std::endl
             << " +- B interp. centers->nodes  : " << clocks->get(2) << " s" << std::endl
@@ -66,6 +70,7 @@ int main(int argc, char **argv) {
             << "Particle Mover                : " << clocks->get(8) << " s" << std::endl
             << "Writing                       : " << clocks->get(9) << " s" << std::endl
             << std::endl << "  Total          : " << clocks->get(10) << " s" << std::endl;
+  }
 
 
   return 0;
