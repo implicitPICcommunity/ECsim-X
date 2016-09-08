@@ -41,6 +41,8 @@ class EMfields3D                // :public Field
     /*! initialize the electromagnetic fields with constant values */
     void init(VirtualTopology3D * vct, Grid * grid, Collective *col);
     void initGEM(VirtualTopology3D * vct, Grid * grid, Collective *col);
+    void initDoubleGEM(VirtualTopology3D * vct, Grid * grid, Collective *col);
+    void initDoublePeriodicHarrisWithGaussianHumpPerturbation(VirtualTopology3D * vct, Grid * grid, Collective *col);
     /*! init beam */
 
     /*! Calculate Electric field using the implicit Maxwell solver */

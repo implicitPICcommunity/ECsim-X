@@ -35,6 +35,8 @@ class Particles3D:public Particles3Dcomm {
     void constantVelocity(double vel, int dim, Grid * grid, Field * EMf);
     /** Initial condition: uniform in space and maxwellian in velocity */
     void maxwellian(Grid * grid, Field * EMf, VirtualTopology3D * vct);
+    /** Maxellian random velocity and uniform spatial distribution, goes with Double GEM */
+    void MaxwellianDoubleGEM(Grid * grid, Field * EMf, VirtualTopology3D * vct) ;
     /** mover for the ECIMM algorith */
     int mover_ECIMM(Grid * grid, VirtualTopology3D * vct, Field * EMf);
 

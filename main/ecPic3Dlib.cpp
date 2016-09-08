@@ -68,7 +68,11 @@ int c_Solver::Init(int argc, char **argv) {
     /* --------------------------------------------------------- */
     /* If using 'default' IO initialize fields depending on case */
     /* --------------------------------------------------------- */
-    if (col->getCase()=="GEM")       EMf->initGEM(vct, grid,col);
+    if      (col->getCase()=="GEM")         EMf->initGEM(vct, grid,col);
+    else if (col->getCase()=="DoubleGEM")   EMf->initDoubleGEM(vct, grid,col);
+    else if (col->getCase()=="DoubleHarris")EMf->initDoublePeriodicHarrisWithGaussianHumpPerturbation(vct,grid,col);
+    else if (col->getCase()=="Whistler")    EMf->initDoublePeriodicHarrisWithGaussianHumpPerturbation(vct,grid,col);
+
     else {
       if (myrank==0) {
         cout << " =========================================================== " << endl;
@@ -89,7 +93,8 @@ int c_Solver::Init(int argc, char **argv) {
   part = new Particles3D[ns];
   for (int i = 0; i < ns; i++) {
     part[i].allocate(i, 0, col, vct, grid);
-    part[i].maxwellian(grid, EMf, vct);
+    if (col->getCase()=="DoubleGEM") part[i].MaxwellianDoubleGEM(grid, EMf, vct);
+    else                             part[i].maxwellian(grid, EMf, vct);
   }
 
 
