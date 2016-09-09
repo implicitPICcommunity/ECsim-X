@@ -8,7 +8,6 @@ class MyClock {
 public:
   /** default constructor */
   MyClock(int _nt) {
-    MPI_Barrier(MPI_COMM_WORLD);
     tTot = MPI_Wtime();
     nt = _nt;
     t        = new double[nt];

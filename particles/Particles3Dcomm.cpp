@@ -241,7 +241,9 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
     //#pragma omp for
     for (register long long ip = 0; ip < nop; ip++)
     {
+      #ifdef __PROFILING__
       clocks->start(3);
+      #endif
       const int ix = 2 + int (floor((x[ip] - xstart) * inv_dx));
       const int iy = 2 + int (floor((y[ip] - ystart) * inv_dy));
       const int iz = 2 + int (floor((z[ip] - zstart) * inv_dz));
@@ -290,9 +292,13 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       double qau = q[ip]*(alpha[0][0]*u[ip] + alpha[0][1]*v[ip] + alpha[0][2]*w[ip]);
       double qav = q[ip]*(alpha[1][0]*u[ip] + alpha[1][1]*v[ip] + alpha[1][2]*w[ip]);
       double qaw = q[ip]*(alpha[2][0]*u[ip] + alpha[2][1]*v[ip] + alpha[2][2]*w[ip]);
+      #ifdef __PROFILING__
       clocks->stop(3);
+      #endif
 
+      #ifdef __PROFILING__
       clocks->start(4);
+      #endif
       // add charge density               
       for (int ii = 0; ii < 2; ii++)
         for (int jj = 0; jj < 2; jj++)
@@ -300,9 +306,13 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
             temp[ii][jj][kk] = q[ip]* weight[ii][jj][kk];
           }
       EMf->addRho(temp, ix, iy, iz, ns);
+      #ifdef __PROFILING__
       clocks->stop(4);
+      #endif
 
+      #ifdef __PROFILING__
       clocks->start(5);
+      #endif
       // add implicit current density - X
       for (int ii = 0; ii < 2; ii++)
         for (int jj = 0; jj < 2; jj++)
@@ -323,9 +333,13 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
           for (int kk = 0; kk < 2; kk++)
             temp[ii][jj][kk] = qaw* weight[ii][jj][kk];
       EMf->addJzh(temp, ix, iy, iz);
+      #ifdef __PROFILING__
       clocks->stop(5);
+      #endif
 
+      #ifdef __PROFILING__
       clocks->start(6);
+      #endif
       // Mass Matrix:
       //  Each node of the cell in which the particle is:
       for (int i=0; i<2; i++) 
@@ -376,7 +390,9 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
 
             }
           }
+        #ifdef __PROFILING__
         clocks->stop(6);
+        #endif
     }
   }
 }

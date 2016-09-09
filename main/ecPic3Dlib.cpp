@@ -18,7 +18,10 @@ int c_Solver::Init(int argc, char **argv) {
 
   clocks = new MyClock(15);
   clocks->start(10);
+  
+  #ifdef __PROFILING__
   clocks->start(0);
+  #endif
 
   col = new Collective(argc, argv); // Every proc loads the parameters of simulation from class Collective
   verbose = col->getVerbose();
@@ -134,18 +137,26 @@ int c_Solver::Init(int argc, char **argv) {
   momentum = new double[ns];
   cq = SaveDirName + "/ConservedQuantities.txt";
   
+  #ifdef __PROFILING__
   clocks->stop(0);
+  #endif
   return 0;
 }
 
 void c_Solver::GatherMoments(){
 
+  #ifdef __PROFILING__
   clocks->start(1);
+  #endif
 
+  #ifdef __PROFILING__
   clocks->start(2);
+  #endif
   EMf->centers2nodesB(vct, grid, col);
   EMf->setZeroDensities();                  // set to zero the densities
+  #ifdef __PROFILING__
   clocks->stop(2);
+  #endif
 
   for (int i = 0; i < ns; i++)
     part[i].computeMoments(EMf, grid, vct);      // interpolate Particles to Grid(Nodes)
@@ -153,32 +164,45 @@ void c_Solver::GatherMoments(){
   EMf->sumOverSpecies (vct);
 
   // Communicate everything:
+  #ifdef __PROFILING__
   clocks->start(11);
+  #endif
   EMf->communicateGhostP2G(vct);
+  #ifdef __PROFILING__
   clocks->stop(11);
+  #endif
 
+  #ifdef __PROFILING__
   clocks->stop(1);
+  #endif
 }
 
 void c_Solver::CalculateField() {
 
+  #ifdef __PROFILING__
   clocks->start(7);
+  #endif
   EMf->interpDensitiesN2C(vct, grid);       // calculate densities on centers from nodes
   MPI_Barrier(MPI_COMM_WORLD);
 
   // MAXWELL'S SOLVER
-#ifdef __WITH_PETSC__
-  petscSolver->solveE();
-#else
-  EMf->calculateEB(grid, vct, col);               // calculate the E field
-#endif
+  #ifdef __WITH_PETSC__
+    petscSolver->solveE();
+  #else
+    EMf->calculateEB(grid, vct, col);               // calculate the E field
+  #endif
+
+  #ifdef __PROFILING__
   clocks->stop(7);
+  #endif
 
 }
 
 bool c_Solver::ParticlesMover() {
 
+  #ifdef __PROFILING__
   clocks->start(8);
+  #endif
   /*  -------------- */
   /*  Particle mover */
   /*  -------------- */
@@ -211,7 +235,9 @@ bool c_Solver::ParticlesMover() {
     return (true);              // exit from the time loop
   }
 
+  #ifdef __PROFILING__
   clocks->stop(8);
+  #endif
   return (false);
 }
 

@@ -40,12 +40,19 @@ int main(int argc, char **argv) {
     /* 3- Output files */
     /* --------------- */
 
+
+    #ifdef __PROFILING__
     clocks->start(9);
+    #endif
+
     //KCode.WriteOutputASCII(i);
     KCode.WriteOutput(i);
     KCode.WriteConserved(i);
     KCode.WriteRestart(i);
+    
+    #ifdef __PROFILING__
     clocks->stop(9);
+    #endif
 
   }
 
@@ -56,6 +63,7 @@ int main(int argc, char **argv) {
 
 
   // Profiling:
+  #ifdef __PROFILING__
   if (myrank == 0) {
     std::cout << "################################################" << std::endl
             << "Initialization                : " << clocks->get(0) << " s" << std::endl
@@ -68,9 +76,10 @@ int main(int argc, char **argv) {
             << " +- Communications            : " << clocks->get(11)<< " s" << std::endl
             << "Field Calculation             : " << clocks->get(7) << " s" << std::endl
             << "Particle Mover                : " << clocks->get(8) << " s" << std::endl
-            << "Writing                       : " << clocks->get(9) << " s" << std::endl
-            << std::endl << "  Total          : " << clocks->get(10) << " s" << std::endl;
+            << "Writing                       : " << clocks->get(9) << " s" << std::endl;
   }
+  #endif
+  if (myrank == 0)  std::cout << "CPU time : " << clocks->get(10) << " s" << std::endl;
 
 
   return 0;
