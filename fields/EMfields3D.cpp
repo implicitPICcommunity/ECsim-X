@@ -163,6 +163,14 @@ void EMfields3D::endEcalc(double* xkrylov, VirtualTopology3D * vct, Collective *
   addscale(1 / th, -(1.0 - th) / th, Ey, Eyth, nxn, nyn, nzn);
   addscale(1 / th, -(1.0 - th) / th, Ez, Ezth, nxn, nyn, nzn);
 
+  // apply to smooth to electric field 3 times
+  smoothE(Smooth, vct, col);
+  smoothE(Smooth, vct, col);
+  smoothE(Smooth, vct, col);
+  smoothB(Smooth, vct, col);
+  smoothB(Smooth, vct, col);
+  smoothB(Smooth, vct, col);
+
   // communicate so the interpolation can have good values
   communicateNodeBC(nxn, nyn, nzn, Exth, col->bcEx[0],col->bcEx[1],col->bcEx[2],col->bcEx[3],col->bcEx[4],col->bcEx[5], vct);
   communicateNodeBC(nxn, nyn, nzn, Eyth, col->bcEy[0],col->bcEy[1],col->bcEy[2],col->bcEy[3],col->bcEy[4],col->bcEy[5], vct);
@@ -236,6 +244,11 @@ void EMfields3D::MaxwellSource(double *bkrylov, Grid * grid, VirtualTopology3D *
   scale(tempZC, Bzc, 1, nxc, nyc, nzc);
   #endif
 
+  // smooth j
+  smooth(Smooth, Jxh, 1, grid, vct);
+  smooth(Smooth, Jyh, 1, grid, vct);
+  smooth(Smooth, Jzh, 1, grid, vct);
+
   // E - 4 pi dt th Jhat
   scale(tempX, Jxh, -4*M_PI*th*dt, nxn, nyn, nzn);
   scale(tempY, Jyh, -4*M_PI*th*dt, nxn, nyn, nzn);
@@ -271,7 +284,6 @@ void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTo
   communicateNode_P(nxn, nyn, nzn, tempX, vct);
   communicateNode_P(nxn, nyn, nzn, tempY, vct);
   communicateNode_P(nxn, nyn, nzn, tempZ, vct);
-
 
   #ifdef ELECTROSTATIC
     for (int i=1; i<nxn-1; i++)
@@ -343,6 +355,155 @@ void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTo
   phys2solver(im, imageBX, imageBY, imageBZ, imageEX, imageEY, imageEZ, nxn, nyn, nzn);
 }
 
+/* Interpolation smoothing: Smoothing (vector must already have ghost cells) TO MAKE SMOOTH value as to be different from 1.0 type = 0 --> center based vector ; type = 1 --> node based vector ; */
+void EMfields3D::smooth(double value, double ***vector, int type, Grid * grid, VirtualTopology3D * vct) {
+
+  int nvolte = 6;
+  for (int icount = 1; icount < nvolte + 1; icount++) {
+
+    if (value != 1.0) {
+      double alpha;
+      int nx, ny, nz;
+      switch (type) {
+        case (0):
+          nx = grid->getNXC();
+          ny = grid->getNYC();
+          nz = grid->getNZC();
+          communicateCenterBoxStencilBC_P(nx, ny, nz, vector, 2, 2, 2, 2, 2, 2, vct);
+
+          break;
+        case (1):
+          nx = grid->getNXN();
+          ny = grid->getNYN();
+          nz = grid->getNZN();
+          communicateNodeBoxStencilBC_P(nx, ny, nz, vector, 2, 2, 2, 2, 2, 2, vct);
+          break;
+      }
+      double ***temp = newArr3(double, nx, ny, nz);
+      if (icount % 2 == 1) {
+        value = 0.;
+      }
+      else {
+        value = 0.5;
+      }
+      alpha = (1.0 - value) / 6;
+      for (int i = 1; i < nx - 1; i++)
+        for (int j = 1; j < ny - 1; j++)
+          for (int k = 1; k < nz - 1; k++)
+            temp[i][j][k] = value * vector[i][j][k] + alpha * (vector[i - 1][j][k] + vector[i + 1][j][k] + vector[i][j - 1][k] + vector[i][j + 1][k] + vector[i][j][k - 1] + vector[i][j][k + 1]);
+      for (int i = 1; i < nx - 1; i++)
+        for (int j = 1; j < ny - 1; j++)
+          for (int k = 1; k < nz - 1; k++)
+            vector[i][j][k] = temp[i][j][k];
+      delArr3(temp, nx, ny);
+    }
+  }
+}
+/* Interpolation smoothing: Smoothing (vector must already have ghost cells) TO MAKE SMOOTH value as to be different from 1.0 type = 0 --> center based vector ; type = 1 --> node based vector ; */
+void EMfields3D::smoothE(double value, VirtualTopology3D * vct, Collective *col) {
+
+  int nvolte = 6;
+  for (int icount = 1; icount < nvolte + 1; icount++) {
+    if (value != 1.0) {
+      double alpha;
+      communicateNodeBoxStencilBC(nxn, nyn, nzn, Ex, col->bcEx[0],col->bcEx[1],col->bcEx[2],col->bcEx[3],col->bcEx[4],col->bcEx[5], vct);
+      communicateNodeBoxStencilBC(nxn, nyn, nzn, Ey, col->bcEy[0],col->bcEy[1],col->bcEy[2],col->bcEy[3],col->bcEy[4],col->bcEy[5], vct);
+      communicateNodeBoxStencilBC(nxn, nyn, nzn, Ez, col->bcEz[0],col->bcEz[1],col->bcEz[2],col->bcEz[3],col->bcEz[4],col->bcEz[5], vct);
+
+      double ***temp = newArr3(double, nxn, nyn, nzn);
+      if (icount % 2 == 1) {
+        value = 0.;
+      }
+      else {
+        value = 0.5;
+      }
+      alpha = (1.0 - value) / 6;
+      // Exth
+      for (int i = 1; i < nxn - 1; i++)
+        for (int j = 1; j < nyn - 1; j++)
+          for (int k = 1; k < nzn - 1; k++)
+            temp[i][j][k] = value * Ex[i][j][k] + alpha * (Ex[i - 1][j][k] + Ex[i + 1][j][k] + Ex[i][j - 1][k] + Ex[i][j + 1][k] + Ex[i][j][k - 1] + Ex[i][j][k + 1]);
+      for (int i = 1; i < nxn - 1; i++)
+        for (int j = 1; j < nyn - 1; j++)
+          for (int k = 1; k < nzn - 1; k++)
+            Ex[i][j][k] = temp[i][j][k];
+      // Eyth
+      for (int i = 1; i < nxn - 1; i++)
+        for (int j = 1; j < nyn - 1; j++)
+          for (int k = 1; k < nzn - 1; k++)
+            temp[i][j][k] = value * Ey[i][j][k] + alpha * (Ey[i - 1][j][k] + Ey[i + 1][j][k] + Ey[i][j - 1][k] + Ey[i][j + 1][k] + Ey[i][j][k - 1] + Ey[i][j][k + 1]);
+      for (int i = 1; i < nxn - 1; i++)
+        for (int j = 1; j < nyn - 1; j++)
+          for (int k = 1; k < nzn - 1; k++)
+            Ey[i][j][k] = temp[i][j][k];
+      // Ezth
+      for (int i = 1; i < nxn - 1; i++)
+        for (int j = 1; j < nyn - 1; j++)
+          for (int k = 1; k < nzn - 1; k++)
+            temp[i][j][k] = value * Ez[i][j][k] + alpha * (Ez[i - 1][j][k] + Ez[i + 1][j][k] + Ez[i][j - 1][k] + Ez[i][j + 1][k] + Ez[i][j][k - 1] + Ez[i][j][k + 1]);
+      for (int i = 1; i < nxn - 1; i++)
+        for (int j = 1; j < nyn - 1; j++)
+          for (int k = 1; k < nzn - 1; k++)
+            Ez[i][j][k] = temp[i][j][k];
+
+
+      delArr3(temp, nxn, nyn);
+    }
+  }
+}
+
+/* Interpolation smoothing: Smoothing (vector must already have ghost cells) TO MAKE SMOOTH value as to be different from 1.0 type = 0 --> center based vector ; type = 1 --> node based vector ; */
+void EMfields3D::smoothB(double value, VirtualTopology3D * vct, Collective *col) {
+
+  int nvolte = 6;
+  for (int icount = 1; icount < nvolte + 1; icount++) {
+    if (value != 1.0) {
+      double alpha;
+      communicateNodeBoxStencilBC(nxc, nyc, nzc, Bxc, col->bcEx[0],col->bcEx[1],col->bcEx[2],col->bcEx[3],col->bcEx[4],col->bcEx[5], vct);
+      communicateNodeBoxStencilBC(nxc, nyc, nzc, Byc, col->bcEy[0],col->bcEy[1],col->bcEy[2],col->bcEy[3],col->bcEy[4],col->bcEy[5], vct);
+      communicateNodeBoxStencilBC(nxc, nyc, nzc, Bzc, col->bcEz[0],col->bcEz[1],col->bcEz[2],col->bcEz[3],col->bcEz[4],col->bcEz[5], vct);
+
+      double ***temp = newArr3(double, nxc, nyc, nzc);
+      if (icount % 2 == 1) {
+        value = 0.;
+      }
+      else {
+        value = 0.5;
+      }
+      alpha = (1.0 - value) / 6;
+      // Bxc
+      for (int i = 1; i < nxc - 1; i++)
+        for (int j = 1; j < nyc - 1; j++)
+          for (int k = 1; k < nzc - 1; k++)
+            temp[i][j][k] = value * Bxc[i][j][k] + alpha * (Bxc[i - 1][j][k] + Bxc[i + 1][j][k] + Bxc[i][j - 1][k] + Bxc[i][j + 1][k] + Bxc[i][j][k - 1] + Bxc[i][j][k + 1]);
+      for (int i = 1; i < nxc - 1; i++)
+        for (int j = 1; j < nyc - 1; j++)
+          for (int k = 1; k < nzc - 1; k++)
+            Bxc[i][j][k] = temp[i][j][k];
+      // Byc
+      for (int i = 1; i < nxc - 1; i++)
+        for (int j = 1; j < nyc - 1; j++)
+          for (int k = 1; k < nzc - 1; k++)
+            temp[i][j][k] = value * Byc[i][j][k] + alpha * (Byc[i - 1][j][k] + Byc[i + 1][j][k] + Byc[i][j - 1][k] + Byc[i][j + 1][k] + Byc[i][j][k - 1] + Byc[i][j][k + 1]);
+      for (int i = 1; i < nxc - 1; i++)
+        for (int j = 1; j < nyc - 1; j++)
+          for (int k = 1; k < nzc - 1; k++)
+            Byc[i][j][k] = temp[i][j][k];
+      // Bzc
+      for (int i = 1; i < nxc - 1; i++)
+        for (int j = 1; j < nyc - 1; j++)
+          for (int k = 1; k < nzc - 1; k++)
+            temp[i][j][k] = value * Bzc[i][j][k] + alpha * (Bzc[i - 1][j][k] + Bzc[i + 1][j][k] + Bzc[i][j - 1][k] + Bzc[i][j + 1][k] + Bzc[i][j][k - 1] + Bzc[i][j][k + 1]);
+      for (int i = 1; i < nxc - 1; i++)
+        for (int j = 1; j < nyc - 1; j++)
+          for (int k = 1; k < nzc - 1; k++)
+            Bzc[i][j][k] = temp[i][j][k];
+
+
+      delArr3(temp, nxc, nyc);
+    }
+  }
+}
 
 // Claculate the product of the mass matrix with the vector v
 void EMfields3D::productMassE(double* MEx, double* MEy, double* MEz, double ***vX, double ***vY, double ***vZ, int i, int j, int k)

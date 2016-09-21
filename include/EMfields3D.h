@@ -58,6 +58,9 @@ class EMfields3D                // :public Field
     /*! Calculate Magnetic and Electric field */
     void calculateEB(Grid*, VirtualTopology3D*, Collective*);
     void productMassE(double*, double*, double*, double***, double***, double***, int, int, int);
+    void smooth(double value, double ***vector, int type, Grid * grid, VirtualTopology3D * vct);
+    void smoothE(double value, VirtualTopology3D * vct, Collective *col);
+    void smoothB(double value, VirtualTopology3D * vct, Collective *col);
     void centers2nodesB(VirtualTopology3D*, Grid*, Collective*);
 
     void UpdateRHOcs(Grid * grid);
