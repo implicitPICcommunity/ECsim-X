@@ -276,14 +276,9 @@ void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTo
   communicateCenterBC(nxc, nyc, nzc, tempXC, 2, 2, 2, 2, 2, 2, vct);
   communicateCenterBC(nxc, nyc, nzc, tempYC, 2, 2, 2, 2, 2, 2, vct);
   communicateCenterBC(nxc, nyc, nzc, tempZC, 2, 2, 2, 2, 2, 2, vct);
-  //communicateNodeBC(nxn, nyn, nzn, tempX, 2, 2, 2, 2, 2, 2, vct);
-  //communicateNodeBC(nxn, nyn, nzn, tempY, 2, 2, 2, 2, 2, 2, vct);
-  //communicateNodeBC(nxn, nyn, nzn, tempZ, 2, 2, 2, 2, 2, 2, vct);
-  // WARNING: this in provisional: communicateNodeBC_P does not copy the ghost edges
-  // correctly
-  communicateNode_P(nxn, nyn, nzn, tempX, vct);
-  communicateNode_P(nxn, nyn, nzn, tempY, vct);
-  communicateNode_P(nxn, nyn, nzn, tempZ, vct);
+  communicateNodeBC(nxn, nyn, nzn, tempX, 2, 2, 2, 2, 2, 2, vct);
+  communicateNodeBC(nxn, nyn, nzn, tempY, 2, 2, 2, 2, 2, 2, vct);
+  communicateNodeBC(nxn, nyn, nzn, tempZ, 2, 2, 2, 2, 2, 2, vct);
 
   #ifdef ELECTROSTATIC
     for (int i=1; i<nxn-1; i++)
