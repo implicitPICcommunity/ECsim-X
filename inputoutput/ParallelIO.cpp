@@ -103,15 +103,18 @@ void WriteOutputParallel(Grid3DCU *grid, EMfields3D *EMf, Particles3Dcomm *part,
 
     grpname = "Fields";
     dtaname = "Jx_" + snmbr.str();
-    outputfile.WritePHDF5dataset(grpname, dtaname, EMf->getJxsc(grid, is), nxc-2, nyc-2, nzc-2);
+    //outputfile.WritePHDF5dataset(grpname, dtaname, EMf->getJxsc(grid, is), nxc-2, nyc-2, nzc-2);
+    outputfile.WritePHDF5dataset(grpname, dtaname, EMf->getJxh(), nxn-2, nyn-2, nzn-2);
 
     grpname = "Fields";
     dtaname = "Jy_" + snmbr.str();
-    outputfile.WritePHDF5dataset(grpname, dtaname, EMf->getJysc(grid, is), nxc-2, nyc-2, nzc-2);
+    //outputfile.WritePHDF5dataset(grpname, dtaname, EMf->getJysc(grid, is), nxc-2, nyc-2, nzc-2);
+    outputfile.WritePHDF5dataset(grpname, dtaname, EMf->getJyh(), nxn-2, nyn-2, nzn-2);
 
     grpname = "Fields";
     dtaname = "Jz_" + snmbr.str();
-    outputfile.WritePHDF5dataset(grpname, dtaname, EMf->getJzsc(grid, is), nxc-2, nyc-2, nzc-2);
+    //outputfile.WritePHDF5dataset(grpname, dtaname, EMf->getJzsc(grid, is), nxc-2, nyc-2, nzc-2);
+    outputfile.WritePHDF5dataset(grpname, dtaname, EMf->getJzh(), nxn-2, nyn-2, nzn-2);
   }
 
   outputfile.ClosePHDF5file();
