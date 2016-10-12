@@ -564,6 +564,9 @@ void EMfields3D::communicateGhostP2G(VirtualTopology3D * vct) {
   communicateInterp(nxn, nyn, nzn, Jxh, 0, 0, 0, 0, 0, 0, vct);
   communicateInterp(nxn, nyn, nzn, Jyh, 0, 0, 0, 0, 0, 0, vct);
   communicateInterp(nxn, nyn, nzn, Jzh, 0, 0, 0, 0, 0, 0, vct);
+  for (int i=0; i<ns; i++) { 
+    communicateInterp(nxn, nyn, nzn, i, rhons, 2, 2, 2, 2, 2, 2, vct);
+  }
   for (int i=0; i<NE_MASS; i++) { 
     communicateInterp(nxn, nyn, nzn, i, Mxx, 2, 2, 2, 2, 2, 2, vct);
     communicateInterp(nxn, nyn, nzn, i, Mxy, 2, 2, 2, 2, 2, 2, vct);
@@ -581,6 +584,9 @@ void EMfields3D::communicateGhostP2G(VirtualTopology3D * vct) {
   communicateNode_P(nxn, nyn, nzn, Jxh, vct);
   communicateNode_P(nxn, nyn, nzn, Jyh, vct);
   communicateNode_P(nxn, nyn, nzn, Jzh, vct);
+  for (int i=0; i<ns; i++) { 
+    communicateNode_P(nxn, nyn, nzn, rhons, i, vct);
+  }
   for (int i=0; i<NE_MASS; i++) {
     communicateNode_P(nxn, nyn, nzn, Mxx, i, vct);
     communicateNode_P(nxn, nyn, nzn, Mxy, i, vct);
