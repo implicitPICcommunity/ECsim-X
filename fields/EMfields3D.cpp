@@ -78,9 +78,15 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
   Ex = newArr3(double, nxn, nyn, nzn);
   Ey = newArr3(double, nxn, nyn, nzn);
   Ez = newArr3(double, nxn, nyn, nzn);
+  //Ex_prev= newArr3(double, nxn, nyn, nzn);
+  //Ey_prev= newArr3(double, nxn, nyn, nzn);
+  //Ez_prev= newArr3(double, nxn, nyn, nzn);
   Exth = newArr3(double, nxn, nyn, nzn);
   Eyth = newArr3(double, nxn, nyn, nzn);
   Ezth = newArr3(double, nxn, nyn, nzn);
+  EFxth = newArr3(double, nxn, nyn, nzn);
+  EFyth = newArr3(double, nxn, nyn, nzn);
+  EFzth = newArr3(double, nxn, nyn, nzn);
   Bxn = newArr3(double, nxn, nyn, nzn);
   Byn = newArr3(double, nxn, nyn, nzn);
   Bzn = newArr3(double, nxn, nyn, nzn);
@@ -147,13 +153,19 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
 
 
 /* Prepare the memory for E calculation */
-void EMfields3D::startEcalc(VirtualTopology3D * vct) {
+void EMfields3D::startEcalc(VirtualTopology3D * vct, Collective *col) {
   if (vct->getCartesian_rank() == 0)
     cout << "*** E CALCULATION ***" << endl;
+
 }
 
 void EMfields3D::endEcalc(double* xkrylov, VirtualTopology3D * vct, Collective *col, Grid* grid)
 {
+
+  //eq(Ex_prev, Ex, nxn, nyn, nzn);
+  //eq(Ey_prev, Ey, nxn, nyn, nzn);
+  //eq(Ez_prev, Ez, nxn, nyn, nzn);
+
   // move from krylov space to physical space
   solver2phys(Exth, Eyth, Ezth, tempXC, tempYC, tempZC, xkrylov, nxn, nyn, nzn);
   addscale(1 / th, -(1.0 - th) / th, Bxc, tempXC, nxc, nyc, nzc);
@@ -163,13 +175,10 @@ void EMfields3D::endEcalc(double* xkrylov, VirtualTopology3D * vct, Collective *
   addscale(1 / th, -(1.0 - th) / th, Ey, Eyth, nxn, nyn, nzn);
   addscale(1 / th, -(1.0 - th) / th, Ez, Ezth, nxn, nyn, nzn);
 
-  // apply to smooth to electric field 3 times
-  smoothE(Smooth, vct, col);
-  smoothE(Smooth, vct, col);
-  smoothE(Smooth, vct, col);
-  smoothB(Smooth, vct, col);
-  smoothB(Smooth, vct, col);
-  smoothB(Smooth, vct, col);
+  eq(EFxth, Exth, nxn, nyn, nzn);
+  eq(EFyth, Eyth, nxn, nyn, nzn);
+  eq(EFzth, Ezth, nxn, nyn, nzn);
+  smoothEth(Smooth, vct, col);
 
   // communicate so the interpolation can have good values
   communicateNodeBC(nxn, nyn, nzn, Exth, col->bcEx[0],col->bcEx[1],col->bcEx[2],col->bcEx[3],col->bcEx[4],col->bcEx[5], vct);
@@ -205,7 +214,7 @@ void EMfields3D::calculateEB(Grid * grid, VirtualTopology3D * vct, Collective *c
   MaxwellSource(bkrylov, grid, vct, col);
   phys2solver(xkrylov, Ex, Ey, Ez, Bxn, Byn, Bzn, nxn, nyn, nzn);
   // solver
-  GMRES(&Field::MaxwellImage, xkrylov, dim, bkrylov, 20, 200, GMREStol, grid, vct, this);
+  GMRES(&Field::MaxwellImage, xkrylov, dim, bkrylov, 20, 200, GMREStol, grid, vct, col, this);
   // move from krylov space to physical space
   solver2phys(Exth, Eyth, Ezth, tempXC, tempYC, tempZC, xkrylov, nxn, nyn, nzn);
   addscale(1 / th, -(1.0 - th) / th, Bxc, tempXC, nxc, nyc, nzc);
@@ -244,10 +253,7 @@ void EMfields3D::MaxwellSource(double *bkrylov, Grid * grid, VirtualTopology3D *
   scale(tempZC, Bzc, 1, nxc, nyc, nzc);
   #endif
 
-  // smooth j
-  smooth(Smooth, Jxh, 1, grid, vct);
-  smooth(Smooth, Jyh, 1, grid, vct);
-  smooth(Smooth, Jzh, 1, grid, vct);
+  smoothJh(Smooth, vct, col);
 
   // E - 4 pi dt th Jhat
   scale(tempX, Jxh, -4*M_PI*th*dt, nxn, nyn, nzn);
@@ -265,7 +271,7 @@ void EMfields3D::MaxwellSource(double *bkrylov, Grid * grid, VirtualTopology3D *
 
 
 /*! Mapping of Maxwell image to give to solver */
-void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTopology3D * vct) {
+void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTopology3D * vct, Collective *col) {
   int dim = 3*(nxn - 2) * (nyn - 2) * (nzn - 2) + 3*(nxc - 2) * (nyc - 2) * (nzc - 2);
   eqValue(0.0, im, dim);
   //eqValue(0.0, im, 6 * (nxn - 2) * (nyn - 2) * (nzn - 2));
@@ -290,7 +296,12 @@ void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTo
         }
   #else
   // c*th*dt*curl(Eth) + Bth
-  grid->curlN2C(imageEX, imageEY, imageEZ, tempX, tempY, tempZ);
+  eq(EFxth, tempX, nxn, nyn, nzn);
+  eq(EFyth, tempY, nxn, nyn, nzn);
+  eq(EFzth, tempZ, nxn, nyn, nzn);
+  smoothEth(Smooth, vct, col);
+
+  grid->curlN2C(imageEX, imageEY, imageEZ, EFxth, EFyth, EFzth);
   scale(imageEX, c*th*dt, nxc, nyc, nzc);
   scale(imageEY, c*th*dt, nxc, nyc, nzc);
   scale(imageEZ, c*th*dt, nxc, nyc, nzc);
@@ -309,7 +320,6 @@ void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTo
   scale(imageBX, -c*th*dt, nxn, nyn, nzn);
   scale(imageBY, -c*th*dt, nxn, nyn, nzn);
   scale(imageBZ, -c*th*dt, nxn, nyn, nzn);
-  #endif
 
   addscale(1, imageBX, tempX, nxn, nyn, nzn);
   addscale(1, imageBY, tempY, nxn, nyn, nzn);
@@ -320,11 +330,12 @@ void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTo
     for (int j=1; j<nyn-1; j++) 
       for (int k=1; k<nzn-1; k++) {
         double MEx, MEy, MEz;
-        productMassE(&MEx, &MEy, &MEz, tempX, tempY, tempZ, i, j, k);
+        productMassE(&MEx, &MEy, &MEz, EFxth, EFyth, EFzth, i, j, k);
         imageBX[i][j][k] += fac*MEx;
         imageBY[i][j][k] += fac*MEy;
         imageBZ[i][j][k] += fac*MEz;
       }
+  #endif
 
   // Boundary condition in the known term
   // boundary condition: Xleft
@@ -351,59 +362,15 @@ void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTo
 }
 
 /* Interpolation smoothing: Smoothing (vector must already have ghost cells) TO MAKE SMOOTH value as to be different from 1.0 type = 0 --> center based vector ; type = 1 --> node based vector ; */
-void EMfields3D::smooth(double value, double ***vector, int type, Grid * grid, VirtualTopology3D * vct) {
-
-  int nvolte = 6;
-  for (int icount = 1; icount < nvolte + 1; icount++) {
-
-    if (value != 1.0) {
-      double alpha;
-      int nx, ny, nz;
-      switch (type) {
-        case (0):
-          nx = grid->getNXC();
-          ny = grid->getNYC();
-          nz = grid->getNZC();
-          communicateCenterBoxStencilBC_P(nx, ny, nz, vector, 2, 2, 2, 2, 2, 2, vct);
-
-          break;
-        case (1):
-          nx = grid->getNXN();
-          ny = grid->getNYN();
-          nz = grid->getNZN();
-          communicateNodeBoxStencilBC_P(nx, ny, nz, vector, 2, 2, 2, 2, 2, 2, vct);
-          break;
-      }
-      double ***temp = newArr3(double, nx, ny, nz);
-      if (icount % 2 == 1) {
-        value = 0.;
-      }
-      else {
-        value = 0.5;
-      }
-      alpha = (1.0 - value) / 6;
-      for (int i = 1; i < nx - 1; i++)
-        for (int j = 1; j < ny - 1; j++)
-          for (int k = 1; k < nz - 1; k++)
-            temp[i][j][k] = value * vector[i][j][k] + alpha * (vector[i - 1][j][k] + vector[i + 1][j][k] + vector[i][j - 1][k] + vector[i][j + 1][k] + vector[i][j][k - 1] + vector[i][j][k + 1]);
-      for (int i = 1; i < nx - 1; i++)
-        for (int j = 1; j < ny - 1; j++)
-          for (int k = 1; k < nz - 1; k++)
-            vector[i][j][k] = temp[i][j][k];
-      delArr3(temp, nx, ny);
-    }
-  }
-}
-/* Interpolation smoothing: Smoothing (vector must already have ghost cells) TO MAKE SMOOTH value as to be different from 1.0 type = 0 --> center based vector ; type = 1 --> node based vector ; */
-void EMfields3D::smoothE(double value, VirtualTopology3D * vct, Collective *col) {
+void EMfields3D::smoothEth(double value, VirtualTopology3D * vct, Collective *col) {
 
   int nvolte = 6;
   for (int icount = 1; icount < nvolte + 1; icount++) {
     if (value != 1.0) {
       double alpha;
-      communicateNodeBoxStencilBC(nxn, nyn, nzn, Ex, col->bcEx[0],col->bcEx[1],col->bcEx[2],col->bcEx[3],col->bcEx[4],col->bcEx[5], vct);
-      communicateNodeBoxStencilBC(nxn, nyn, nzn, Ey, col->bcEy[0],col->bcEy[1],col->bcEy[2],col->bcEy[3],col->bcEy[4],col->bcEy[5], vct);
-      communicateNodeBoxStencilBC(nxn, nyn, nzn, Ez, col->bcEz[0],col->bcEz[1],col->bcEz[2],col->bcEz[3],col->bcEz[4],col->bcEz[5], vct);
+      communicateNodeBoxStencilBC(nxn, nyn, nzn, EFxth, col->bcEx[0],col->bcEx[1],col->bcEx[2],col->bcEx[3],col->bcEx[4],col->bcEx[5], vct);
+      communicateNodeBoxStencilBC(nxn, nyn, nzn, EFyth, col->bcEy[0],col->bcEy[1],col->bcEy[2],col->bcEy[3],col->bcEy[4],col->bcEy[5], vct);
+      communicateNodeBoxStencilBC(nxn, nyn, nzn, EFzth, col->bcEz[0],col->bcEz[1],col->bcEz[2],col->bcEz[3],col->bcEz[4],col->bcEz[5], vct);
 
       double ***temp = newArr3(double, nxn, nyn, nzn);
       if (icount % 2 == 1) {
@@ -413,52 +380,51 @@ void EMfields3D::smoothE(double value, VirtualTopology3D * vct, Collective *col)
         value = 0.5;
       }
       alpha = (1.0 - value) / 6;
-      // Exth
+      // EFxthth
       for (int i = 1; i < nxn - 1; i++)
         for (int j = 1; j < nyn - 1; j++)
           for (int k = 1; k < nzn - 1; k++)
-            temp[i][j][k] = value * Ex[i][j][k] + alpha * (Ex[i - 1][j][k] + Ex[i + 1][j][k] + Ex[i][j - 1][k] + Ex[i][j + 1][k] + Ex[i][j][k - 1] + Ex[i][j][k + 1]);
+            temp[i][j][k] = value * EFxth[i][j][k] + alpha * (EFxth[i - 1][j][k] + EFxth[i + 1][j][k] + EFxth[i][j - 1][k] + EFxth[i][j + 1][k] + EFxth[i][j][k - 1] + EFxth[i][j][k + 1]);
       for (int i = 1; i < nxn - 1; i++)
         for (int j = 1; j < nyn - 1; j++)
           for (int k = 1; k < nzn - 1; k++)
-            Ex[i][j][k] = temp[i][j][k];
-      // Eyth
+            EFxth[i][j][k] = temp[i][j][k];
+      // EFythth
       for (int i = 1; i < nxn - 1; i++)
         for (int j = 1; j < nyn - 1; j++)
           for (int k = 1; k < nzn - 1; k++)
-            temp[i][j][k] = value * Ey[i][j][k] + alpha * (Ey[i - 1][j][k] + Ey[i + 1][j][k] + Ey[i][j - 1][k] + Ey[i][j + 1][k] + Ey[i][j][k - 1] + Ey[i][j][k + 1]);
+            temp[i][j][k] = value * EFyth[i][j][k] + alpha * (EFyth[i - 1][j][k] + EFyth[i + 1][j][k] + EFyth[i][j - 1][k] + EFyth[i][j + 1][k] + EFyth[i][j][k - 1] + EFyth[i][j][k + 1]);
       for (int i = 1; i < nxn - 1; i++)
         for (int j = 1; j < nyn - 1; j++)
           for (int k = 1; k < nzn - 1; k++)
-            Ey[i][j][k] = temp[i][j][k];
-      // Ezth
+            EFyth[i][j][k] = temp[i][j][k];
+      // EFzthth
       for (int i = 1; i < nxn - 1; i++)
         for (int j = 1; j < nyn - 1; j++)
           for (int k = 1; k < nzn - 1; k++)
-            temp[i][j][k] = value * Ez[i][j][k] + alpha * (Ez[i - 1][j][k] + Ez[i + 1][j][k] + Ez[i][j - 1][k] + Ez[i][j + 1][k] + Ez[i][j][k - 1] + Ez[i][j][k + 1]);
+            temp[i][j][k] = value * EFzth[i][j][k] + alpha * (EFzth[i - 1][j][k] + EFzth[i + 1][j][k] + EFzth[i][j - 1][k] + EFzth[i][j + 1][k] + EFzth[i][j][k - 1] + EFzth[i][j][k + 1]);
       for (int i = 1; i < nxn - 1; i++)
         for (int j = 1; j < nyn - 1; j++)
           for (int k = 1; k < nzn - 1; k++)
-            Ez[i][j][k] = temp[i][j][k];
+            EFzth[i][j][k] = temp[i][j][k];
 
 
       delArr3(temp, nxn, nyn);
     }
   }
 }
-
 /* Interpolation smoothing: Smoothing (vector must already have ghost cells) TO MAKE SMOOTH value as to be different from 1.0 type = 0 --> center based vector ; type = 1 --> node based vector ; */
-void EMfields3D::smoothB(double value, VirtualTopology3D * vct, Collective *col) {
+void EMfields3D::smoothJh(double value, VirtualTopology3D * vct, Collective *col) {
 
   int nvolte = 6;
   for (int icount = 1; icount < nvolte + 1; icount++) {
     if (value != 1.0) {
       double alpha;
-      communicateNodeBoxStencilBC(nxc, nyc, nzc, Bxc, col->bcEx[0],col->bcEx[1],col->bcEx[2],col->bcEx[3],col->bcEx[4],col->bcEx[5], vct);
-      communicateNodeBoxStencilBC(nxc, nyc, nzc, Byc, col->bcEy[0],col->bcEy[1],col->bcEy[2],col->bcEy[3],col->bcEy[4],col->bcEy[5], vct);
-      communicateNodeBoxStencilBC(nxc, nyc, nzc, Bzc, col->bcEz[0],col->bcEz[1],col->bcEz[2],col->bcEz[3],col->bcEz[4],col->bcEz[5], vct);
+      communicateNodeBoxStencilBC(nxn, nyn, nzn, Jxh, col->bcEx[0],col->bcEx[1],col->bcEx[2],col->bcEx[3],col->bcEx[4],col->bcEx[5], vct);
+      communicateNodeBoxStencilBC(nxn, nyn, nzn, Jyh, col->bcEy[0],col->bcEy[1],col->bcEy[2],col->bcEy[3],col->bcEy[4],col->bcEy[5], vct);
+      communicateNodeBoxStencilBC(nxn, nyn, nzn, Jzh, col->bcEz[0],col->bcEz[1],col->bcEz[2],col->bcEz[3],col->bcEz[4],col->bcEz[5], vct);
 
-      double ***temp = newArr3(double, nxc, nyc, nzc);
+      double ***temp = newArr3(double, nxn, nyn, nzn);
       if (icount % 2 == 1) {
         value = 0.;
       }
@@ -466,39 +432,40 @@ void EMfields3D::smoothB(double value, VirtualTopology3D * vct, Collective *col)
         value = 0.5;
       }
       alpha = (1.0 - value) / 6;
-      // Bxc
-      for (int i = 1; i < nxc - 1; i++)
-        for (int j = 1; j < nyc - 1; j++)
-          for (int k = 1; k < nzc - 1; k++)
-            temp[i][j][k] = value * Bxc[i][j][k] + alpha * (Bxc[i - 1][j][k] + Bxc[i + 1][j][k] + Bxc[i][j - 1][k] + Bxc[i][j + 1][k] + Bxc[i][j][k - 1] + Bxc[i][j][k + 1]);
-      for (int i = 1; i < nxc - 1; i++)
-        for (int j = 1; j < nyc - 1; j++)
-          for (int k = 1; k < nzc - 1; k++)
-            Bxc[i][j][k] = temp[i][j][k];
-      // Byc
-      for (int i = 1; i < nxc - 1; i++)
-        for (int j = 1; j < nyc - 1; j++)
-          for (int k = 1; k < nzc - 1; k++)
-            temp[i][j][k] = value * Byc[i][j][k] + alpha * (Byc[i - 1][j][k] + Byc[i + 1][j][k] + Byc[i][j - 1][k] + Byc[i][j + 1][k] + Byc[i][j][k - 1] + Byc[i][j][k + 1]);
-      for (int i = 1; i < nxc - 1; i++)
-        for (int j = 1; j < nyc - 1; j++)
-          for (int k = 1; k < nzc - 1; k++)
-            Byc[i][j][k] = temp[i][j][k];
-      // Bzc
-      for (int i = 1; i < nxc - 1; i++)
-        for (int j = 1; j < nyc - 1; j++)
-          for (int k = 1; k < nzc - 1; k++)
-            temp[i][j][k] = value * Bzc[i][j][k] + alpha * (Bzc[i - 1][j][k] + Bzc[i + 1][j][k] + Bzc[i][j - 1][k] + Bzc[i][j + 1][k] + Bzc[i][j][k - 1] + Bzc[i][j][k + 1]);
-      for (int i = 1; i < nxc - 1; i++)
-        for (int j = 1; j < nyc - 1; j++)
-          for (int k = 1; k < nzc - 1; k++)
-            Bzc[i][j][k] = temp[i][j][k];
+      // Jxhth
+      for (int i = 1; i < nxn - 1; i++)
+        for (int j = 1; j < nyn - 1; j++)
+          for (int k = 1; k < nzn - 1; k++)
+            temp[i][j][k] = value * Jxh[i][j][k] + alpha * (Jxh[i - 1][j][k] + Jxh[i + 1][j][k] + Jxh[i][j - 1][k] + Jxh[i][j + 1][k] + Jxh[i][j][k - 1] + Jxh[i][j][k + 1]);
+      for (int i = 1; i < nxn - 1; i++)
+        for (int j = 1; j < nyn - 1; j++)
+          for (int k = 1; k < nzn - 1; k++)
+            Jxh[i][j][k] = temp[i][j][k];
+      // Jyhth
+      for (int i = 1; i < nxn - 1; i++)
+        for (int j = 1; j < nyn - 1; j++)
+          for (int k = 1; k < nzn - 1; k++)
+            temp[i][j][k] = value * Jyh[i][j][k] + alpha * (Jyh[i - 1][j][k] + Jyh[i + 1][j][k] + Jyh[i][j - 1][k] + Jyh[i][j + 1][k] + Jyh[i][j][k - 1] + Jyh[i][j][k + 1]);
+      for (int i = 1; i < nxn - 1; i++)
+        for (int j = 1; j < nyn - 1; j++)
+          for (int k = 1; k < nzn - 1; k++)
+            Jyh[i][j][k] = temp[i][j][k];
+      // Jzhth
+      for (int i = 1; i < nxn - 1; i++)
+        for (int j = 1; j < nyn - 1; j++)
+          for (int k = 1; k < nzn - 1; k++)
+            temp[i][j][k] = value * Jzh[i][j][k] + alpha * (Jzh[i - 1][j][k] + Jzh[i + 1][j][k] + Jzh[i][j - 1][k] + Jzh[i][j + 1][k] + Jzh[i][j][k - 1] + Jzh[i][j][k + 1]);
+      for (int i = 1; i < nxn - 1; i++)
+        for (int j = 1; j < nyn - 1; j++)
+          for (int k = 1; k < nzn - 1; k++)
+            Jzh[i][j][k] = temp[i][j][k];
 
 
-      delArr3(temp, nxc, nyc);
+      delArr3(temp, nxn, nyn);
     }
   }
 }
+
 
 // Claculate the product of the mass matrix with the vector v
 void EMfields3D::productMassE(double* MEx, double* MEy, double* MEz, double ***vX, double ***vY, double ***vZ, int i, int j, int k)
@@ -1639,6 +1606,9 @@ double ***EMfields3D::getEx() {
 double ***EMfields3D::getExth() {
   return (Exth);
 }
+double ***EMfields3D::getEFxth() {
+  return (EFxth);
+}
 /*! get Electric Field component X array cell without the ghost cells */
 double ***EMfields3D::getExc() {
 
@@ -1667,6 +1637,9 @@ double ***EMfields3D::getEy() {
 double ***EMfields3D::getEyth() {
   return (Eyth);
 }
+double ***EMfields3D::getEFyth() {
+  return (EFyth);
+}
 /*! get Electric Field component Y array cell without the ghost cells */
 double ***EMfields3D::getEyc() {
 
@@ -1693,6 +1666,9 @@ double ***EMfields3D::getEz() {
 }
 double ***EMfields3D::getEzth() {
   return (Ezth);
+}
+double ***EMfields3D::getEFzth() {
+  return (EFzth);
 }
 /*! get Electric Field component Z array cell without the ghost cells */
 double ***EMfields3D::getEzc() {
@@ -1897,20 +1873,46 @@ double EMfields3D::getEenergy(void) {
   double totalEenergy = 0.0;
 
   double err; 
-  for (int i = 1; i < nxn-1 ; i++) {
-  }
-
 
   for (int i = 1; i < nxn-2 ; i++)
     for (int j = 1; j < nyn-2 ; j++)
       for (int k = 1; k < nzn-2 ; k++) {
         localEenergy += .5 * dx * dy * dz * (Ex[i][j][k] * Ex[i][j][k] + Ey[i][j][k] * Ey[i][j][k] + Ez[i][j][k] * Ez[i][j][k]) / (FourPI);
+        //localEenergy += dx * dy * dz * (Ex[i][j][k]*Exth[i][j][k] + Ey[i][j][k]*Eyth[i][j][k] + Ez[i][j][k]*Ezth[i][j][k]) / (FourPI);
       }
 
   MPI_Allreduce(&localEenergy, &totalEenergy, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
   return (totalEenergy);
 
 }
+/*! get the electric field energy */
+/*
+double EMfields3D::getEenergyFilter(void) {
+  double localEenergy = 0.0;
+  double totalEenergy = 0.0;
+
+  double err; 
+
+  for (int i = 1; i < nxn-2 ; i++)
+    for (int j = 1; j < nyn-2 ; j++)
+      for (int k = 1; k < nzn-2 ; k++) {
+        double E0  = .5 * dx * dy * dz * (Ex_prev[i][j][k] * Ex_prev[i][j][k] + Ey_prev[i][j][k] * Ey_prev[i][j][k] + Ez_prev[i][j][k] * Ez_prev[i][j][k]) / (FourPI);
+        double E1  = .5 * dx * dy * dz * (Ex[i][j][k] * Ex[i][j][k] + Ey[i][j][k] * Ey[i][j][k] + Ez[i][j][k] * Ez[i][j][k]) / (FourPI);
+        double dE  = E1 - E0;
+        double valx = Ex[i][j][k] - Ex_prev[i][j][k];
+        double valy = Ey[i][j][k] - Ey_prev[i][j][k];
+        double valz = Ez[i][j][k] - Ez_prev[i][j][k];
+        double dEf = dx*dy*dz*(valx*EFxth[i][j][k] + valy*EFyth[i][j][k] + valz*EFzth[i][j][k])/FourPI;
+        localEenergy += fabs(dE - dEf);
+      }
+
+  MPI_Allreduce(&localEenergy, &totalEenergy, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+  return (totalEenergy);
+
+}
+*/
+
+
 /*! get the magnetic field energy */
 double EMfields3D::getBenergy(void) {
   double localBenergy = 0.0;
@@ -1942,9 +1944,15 @@ EMfields3D::~EMfields3D() {
   delArr3(Ex, nxn, nyn);
   delArr3(Ey, nxn, nyn);
   delArr3(Ez, nxn, nyn);
+  //delArr3(Ex_prev, nxn, nyn);
+  //delArr3(Ey_prev, nxn, nyn);
+  //delArr3(Ez_prev, nxn, nyn);
   delArr3(Exth, nxn, nyn);
   delArr3(Eyth, nxn, nyn);
   delArr3(Ezth, nxn, nyn);
+  delArr3(EFxth, nxn, nyn);
+  delArr3(EFyth, nxn, nyn);
+  delArr3(EFzth, nxn, nyn);
   delArr3(Bxn, nxn, nyn);
   delArr3(Byn, nxn, nyn);
   delArr3(Bzn, nxn, nyn);

@@ -48,19 +48,18 @@ class EMfields3D                // :public Field
     /*! Calculate Electric field using the implicit Maxwell solver */
     void calculateE(Grid * grid, VirtualTopology3D * vct, Collective *col);
     /*! Perpare the memory to calculate E with PETSc */
-    void startEcalc(VirtualTopology3D * vct);
+    void startEcalc(VirtualTopology3D * vct, Collective *col);
     /*! Frees the memory allocated in startEcalc and apply BC to the field */
     void endEcalc(double* xkrylov, VirtualTopology3D * vct, Collective *col, Grid* grid);
     /*! Image of Poisson Solver (for SOLVER) */
-    void MaxwellImage(double *im, double *vector, Grid * grid, VirtualTopology3D * vct);
+    void MaxwellImage(double *im, double *vector, Grid * grid, VirtualTopology3D * vct, Collective *col);
     /*! Maxwell source term (for SOLVER) */
     void MaxwellSource(double *bkrylov, Grid * grid, VirtualTopology3D * vct, Collective *col);
     /*! Calculate Magnetic and Electric field */
     void calculateEB(Grid*, VirtualTopology3D*, Collective*);
     void productMassE(double*, double*, double*, double***, double***, double***, int, int, int);
-    void smooth(double value, double ***vector, int type, Grid * grid, VirtualTopology3D * vct);
-    void smoothE(double value, VirtualTopology3D * vct, Collective *col);
-    void smoothB(double value, VirtualTopology3D * vct, Collective *col);
+    void smoothEth(double value, VirtualTopology3D * vct, Collective *col);
+    void smoothJh(double value, VirtualTopology3D * vct, Collective *col);
     void centers2nodesB(VirtualTopology3D*, Grid*, Collective*);
 
     void UpdateRHOcs(Grid * grid);
@@ -117,6 +116,7 @@ class EMfields3D                // :public Field
     /*! get Electric field X component array */
     double ***getEx();
     double ***getExth();
+    double ***getEFxth();
     /*! get Electric field X component cell array without the ghost cells */
     double ***getExc();
     /*! get Electric Field component Y defined on node(indexX,indexY,indexZ) */
@@ -124,6 +124,7 @@ class EMfields3D                // :public Field
     /*! get Electric field Y component array */
     double ***getEy();
     double ***getEyth();
+    double ***getEFyth();
     /*! get Electric field Y component cell array without the ghost cells */
     double ***getEyc();
     /*! get Electric Field component Z defined on node(indexX,indexY,indexZ) */
@@ -131,6 +132,7 @@ class EMfields3D                // :public Field
     /*! get Electric field Z component array */
     double ***getEz();
     double ***getEzth();
+    double ***getEFzth();
     /*! get Electric field Z component cell array without the ghost cells */
     double ***getEzc();
     /*! get Magnetic Field component X defined on node(indexX,indexY,indexZ) */
@@ -278,15 +280,15 @@ class EMfields3D                // :public Field
     /*! Ex: electric field X-component (indexX, indexY, indexZ), defined on nodes */
     double ***Ex;
     /*! Exth: implicit electric field X-component (indexX, indexY, indexZ), defined on nodes */
-    double ***Exth;
+    double ***Exth, ***EFxth;
     /*! Ey: electric field Y-component (indexX, indexY, indexZ), defined on nodes */
     double ***Ey;
     /*! Eyth: implicit electric field Y-component (indexX, indexY, indexZ), defined on nodes */
-    double ***Eyth;
+    double ***Eyth, ***EFyth;
     /*! Ez: electric field Z-component (indexX, indexY, indexZ, #species), defined on nodes */
     double ***Ez;
     /*! Ezth: implicit electric field Z-component (indexX, indexY, indexZ), defined on nodes */
-    double ***Ezth;
+    double ***Ezth, ***EFzth;
     /*! Bxc: magnetic field X-component (indexX, indexY, indexZ), defined on central points between nodes */
     double ***Bxc;
     /*! Byc: magnetic field Y-component (indexX, indexY, indexZ), defined on central points between nodes */

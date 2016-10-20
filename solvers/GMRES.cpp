@@ -1,7 +1,7 @@
 
 #include "GMRES.h"
 
-void GMRES(FIELD_IMAGE FunctionImage, double *xkrylov, int xkrylovlen, double *b, int m, int max_iter, double tol, Grid * grid, VirtualTopology3D * vct, Field * field) {
+void GMRES(FIELD_IMAGE FunctionImage, double *xkrylov, int xkrylovlen, double *b, int m, int max_iter, double tol, Grid * grid, VirtualTopology3D * vct,Collective *col, Field * field) {
   if (m > xkrylovlen) {
     if (vct->getCartesian_rank() == 0)
       cerr << "In GMRES the dimension of Krylov space(m) can't be > (length of krylov vector)/(# processors)" << endl;
@@ -49,7 +49,7 @@ void GMRES(FIELD_IMAGE FunctionImage, double *xkrylov, int xkrylovlen, double *b
   for (register int itr = 0; itr < max_iter; itr++) {
 
     // r = b - A*x
-    (field->*FunctionImage) (im, xkrylov, grid, vct);
+    (field->*FunctionImage) (im, xkrylov, grid, vct, col);
     sub(r, b, im, xkrylovlen);
     initial_error = normP(r, xkrylovlen);
     normb = normP(b, xkrylovlen);
@@ -88,7 +88,7 @@ void GMRES(FIELD_IMAGE FunctionImage, double *xkrylov, int xkrylovlen, double *b
 
       // w= A*V(:,k)
       getColumn(v, V, k, xkrylovlen);
-      (field->*FunctionImage) (w, v, grid, vct);
+      (field->*FunctionImage) (w, v, grid, vct, col);
       putColumn(V, w, k + 1, xkrylovlen);
       av = normP(w, xkrylovlen);
 

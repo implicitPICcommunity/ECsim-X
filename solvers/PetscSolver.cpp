@@ -83,7 +83,7 @@ void PetscSolver::solveE()
   VecAssemblyBegin(globB);
   VecAssemblyEnd  (globB);
 
-  ctx.EMf->startEcalc(ctx.vct);
+  ctx.EMf->startEcalc(ctx.vct, ctx.col);
   KSPSolve(ksp,globB,globX);
   double *d_x;
   VecGetArray(globX, &d_x);
@@ -114,7 +114,7 @@ PetscErrorCode MyMatMult(Mat A,Vec x,Vec y)
   double *d_y, *d_x;
   VecGetArray(y, &d_y);
   VecGetArray(x, &d_x);
-  ctx->EMf->MaxwellImage(d_y, d_x, ctx->grid, ctx->vct); 
+  ctx->EMf->MaxwellImage(d_y, d_x, ctx->grid, ctx->vct, ctx->col); 
 
   VecRestoreArray(x, &d_x);
   VecRestoreArray(y, &d_y);
