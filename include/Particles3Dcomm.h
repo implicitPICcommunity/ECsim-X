@@ -284,6 +284,9 @@ protected:
   double Ninj;
 
   NeighboringNodes NeNo;
+
+  /** Seed for random numbers generator */
+  long long seed;
 };
 
 #endif
