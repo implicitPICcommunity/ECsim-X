@@ -72,6 +72,10 @@ Particles3Dcomm::~Particles3Dcomm() {
 }
 /** constructors fo a single species*/
 void Particles3Dcomm::allocate(int species, long long initnpmax, Collective * col, VirtualTopology3D * vct, Grid * grid) {
+
+  /* initialize random generator with different seed on different processor */
+  seed = vct->getCartesian_rank()+1+ns+(int(MPI_Wtime()))%10000;
+
   // info from collectiveIO
   ns = species;
   npcel = col->getNpcel(species);
