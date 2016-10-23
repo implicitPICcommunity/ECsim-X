@@ -92,6 +92,8 @@ void communicateGhostFace(int b_len, int myrank, int right_neighbor, int left_ne
   4 = from   XsameYrightZright to XsameYleftZleft; we exchange X edge
   5 = from   XsameYrightZleft to XsameYleftZright; we exchange X edge
   */
+/*  THIS FUNCTION IS NEVER USED. INSTEAD WHEN THE COPY OF THE EDGES IS NEEDED THE FUNCION communicateGhostFace() 
+ *  IS USED. MOREOVER IT SEEMS THAT THERE ARE SOME BUGS IN THIS FUNCION.
 void communicateGhostEdge(int b_len, int myrank, int right_neighborD, int left_neighborD, int DIR, int XLEN, int YLEN, int ZLEN, double *ghostRightEdge, double *ghostLeftEdge) {
   MPI_Status status;
   int rankE;
@@ -157,6 +159,8 @@ void communicateGhostEdge(int b_len, int myrank, int right_neighborD, int left_n
 
 
 }
+*/
+
 /** Communicate ghost corners along a direction; there are 4 Diagonal directions through which we exchange Ghost Corners:
   0 =  from XrightYrightZright to XleftYleftZleft
   1 =  from XrightYleftZright  to XleftYrightZleft

@@ -191,6 +191,7 @@ void EMfields3D::endEcalc(double* xkrylov, VirtualTopology3D * vct, Collective *
   communicateCenterBC(nxc, nyc, nzc, Byc,   col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5], vct);
   communicateCenterBC(nxc, nyc, nzc, Bzc,   col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct);
 
+
 }
 
 
@@ -215,6 +216,9 @@ void EMfields3D::calculateEB(Grid * grid, VirtualTopology3D * vct, Collective *c
   phys2solver(xkrylov, Ex, Ey, Ez, Bxn, Byn, Bzn, nxn, nyn, nzn);
   // solver
   GMRES(&Field::MaxwellImage, xkrylov, dim, bkrylov, 20, 200, GMREStol, grid, vct, col, this);
+  endEcalc(xkrylov, vct, col, grid);
+
+/*
   // move from krylov space to physical space
   solver2phys(Exth, Eyth, Ezth, tempXC, tempYC, tempZC, xkrylov, nxn, nyn, nzn);
   addscale(1 / th, -(1.0 - th) / th, Bxc, tempXC, nxc, nyc, nzc);
@@ -235,6 +239,7 @@ void EMfields3D::calculateEB(Grid * grid, VirtualTopology3D * vct, Collective *c
   communicateCenterBC(nxc, nyc, nzc, Byc, col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5], vct);
   communicateCenterBC(nxc, nyc, nzc, Bzc, col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct);
 
+*/
   // deallocate temporary arrays
   delete[]xkrylov;
   delete[]bkrylov;
@@ -337,28 +342,9 @@ void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTo
       }
   #endif
 
-  // Boundary condition in the known term
-  // boundary condition: Xleft
-  if (vct->getXleft_neighbor() == MPI_PROC_NULL && bcEMfaceXleft == 0)  // perfect conductor
-    perfectConductorLeftS(tempX, tempY, tempZ, 0);
-  // boundary condition: Xright
-  if (vct->getXright_neighbor() == MPI_PROC_NULL && bcEMfaceXright == 0)  // perfect conductor
-    perfectConductorRightS(tempX, tempY, tempZ, 0);
-  // boundary condition: Yleft
-  if (vct->getYleft_neighbor() == MPI_PROC_NULL && bcEMfaceYleft == 0)  // perfect conductor
-    perfectConductorLeftS(tempX, tempY, tempZ, 1);
-  // boundary condition: Yright
-  if (vct->getYright_neighbor() == MPI_PROC_NULL && bcEMfaceYright == 0)  // perfect conductor
-    perfectConductorRightS(tempX, tempY, tempZ, 1);
-  // boundary condition: Zleft
-  if (vct->getZleft_neighbor() == MPI_PROC_NULL && bcEMfaceZleft == 0)  // perfect conductor
-    perfectConductorLeftS(tempX, tempY, tempZ, 2);
-  // boundary condition: Zright
-  if (vct->getZright_neighbor() == MPI_PROC_NULL && bcEMfaceZright == 0)  // perfect conductor
-    perfectConductorRightS(tempX, tempY, tempZ, 2);
-
   // move from physical space to krylov space
   phys2solver(im, imageBX, imageBY, imageBZ, imageEX, imageEY, imageEZ, nxn, nyn, nzn);
+
 }
 
 /* Interpolation smoothing: Smoothing (vector must already have ghost cells) TO MAKE SMOOTH value as to be different from 1.0 type = 0 --> center based vector ; type = 1 --> node based vector ; */
@@ -526,24 +512,26 @@ void EMfields3D::interpDensitiesN2C(VirtualTopology3D * vct, Grid * grid) {
 /*! communicate ghost for grid -> Particles interpolation */
 void EMfields3D::communicateGhostP2G(VirtualTopology3D * vct) {
 
+  int rank = vct->getCartesian_rank();
+
   // interpolate adding common nodes among processors
   communicateInterp(nxn, nyn, nzn, rhon, 0, 0, 0, 0, 0, 0, vct);
   communicateInterp(nxn, nyn, nzn, Jxh, 0, 0, 0, 0, 0, 0, vct);
   communicateInterp(nxn, nyn, nzn, Jyh, 0, 0, 0, 0, 0, 0, vct);
   communicateInterp(nxn, nyn, nzn, Jzh, 0, 0, 0, 0, 0, 0, vct);
   for (int i=0; i<ns; i++) { 
-    communicateInterp(nxn, nyn, nzn, i, rhons, 2, 2, 2, 2, 2, 2, vct);
+    communicateInterp(nxn, nyn, nzn, i, rhons, 0, 0, 0, 0, 0, 0, vct);
   }
   for (int i=0; i<NE_MASS; i++) { 
-    communicateInterp(nxn, nyn, nzn, i, Mxx, 2, 2, 2, 2, 2, 2, vct);
-    communicateInterp(nxn, nyn, nzn, i, Mxy, 2, 2, 2, 2, 2, 2, vct);
-    communicateInterp(nxn, nyn, nzn, i, Mxz, 2, 2, 2, 2, 2, 2, vct);
-    communicateInterp(nxn, nyn, nzn, i, Myx, 2, 2, 2, 2, 2, 2, vct);
-    communicateInterp(nxn, nyn, nzn, i, Myy, 2, 2, 2, 2, 2, 2, vct);
-    communicateInterp(nxn, nyn, nzn, i, Myz, 2, 2, 2, 2, 2, 2, vct);
-    communicateInterp(nxn, nyn, nzn, i, Mzx, 2, 2, 2, 2, 2, 2, vct);
-    communicateInterp(nxn, nyn, nzn, i, Mzy, 2, 2, 2, 2, 2, 2, vct);
-    communicateInterp(nxn, nyn, nzn, i, Mzz, 2, 2, 2, 2, 2, 2, vct);
+    communicateInterp(nxn, nyn, nzn, i, Mxx, 0, 0, 0, 0, 0, 0, vct);
+    communicateInterp(nxn, nyn, nzn, i, Mxy, 0, 0, 0, 0, 0, 0, vct);
+    communicateInterp(nxn, nyn, nzn, i, Mxz, 0, 0, 0, 0, 0, 0, vct);
+    communicateInterp(nxn, nyn, nzn, i, Myx, 0, 0, 0, 0, 0, 0, vct);
+    communicateInterp(nxn, nyn, nzn, i, Myy, 0, 0, 0, 0, 0, 0, vct);
+    communicateInterp(nxn, nyn, nzn, i, Myz, 0, 0, 0, 0, 0, 0, vct);
+    communicateInterp(nxn, nyn, nzn, i, Mzx, 0, 0, 0, 0, 0, 0, vct);
+    communicateInterp(nxn, nyn, nzn, i, Mzy, 0, 0, 0, 0, 0, 0, vct);
+    communicateInterp(nxn, nyn, nzn, i, Mzz, 0, 0, 0, 0, 0, 0, vct);
   }
 
   // put the correct values on ghost cells

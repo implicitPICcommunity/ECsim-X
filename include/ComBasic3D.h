@@ -16,9 +16,6 @@ void communicateParticlesDIR(int buffer_size, int myrank, int right_neighbor, in
 /** communicate ghost along a direction **/
 void communicateGhostFace(int b_len, int myrank, int right_neighbor, int left_neighbor, int DIR, int XLEN, int YLEN, int ZLEN, double *ghostRightFace, double *ghostLeftFace);
 
-/** communicate ghost along a direction **/
-void communicateGhostFace(int b_len, int myrank, int right_neighbor, int left_neighbor, int DIR, int XLEN, int YLEN, int ZLEN, double *ghostRightFace, double *ghostLeftFace);
-
 /** communicate ghost edge along a direction; there are 6 Diagonal directions through which we exchange Ghost Edges :
   0 = from   XrightYrightZsame to YleftZleftZsame; we exchange Z edge
   1 = from   XrightYleftZsame to XleftYrightZsame; we exchange Z edge
@@ -27,7 +24,7 @@ void communicateGhostFace(int b_len, int myrank, int right_neighbor, int left_ne
   4 = from   XsameYrightZright to XsameYleftZleft; we exchange X edge
   5 = from   XsameYrightZleft to XsameYleftZright; we exchange X edge
   */
-void communicateGhostEdge(int b_len, int myrank, int right_neighborD, int left_neighborD, int DIR, int XLEN, int YLEN, int ZLEN, double *ghostRightEdge, double *ghostLeftEdge);
+//void communicateGhostEdge(int b_len, int myrank, int right_neighborD, int left_neighborD, int DIR, int XLEN, int YLEN, int ZLEN, double *ghostRightEdge, double *ghostLeftEdge);
 
 /** Communicate ghost corners along a direction; there are 4 Diagonal directions through which we exchange Ghost Corners:
   0 =  from XrightYrightZright to XleftYleftZleft
