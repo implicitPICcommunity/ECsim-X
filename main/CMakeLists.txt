@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8.5)
 # Project declaration
 #
 
-project(ecPic3Dlib)
+project(ECsimlib)
 
 #
 # Set exec path
@@ -56,7 +56,7 @@ file(
         ${IPIC_HOME}/processtopology/*.cpp
         ${IPIC_HOME}/solvers/*.cpp
         ${IPIC_HOME}/utility/*.cpp
-        ${IPIC_HOME}/main/ecPic3Dlib.cpp
+        ${IPIC_HOME}/main/ECsimlib.cpp
 )
 
 #
@@ -117,7 +117,7 @@ link_directories(
 #
 
 add_library(
-        ecPic3Dlib
+        ECsimlib
         STATIC
         ${inc_files}
         ${src_files}
@@ -128,7 +128,7 @@ add_library(
 #
 
 target_link_libraries(
-         ecPic3Dlib
+         ECsimlib
          ${H5HUTIO_LIBRARIES}
          ${PETSC_LIBRARIES}
 )

@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8.5)
 # Set project name
 #
 
-project(ecPic3D)
+project(ECsim)
 
 #
 # Find packages (already managed by CMake)
@@ -21,7 +21,7 @@ list (APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake-modules")
 #
 # Options
 #
-option(PROFILING "Measure the times in each stage" ON)
+option(PROFILING "Measure the times in each stage" OFF)
 if(PROFILING)
   add_definitions( -D__PROFILING__ )
 endif()
@@ -57,8 +57,8 @@ add_definitions(
 #
 
 add_executable(
-    ecPic3D
-    ecPic3D.cpp
+    ECsim
+    ECsim.cpp
 )
 
 #
@@ -66,8 +66,8 @@ add_executable(
 #
 
 target_link_libraries(
-    ecPic3D
-    ecPic3Dlib
+    ECsim
+    ECsimlib
     ${MPI_LIBRARIES}
     ${HDF5_LIBRARIES}
     ${PETSC_LIBRARIES}
@@ -80,13 +80,13 @@ target_link_libraries(
 if(IPIC_TESTS)
   enable_testing()
   set(IPIC_TESTS_DIR "${CMAKE_BINARY_DIR}/tests" CACHE STRING "Location of the
-source files for ecPic3D")
+source files for ECsim")
 
   add_test(NAME GEM-test
            COMMAND ${CMAKE_COMMAND}
            -DIPIC_TESTS_DIR=${IPIC_TESTS_DIR}
            -DIPIC_SOURCE_DIR=${CMAKE_SOURCE_DIR}
-           -DIPICEXEC=$<TARGET_FILE:ecPic3D>
+           -DIPICEXEC=$<TARGET_FILE:ECsim>
            -DMPIEXEC=${MPIEXEC}
            -DMPIEXEC_NUMPROC_FLAG=${MPIEXEC_NUMPROC_FLAG}
            -DMPIEXEC_POSTFLAGS=${MPIEXEC_POSTFLAGS}

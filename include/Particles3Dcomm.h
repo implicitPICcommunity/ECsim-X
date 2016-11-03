@@ -1,7 +1,7 @@
 /*******************************************************************************************
-  Particles3Dcommcomm.h  -  Class for particles of the same species, in a 2D space and 3component velocity with communications methods
+  Particles3Dcomm.h  -  Class for particles of the same species, in a 2D space and 3component velocity with communications methods
   -------------------
-developers: Stefano Markidis, Giovanni Lapenta
+developers: Stefano Markidis, Giovanni Lapenta, Diego Gonzalez
  ********************************************************************************************/
 
 #ifndef Part3DCOMM_H

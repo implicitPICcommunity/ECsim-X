@@ -1,3 +1,10 @@
+/***************************************************************************
+  PetscSolver.h  -  Class to solve the Maxwell equations with PETSc
+  -------------------
+begin                : 2016
+copyright            : 2016 KU Luveun
+developers           : Diego Gonzalez
+ ***************************************************************************/
 #ifdef __WITH_PETSC__
 
 #ifndef PETSCSOLVER_H

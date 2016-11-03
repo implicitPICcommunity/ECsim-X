@@ -1,14 +1,9 @@
 Mon Aug 29 10:17:48 CEST 2016
 
-  iPic3D-ECIMM: version of iPic3D with the algorithm of Energy Conserving Implicit Moment Method.
-  Fully Electromagnetic.
+  ECsim: Particle in Cell code with the Energy Conserving Semi Implicit Method 
+  algorithm.
 
-  Modifications from Ver2:
-
-  Parallel Output 
-  Code cleaned: test, ASCII output
-  
-  Mass matrix optimization: Only 14 elements are computed.
-  Some clocks are included to profile the code
+  It inherits from iPic3D the scheme of the particle and field communications, output 
+  and grid operations.
 
   Diego Gonzalez

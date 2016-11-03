@@ -1,4 +1,10 @@
-/*!************************************************************************* EMfields3D.h - ElectroMagnetic fields definition ------------------- begin : May 2008 copyright : KU Leuven developers : Stefano Markidis, Giovanni Lapenta ************************************************************************* */
+/*!************************************************************************* 
+ * EMfields3D.h - ElectroMagnetic fields definition 
+ * ------------------- 
+ *  begin : May 2008 
+ *  copyright : KU Leuven 
+ *  developers : Stefano Markidis, Giovanni Lapenta, Diego Gonzalez
+ *  ************************************************************************* */
 
 #ifndef EMfields3D_H
 #define EMfields3D_H

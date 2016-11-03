@@ -1,7 +1,7 @@
 /*******************************************************************************************
   Particles3D.h  -  Class for particles of the same species, in a 2D space and 3 component velocity
   -------------------
-developers: Stefano Markidis, Enrico Camporeale, Giovanni Lapenta, David Burgess
+developers: Stefano Markidis, Enrico Camporeale, Giovanni Lapenta, David Burgess, Diego Gonzalez
  ********************************************************************************************/
 
 #ifndef Part2D_H
