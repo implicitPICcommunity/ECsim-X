@@ -1,9 +1,8 @@
 Mon Aug 29 10:17:48 CEST 2016
 
-  ECsim: Particle in Cell code with the Energy Conserving Semi Implicit Method 
-  algorithm.
+  ECsim: Particle in Cell code with the Energy Conserving Semi Implicit Method.
 
-  It inherits from iPic3D the scheme of the particle and field communications, output 
+  It inherits from iPic3D the scheme of the particles and fields communications, output 
   and grid operations.
 
   Diego Gonzalez
