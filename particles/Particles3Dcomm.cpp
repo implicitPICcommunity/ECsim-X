@@ -246,7 +246,7 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
     for (register long long ip = 0; ip < nop; ip++)
     {
       #ifdef __PROFILING__
-      clocks->start(3);
+      clocks->start(6);
       #endif
       const int ix = 2 + int (floor((x[ip] - xstart) * inv_dx));
       const int iy = 2 + int (floor((y[ip] - ystart) * inv_dy));
@@ -297,11 +297,11 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       double qav = q[ip]*(alpha[1][0]*u[ip] + alpha[1][1]*v[ip] + alpha[1][2]*w[ip]);
       double qaw = q[ip]*(alpha[2][0]*u[ip] + alpha[2][1]*v[ip] + alpha[2][2]*w[ip]);
       #ifdef __PROFILING__
-      clocks->stop(3);
+      clocks->stop(6);
       #endif
 
       #ifdef __PROFILING__
-      clocks->start(4);
+      clocks->start(7);
       #endif
       // add charge density               
       for (int ii = 0; ii < 2; ii++)
@@ -311,11 +311,11 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
           }
       EMf->addRho(temp, ix, iy, iz, ns);
       #ifdef __PROFILING__
-      clocks->stop(4);
+      clocks->stop(7);
       #endif
 
       #ifdef __PROFILING__
-      clocks->start(5);
+      clocks->start(8);
       #endif
       // add implicit current density - X
       for (int ii = 0; ii < 2; ii++)
@@ -338,11 +338,11 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
             temp[ii][jj][kk] = qaw* weight[ii][jj][kk];
       EMf->addJzh(temp, ix, iy, iz);
       #ifdef __PROFILING__
-      clocks->stop(5);
+      clocks->stop(8);
       #endif
 
       #ifdef __PROFILING__
-      clocks->start(6);
+      clocks->start(9);
       #endif
       // Mass Matrix:
       //  Each node of the cell in which the particle is:
@@ -395,7 +395,7 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
             }
           }
         #ifdef __PROFILING__
-        clocks->stop(6);
+        clocks->stop(9);
         #endif
     }
   }
