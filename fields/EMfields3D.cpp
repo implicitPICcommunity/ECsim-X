@@ -1,7 +1,9 @@
 
 //#define ELECTROSTATIC
 #include "EMfields3D.h"
+#include "MyClock.h"
 //#include "MaxwellECIMM.h"
+extern MyClock *clocks;
 
 #define NE_MASS 14
 /*! constructor */
@@ -161,6 +163,9 @@ void EMfields3D::startEcalc(VirtualTopology3D * vct, Collective *col) {
 
 void EMfields3D::endEcalc(double* xkrylov, VirtualTopology3D * vct, Collective *col, Grid* grid)
 {
+  #ifdef __PROFILING__
+  clocks->start(14);
+  #endif
 
   //eq(Ex_prev, Ex, nxn, nyn, nzn);
   //eq(Ey_prev, Ey, nxn, nyn, nzn);
@@ -192,6 +197,9 @@ void EMfields3D::endEcalc(double* xkrylov, VirtualTopology3D * vct, Collective *
   communicateCenterBC(nxc, nyc, nzc, Bzc,   col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct);
 
 
+  #ifdef __PROFILING__
+  clocks->stop(14);
+  #endif
 }
 
 
@@ -247,7 +255,10 @@ void EMfields3D::calculateEB(Grid * grid, VirtualTopology3D * vct, Collective *c
 
 /*! Calculate sorgent for Maxwell solver */
 void EMfields3D::MaxwellSource(double *bkrylov, Grid * grid, VirtualTopology3D * vct, Collective *col) {
-  // 
+  #ifdef __PROFILING__
+  clocks->start(11);
+  #endif
+
   #ifdef ELECTROSTATIC
   eqValue(0, Bxc, nxc, nyc, nzc);
   eqValue(0, Byc, nxc, nyc, nzc);
@@ -271,25 +282,35 @@ void EMfields3D::MaxwellSource(double *bkrylov, Grid * grid, VirtualTopology3D *
 
   // physical space -> Krylov space
   phys2solver(bkrylov, tempX, tempY, tempZ, tempXC, tempYC, tempZC, nxn, nyn, nzn);
-
+  #ifdef __PROFILING__
+  clocks->stop(11);
+  #endif
 }
 
 
 /*! Mapping of Maxwell image to give to solver */
 void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTopology3D * vct, Collective *col) {
+  #ifdef __PROFILING__
+  clocks->start(12);
+  #endif
   int dim = 3*(nxn - 2) * (nyn - 2) * (nzn - 2) + 3*(nxc - 2) * (nyc - 2) * (nzc - 2);
   eqValue(0.0, im, dim);
   //eqValue(0.0, im, 6 * (nxn - 2) * (nyn - 2) * (nzn - 2));
   // move from krylov space to physical space: E -> vect   B -> temp
   solver2phys(tempX, tempY, tempZ, tempXC, tempYC, tempZC, vector, nxn, nyn, nzn);
 
-
+  #ifdef __PROFILING__
+  clocks->start(13);
+  #endif
   communicateCenterBC(nxc, nyc, nzc, tempXC, 2, 2, 2, 2, 2, 2, vct);
   communicateCenterBC(nxc, nyc, nzc, tempYC, 2, 2, 2, 2, 2, 2, vct);
   communicateCenterBC(nxc, nyc, nzc, tempZC, 2, 2, 2, 2, 2, 2, vct);
   communicateNodeBC(nxn, nyn, nzn, tempX, 2, 2, 2, 2, 2, 2, vct);
   communicateNodeBC(nxn, nyn, nzn, tempY, 2, 2, 2, 2, 2, 2, vct);
   communicateNodeBC(nxn, nyn, nzn, tempZ, 2, 2, 2, 2, 2, 2, vct);
+  #ifdef __PROFILING__
+  clocks->stop(13);
+  #endif
 
   #ifdef ELECTROSTATIC
     for (int i=1; i<nxn-1; i++)
@@ -347,6 +368,9 @@ void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTo
   // move from physical space to krylov space
   phys2solver(im, imageBX, imageBY, imageBZ, imageEX, imageEY, imageEZ, nxn, nyn, nzn);
 
+  #ifdef __PROFILING__
+  clocks->stop(12);
+  #endif
 }
 
 /* Interpolation smoothing: Smoothing (vector must already have ghost cells) TO MAKE SMOOTH value as to be different from 1.0 type = 0 --> center based vector ; type = 1 --> node based vector ; */

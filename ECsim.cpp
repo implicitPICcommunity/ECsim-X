@@ -56,19 +56,23 @@ int main(int argc, char **argv) {
   #ifdef __PROFILING__
   if (myrank == 0) {
     std::cout << "################################################" << std::endl
-            << "Initialization                : " << clocks->get(0) << " s" << std::endl
-            << "Moments Gathering             : " << clocks->get(1) << " s" << std::endl
-            << " +- B interp. centers->nodes  : " << clocks->get(5) << " s" << std::endl
-            << " +- B interp. nodes->particles: " << clocks->get(6) << " s" << std::endl
-            << " +- Charge density            : " << clocks->get(7) << " s" << std::endl
-            << " +- Implicit Current          : " << clocks->get(8) << " s" << std::endl
-            << " +- Mass matrix               : " << clocks->get(9) << " s" << std::endl
-            << " +- Communications            : " << clocks->get(10)<< " s" << std::endl
-            << "Field Calculation             : " << clocks->get(2) << " s" << std::endl
-            << "Particle Mover                : " << clocks->get(3) << " s" << std::endl
-            << "Writing                       : " << clocks->get(4) << " s" << std::endl
+            << "Initialization                : " << clocks->get(0) <<  std::endl
+            << "Moments Gathering             : " << clocks->get(1) <<  std::endl
+            << " +- B interp. centers->nodes  : " << clocks->get(5) <<  std::endl
+            << " +- B interp. nodes->particles: " << clocks->get(6) <<  std::endl
+            << " +- Charge density            : " << clocks->get(7) <<  std::endl
+            << " +- Implicit Current          : " << clocks->get(8) <<  std::endl
+            << " +- Mass matrix               : " << clocks->get(9) <<  std::endl
+            << " +- Communications            : " << clocks->get(10)<<  std::endl
+            << "Field Calculation             : " << clocks->get(2) <<  std::endl
+            << " +- Maxwell sources           : " << clocks->get(11)<<  std::endl
+            << " +- Maxwell imagen            : " << clocks->get(12)<<  std::endl
+            << "     +- Communications        : " << clocks->get(13)<<  std::endl
+            << " +- End E calc (comm)         : " << clocks->get(14)<<  std::endl
+            << "Particle Mover                : " << clocks->get(3) <<  std::endl
+            << "Writing                       : " << clocks->get(4) <<  std::endl
             << "----------------------------------------------------------" << std::endl
-            << "Total                         : " << clocks->get(11)<< " s" << std::endl;
+            << "Total                         : " << clocks->get(15)<<  std::endl;
   }
   #else
   if (myrank == 0) {
@@ -79,7 +83,7 @@ int main(int argc, char **argv) {
             << "Particle Mover                : " << clocks->get(3) << " s" << std::endl
             << "Writing                       : " << clocks->get(4) << " s" << std::endl
             << "----------------------------------------------------------" << std::endl
-            << "Total                         : " << clocks->get(11)<< " s" << std::endl;
+            << "Total                         : " << clocks->get(15)<< " s" << std::endl;
   }
   #endif
 

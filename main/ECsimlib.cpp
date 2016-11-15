@@ -15,8 +15,8 @@ int c_Solver::Init(int argc, char **argv) {
   nprocs = mpi->nprocs;
   myrank = mpi->rank;
 
-  clocks = new MyClock(12);
-  clocks->start(11);
+  clocks = new MyClock(16);
+  clocks->start(15);
 
   clocks->start(0);
 
@@ -391,14 +391,11 @@ void c_Solver::WriteOutputASCII(int cycle) {
 void c_Solver::Finalize() {
 
   // stop profiling
-  clocks->stop(11);
+  clocks->stop(15);
 
   // deallocate
   delete[]Ke;
   delete[]momentum;
-#ifdef __WITH_PETSC__
-  delete petscSolver;
-#endif
   // close MPI
   mpi->finalize_mpi();
 }
