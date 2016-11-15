@@ -267,31 +267,30 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
             Bzl += weight[i][j][k] * Bz[ix-i][iy-j][iz-k];
           }
 
-
-//fprintf(stderr,"\n====================== Local B (moment gathering)\n");
-//fprintf(stderr,"Bl: %13.6e %13.6e %13.6e\n",Bx,By,Bz);
       // Rotation matrix alpha:
       double omcx = beta * Bxl;
       double omcy = beta * Byl;
       double omcz = beta * Bzl;
-      double denom = 1.0 / (1.0 + omcx * omcx + omcy * omcy + omcz * omcz);
-      //double edotb = u[i] * omcx + v[i] * omcy + w[i] * omcz;
-      //alphaU += (u[i] + (v[i] * omcz - w[i] * omcy + edotb * omcx)) * denom;
-      //alphaV += (v[i] + (w[i] * omcx - u[i] * omcz + edotb * omcy)) * denom;
-      //alphaW += (w[i] + (u[i] * omcy - v[i] * omcx + edotb * omcz)) * denom;
+      double oxx = omcx*omcx;
+      double oyy = omcy*omcy;
+      double ozz = omcz*omcz;
+      double oxy = omcy*omcx;
+      double oxz = omcx*omcz;
+      double oyz = omcy*omcz;
+      double denom = 1.0 / (1.0 + oxx + oyy + ozz);
     
       double alpha[3][3];
-      alpha[0][0] = ( 1    + omcx*omcx)*denom;
-      alpha[0][1] = ( omcz + omcy*omcx)*denom;
-      alpha[0][2] = (-omcy + omcz*omcx)*denom;
+      alpha[0][0] = ( 1    + oxx)*denom;
+      alpha[0][1] = ( omcz + oxy)*denom;
+      alpha[0][2] = (-omcy + oxz)*denom;
 
-      alpha[1][0] = (-omcz + omcx*omcy)*denom;
-      alpha[1][1] = ( 1    + omcy*omcy)*denom;
-      alpha[1][2] = ( omcx + omcz*omcy)*denom;
+      alpha[1][0] = (-omcz + oxy)*denom;
+      alpha[1][1] = ( 1    + oyy)*denom;
+      alpha[1][2] = ( omcx + oyz)*denom;
 
-      alpha[2][0] = ( omcy + omcx*omcz)*denom;
-      alpha[2][1] = (-omcx + omcy*omcz)*denom;
-      alpha[2][2] = ( 1    + omcz*omcz)*denom;
+      alpha[2][0] = ( omcy + oxz)*denom;
+      alpha[2][1] = (-omcx + oyz)*denom;
+      alpha[2][2] = ( 1    + ozz)*denom;
 
       double qau = q[ip]*(alpha[0][0]*u[ip] + alpha[0][1]*v[ip] + alpha[0][2]*w[ip]);
       double qav = q[ip]*(alpha[1][0]*u[ip] + alpha[1][1]*v[ip] + alpha[1][2]*w[ip]);
@@ -367,28 +366,28 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
               // Check if this node is one of the cell in which the particle is:
               if (i2>=0 && i2<2 && j2>=0 && j2<2 && k2>=0 && k2<2) {
                 //Mass[i][j][j] 
-                double ww = beta*weight[i][j][k]*weight[i2][j2][k2];
+                double qww = q[ip]*beta*weight[i][j][k]*weight[i2][j2][k2];
                 //double ww = weight[i][j][k]*weight[i2][j2][k2];
                 double qaww; 
-                qaww = alpha[0][0]*q[ip]*ww;
+                qaww = alpha[0][0]*qww;
                 EMf->addMxx(qaww, ni, nj, nk, c);
-                qaww = alpha[0][1]*q[ip]*ww;
+                qaww = alpha[0][1]*qww;
                 EMf->addMxy(qaww, ni, nj, nk, c);
-                qaww = alpha[0][2]*q[ip]*ww;
+                qaww = alpha[0][2]*qww;
                 EMf->addMxz(qaww, ni, nj, nk, c);
 
-                qaww = alpha[1][0]*q[ip]*ww;
+                qaww = alpha[1][0]*qww;
                 EMf->addMyx(qaww, ni, nj, nk, c);
-                qaww = alpha[1][1]*q[ip]*ww;
+                qaww = alpha[1][1]*qww;
                 EMf->addMyy(qaww, ni, nj, nk, c);
-                qaww = alpha[1][2]*q[ip]*ww;
+                qaww = alpha[1][2]*qww;
                 EMf->addMyz(qaww, ni, nj, nk, c);
 
-                qaww = alpha[2][0]*q[ip]*ww;
+                qaww = alpha[2][0]*qww;
                 EMf->addMzx(qaww, ni, nj, nk, c);
-                qaww = alpha[2][1]*q[ip]*ww;
+                qaww = alpha[2][1]*qww;
                 EMf->addMzy(qaww, ni, nj, nk, c);
-                qaww = alpha[2][2]*q[ip]*ww;
+                qaww = alpha[2][2]*qww;
                 EMf->addMzz(qaww, ni, nj, nk, c);
               }
 

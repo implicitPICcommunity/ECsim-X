@@ -301,15 +301,17 @@ void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTo
         }
   #else
   // c*th*dt*curl(Eth) + Bth
+  double cthdt = c*th*dt;
+
   eq(EFxth, tempX, nxn, nyn, nzn);
   eq(EFyth, tempY, nxn, nyn, nzn);
   eq(EFzth, tempZ, nxn, nyn, nzn);
   smoothEth(Smooth, vct, col);
 
   grid->curlN2C(imageEX, imageEY, imageEZ, EFxth, EFyth, EFzth);
-  scale(imageEX, c*th*dt, nxc, nyc, nzc);
-  scale(imageEY, c*th*dt, nxc, nyc, nzc);
-  scale(imageEZ, c*th*dt, nxc, nyc, nzc);
+  scale(imageEX, cthdt, nxc, nyc, nzc);
+  scale(imageEY, cthdt, nxc, nyc, nzc);
+  scale(imageEZ, cthdt, nxc, nyc, nzc);
   addscale(1, imageEX, tempXC, nxc, nyc, nzc);
   addscale(1, imageEY, tempYC, nxc, nyc, nzc);
   addscale(1, imageEZ, tempZC, nxc, nyc, nzc);
@@ -322,9 +324,9 @@ void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTo
   eqValue(0, imageBZ, nxn, nyn, nzn);
   #else
   grid->curlC2N(imageBX, imageBY, imageBZ, tempXC, tempYC, tempZC);
-  scale(imageBX, -c*th*dt, nxn, nyn, nzn);
-  scale(imageBY, -c*th*dt, nxn, nyn, nzn);
-  scale(imageBZ, -c*th*dt, nxn, nyn, nzn);
+  scale(imageBX, -cthdt, nxn, nyn, nzn);
+  scale(imageBY, -cthdt, nxn, nyn, nzn);
+  scale(imageBZ, -cthdt, nxn, nyn, nzn);
 
   addscale(1, imageBX, tempX, nxn, nyn, nzn);
   addscale(1, imageBY, tempY, nxn, nyn, nzn);
@@ -351,8 +353,8 @@ void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTo
 void EMfields3D::smoothEth(double value, VirtualTopology3D * vct, Collective *col) {
 
   int nvolte = 6;
-  for (int icount = 1; icount < nvolte + 1; icount++) {
-    if (value != 1.0) {
+  if (value != 1.0) {
+    for (int icount = 1; icount < nvolte + 1; icount++) {
       double alpha;
       communicateNodeBoxStencilBC(nxn, nyn, nzn, EFxth, col->bcEx[0],col->bcEx[1],col->bcEx[2],col->bcEx[3],col->bcEx[4],col->bcEx[5], vct);
       communicateNodeBoxStencilBC(nxn, nyn, nzn, EFyth, col->bcEy[0],col->bcEy[1],col->bcEy[2],col->bcEy[3],col->bcEy[4],col->bcEy[5], vct);
@@ -403,8 +405,8 @@ void EMfields3D::smoothEth(double value, VirtualTopology3D * vct, Collective *co
 void EMfields3D::smoothJh(double value, VirtualTopology3D * vct, Collective *col) {
 
   int nvolte = 6;
-  for (int icount = 1; icount < nvolte + 1; icount++) {
-    if (value != 1.0) {
+  if (value != 1.0) {
+    for (int icount = 1; icount < nvolte + 1; icount++) {
       double alpha;
       communicateNodeBoxStencilBC(nxn, nyn, nzn, Jxh, col->bcEx[0],col->bcEx[1],col->bcEx[2],col->bcEx[3],col->bcEx[4],col->bcEx[5], vct);
       communicateNodeBoxStencilBC(nxn, nyn, nzn, Jyh, col->bcEy[0],col->bcEy[1],col->bcEy[2],col->bcEy[3],col->bcEy[4],col->bcEy[5], vct);

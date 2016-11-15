@@ -424,9 +424,7 @@ int Particles3D::mover_ECIMM(Grid * grid, VirtualTopology3D * vct, Field * EMf) 
     Ezl += weight101 * Ezth[ix - 1][iy][iz - 1];
     Ezl += weight110 * Ezth[ix - 1][iy - 1][iz];
     Ezl += weight111 * Ezth[ix - 1][iy - 1][iz - 1];
-//fprintf(stderr,"\n================ Local Fields          \n");
-//fprintf(stderr,"El: %13.6e %13.6e %13.6e \nBl:%13.6e %13.6e %13.6e \n"
-              //,Exl,Eyl,Ezl, Bxl, Byl, Bzl);
+
     // 
     // End of interpolation
     double beta = 0.5*qom*dt;
