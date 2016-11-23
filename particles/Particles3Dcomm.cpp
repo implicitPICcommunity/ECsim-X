@@ -367,28 +367,11 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
               if (i2>=0 && i2<2 && j2>=0 && j2<2 && k2>=0 && k2<2) {
                 //Mass[i][j][j] 
                 double qww = q[ip]*beta*weight[i][j][k]*weight[i2][j2][k2];
-                //double ww = weight[i][j][k]*weight[i2][j2][k2];
-                double qaww; 
-                qaww = alpha[0][0]*qww;
-                EMf->addMxx(qaww, ni, nj, nk, c);
-                qaww = alpha[0][1]*qww;
-                EMf->addMxy(qaww, ni, nj, nk, c);
-                qaww = alpha[0][2]*qww;
-                EMf->addMxz(qaww, ni, nj, nk, c);
+                double val[3][3];
+                for (int ind1=0; ind1<3; ind1++)
+                   for (int ind2=0; ind2<3; ind2++) val[ind1][ind2] = alpha[ind1][ind2]*qww;
 
-                qaww = alpha[1][0]*qww;
-                EMf->addMyx(qaww, ni, nj, nk, c);
-                qaww = alpha[1][1]*qww;
-                EMf->addMyy(qaww, ni, nj, nk, c);
-                qaww = alpha[1][2]*qww;
-                EMf->addMyz(qaww, ni, nj, nk, c);
-
-                qaww = alpha[2][0]*qww;
-                EMf->addMzx(qaww, ni, nj, nk, c);
-                qaww = alpha[2][1]*qww;
-                EMf->addMzy(qaww, ni, nj, nk, c);
-                qaww = alpha[2][2]*qww;
-                EMf->addMzz(qaww, ni, nj, nk, c);
+                EMf->addMass(val, ni, nj, nk, c);
               }
 
             }

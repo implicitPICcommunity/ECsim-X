@@ -634,32 +634,16 @@ void EMfields3D::addJzh(double weight[][2][2], int X, int Y, int Z) {
 }
 
 /** add an amount of current density to mass matrix field at node X,Y */
-void EMfields3D::addMxx(double val, int X, int Y, int Z, int ind) {
-  Mxx[ind][X][Y][Z] += val*invVOL;
-}
-void EMfields3D::addMxy(double val, int X, int Y, int Z, int ind) {
-  Mxy[ind][X][Y][Z] += val*invVOL;
-}
-void EMfields3D::addMxz(double val, int X, int Y, int Z, int ind) {
-  Mxz[ind][X][Y][Z] += val*invVOL;
-}
-void EMfields3D::addMyx(double val, int X, int Y, int Z, int ind) {
-  Myx[ind][X][Y][Z] += val*invVOL;
-}
-void EMfields3D::addMyy(double val, int X, int Y, int Z, int ind) {
-  Myy[ind][X][Y][Z] += val*invVOL;
-}
-void EMfields3D::addMyz(double val, int X, int Y, int Z, int ind) {
-  Myz[ind][X][Y][Z] += val*invVOL;
-}
-void EMfields3D::addMzx(double val, int X, int Y, int Z, int ind) {
-  Mzx[ind][X][Y][Z] += val*invVOL;
-}
-void EMfields3D::addMzy(double val, int X, int Y, int Z, int ind) {
-  Mzy[ind][X][Y][Z] += val*invVOL;
-}
-void EMfields3D::addMzz(double val, int X, int Y, int Z, int ind) {
-  Mzz[ind][X][Y][Z] += val*invVOL;
+void EMfields3D::addMass(double val[3][3], int X, int Y, int Z, int ind) {
+  Mxx[ind][X][Y][Z] += val[0][0]*invVOL;
+  Mxy[ind][X][Y][Z] += val[0][1]*invVOL;
+  Mxz[ind][X][Y][Z] += val[0][2]*invVOL;
+  Myx[ind][X][Y][Z] += val[1][0]*invVOL;
+  Myy[ind][X][Y][Z] += val[1][1]*invVOL;
+  Myz[ind][X][Y][Z] += val[1][2]*invVOL;
+  Mzx[ind][X][Y][Z] += val[2][0]*invVOL;
+  Mzy[ind][X][Y][Z] += val[2][1]*invVOL;
+  Mzz[ind][X][Y][Z] += val[2][2]*invVOL;
 }
 
 /*! set to 0 all the densities fields */

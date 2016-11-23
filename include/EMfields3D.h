@@ -85,15 +85,7 @@ class EMfields3D                // :public Field
     void addRho(double weight[][2][2], int X, int Y, int Z, int is);
     /*! add an amount of current density - direction X to current density field at node X,Y,Z */
 
-    void addMxx(double, int, int, int, int);
-    void addMxy(double, int, int, int, int);
-    void addMxz(double, int, int, int, int);
-    void addMyx(double, int, int, int, int);
-    void addMyy(double, int, int, int, int);
-    void addMyz(double, int, int, int, int);
-    void addMzx(double, int, int, int, int);
-    void addMzy(double, int, int, int, int);
-    void addMzz(double, int, int, int, int);
+    void addMass(double val[3][3], int, int, int, int);
     void addJxh(double weight[][2][2], int X, int Y, int Z);
     void addJyh(double weight[][2][2], int X, int Y, int Z);
     void addJzh(double weight[][2][2], int X, int Y, int Z);
