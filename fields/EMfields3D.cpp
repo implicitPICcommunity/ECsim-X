@@ -76,6 +76,8 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
   RestartDirName = col->getRestartDirName();
   Case = col->getCase();
 
+  Fext = 0;
+
   // arrays allocation: nodes
   Ex = newArr3(double, nxn, nyn, nzn);
   Ey = newArr3(double, nxn, nyn, nzn);
@@ -707,6 +709,9 @@ void EMfields3D::init(VirtualTopology3D * vct, Grid * grid, Collective *col) {
     eqValue(0.0, Ex, nxn, nyn, nzn);
     eqValue(0.0, Ey, nxn, nyn, nzn);
     eqValue(0.0, Ez, nxn, nyn, nzn);
+    eqValue(0.0, Bx_ext, nxn, nyn, nzn);
+    eqValue(0.0, By_ext, nxn, nyn, nzn);
+    eqValue(0.0, Bz_ext, nxn, nyn, nzn);
     eqValue(0.0, tempXC, nxc, nyc, nzc);
     eqValue(0.0, tempYC, nxc, nyc, nzc);
     eqValue(0.0, tempZC, nxc, nyc, nzc);
@@ -1091,6 +1096,12 @@ void EMfields3D::initDoubleGEM(VirtualTopology3D * vct, Grid * grid, Collective 
 						);
 	  // guide field                                                                                                 
 	  Bzn[i][j][k] = B0z;
+
+          // External field
+	  Bx_ext[i][j][k] = 0;
+	  By_ext[i][j][k] = 0;
+	  Bz_ext[i][j][k] = 0;
+          
         }
     // communicate ghost
     communicateNodeBC(nxn, nyn, nzn, Bxn, col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5], vct);
@@ -1185,6 +1196,10 @@ void EMfields3D::initDoublePeriodicHarrisWithGaussianHumpPerturbation(VirtualTop
 
           // guide field
           Bzn[i][j][k] = B0z;
+
+	  Bx_ext[i][j][k] = 0;
+	  By_ext[i][j][k] = 0;
+	  Bz_ext[i][j][k] = 0;
         }
     // communicate ghost
     communicateNodeBC(nxn, nyn, nzn, Bxn, col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5], vct);
