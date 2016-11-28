@@ -16,9 +16,8 @@ int c_Solver::Init(int argc, char **argv) {
   myrank = mpi->rank;
 
   clocks = new MyClock(16);
-  clocks->start(15);
-
   clocks->start(0);
+  clocks->start(15);
 
   col = new Collective(argc, argv); // Every proc loads the parameters of simulation from class Collective
   verbose = col->getVerbose();
@@ -140,7 +139,6 @@ int c_Solver::Init(int argc, char **argv) {
 
 void c_Solver::GatherMoments(){
 
-  clocks->start(1);
 
   #ifdef __PROFILING__
   clocks->start(5);
@@ -164,13 +162,9 @@ void c_Solver::GatherMoments(){
   #ifdef __PROFILING__
   clocks->stop(10);
   #endif
-
-  clocks->stop(1);
 }
 
 void c_Solver::CalculateField() {
-
-  clocks->start(2);
 
   EMf->interpDensitiesN2C(vct, grid);       // calculate densities on centers from nodes
   MPI_Barrier(MPI_COMM_WORLD);
@@ -182,13 +176,9 @@ void c_Solver::CalculateField() {
     EMf->calculateEB(grid, vct, col);               // calculate the E field
   #endif
 
-  clocks->stop(2);
-
 }
 
 bool c_Solver::ParticlesMover() {
-
-  clocks->start(3);
 
   /*  -------------- */
   /*  Particle mover */
@@ -222,8 +212,6 @@ bool c_Solver::ParticlesMover() {
     return (true);              // exit from the time loop
   }
 
-  clocks->stop(3);
-
   return (false);
 }
 
@@ -245,8 +233,6 @@ void c_Solver::WriteRestart(int cycle) {
 }
 
 void c_Solver::WriteConserved(int cycle) {
-
-  clocks->start(4);
 
   if (cycle == 0) {
     totEn0 = EMf->getEenergy() + EMf->getBenergy();
@@ -278,13 +264,10 @@ void c_Solver::WriteConserved(int cycle) {
       fclose(fd);
     }
   }
-  clocks->stop(4);
 }
 
 
 void c_Solver::WriteOutput(int cycle) {
-
-  clocks->start(4);
 
   if (col->getWriteMethod() == "h5hut") {
 
@@ -314,7 +297,6 @@ void c_Solver::WriteOutput(int cycle) {
     }
   }
 
-  clocks->stop(4);
 }
 
 

@@ -31,9 +31,18 @@ int main(int argc, char **argv) {
     /* 2- Calculate fields and move particles                */
     /*    Exit if there is a memory issue with the particles */
     /* ----------------------------------------------------- */
+    clocks->start(1);
     KCode.GatherMoments();
+    clocks->stop(1);
+
+    clocks->start(2);
     KCode.CalculateField();
+    clocks->stop(2);
+
+    clocks->start(3);
     b_err = KCode.ParticlesMover();
+    clocks->stop(3);
+
     if ( b_err) i = KCode.LastCycle() + 1;
 
     /* --------------- */
@@ -41,9 +50,11 @@ int main(int argc, char **argv) {
     /* --------------- */
 
     //KCode.WriteOutputASCII(i);
+    clocks->start(4);
     KCode.WriteOutput(i);
     KCode.WriteConserved(i);
     KCode.WriteRestart(i);
+    clocks->stop(4);
   }
 
 
