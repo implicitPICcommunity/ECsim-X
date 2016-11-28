@@ -44,6 +44,7 @@ include_directories(
     include
     ${MPI_INCLUDE_PATH}
     ${HDF5_INCLUDE_DIRS}
+    ${HDF5_HL_LIBRARIES}
     ${PETSC_INCLUDES}
 )
 
