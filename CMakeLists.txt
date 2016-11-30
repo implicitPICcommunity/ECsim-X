@@ -44,7 +44,6 @@ include_directories(
     include
     ${MPI_INCLUDE_PATH}
     ${HDF5_INCLUDE_DIRS}
-    ${HDF5_HL_LIBRARIES}
     ${PETSC_INCLUDES}
 )
 
@@ -71,6 +70,7 @@ target_link_libraries(
     ECsimlib
     ${MPI_LIBRARIES}
     ${HDF5_LIBRARIES}
+    ${HDF5_HL_LIBRARIES}
     ${PETSC_LIBRARIES}
 )
 
