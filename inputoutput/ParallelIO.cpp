@@ -104,17 +104,17 @@ void WriteOutputParallel(Grid3DCU *grid, EMfields3D *EMf, Particles3Dcomm *part,
     grpname = "Fields";
     dtaname = "Jx_" + snmbr.str();
     //outputfile.WritePHDF5dataset(grpname, dtaname, EMf->getJxsc(grid, is), nxc-2, nyc-2, nzc-2);
-    outputfile.WritePHDF5dataset(grpname, dtaname, EMf->getJxh(), nxn-2, nyn-2, nzn-2);
+    outputfile.WritePHDF5dataset(grpname, dtaname, EMf->getJxs(is), nxn-2, nyn-2, nzn-2, is);
 
     grpname = "Fields";
     dtaname = "Jy_" + snmbr.str();
     //outputfile.WritePHDF5dataset(grpname, dtaname, EMf->getJysc(grid, is), nxc-2, nyc-2, nzc-2);
-    outputfile.WritePHDF5dataset(grpname, dtaname, EMf->getJyh(), nxn-2, nyn-2, nzn-2);
+    outputfile.WritePHDF5dataset(grpname, dtaname, EMf->getJys(is), nxn-2, nyn-2, nzn-2, is);
 
     grpname = "Fields";
     dtaname = "Jz_" + snmbr.str();
     //outputfile.WritePHDF5dataset(grpname, dtaname, EMf->getJzsc(grid, is), nxc-2, nyc-2, nzc-2);
-    outputfile.WritePHDF5dataset(grpname, dtaname, EMf->getJzh(), nxn-2, nyn-2, nzn-2);
+    outputfile.WritePHDF5dataset(grpname, dtaname, EMf->getJzs(is), nxn-2, nyn-2, nzn-2, is);
   }
 
   outputfile.ClosePHDF5file();
@@ -133,7 +133,6 @@ void WriteFieldsH5hut(int nspec, Grid3DCU *grid, EMfields3D *EMf, Collective *co
 #ifdef USEH5HUT
 
   H5output file;
-
 
   /* ---------------- */
   /* Write the fields */
@@ -161,9 +160,9 @@ void WriteFieldsH5hut(int nspec, Grid3DCU *grid, EMfields3D *EMf, Collective *co
     ss << is;
     string s_is = ss.str();
     file.WriteFields(EMf->getRHOns(is), "rho_"+ s_is, grid->getNXN(), grid->getNYN(), grid->getNZN());
-    file.WriteFields(EMf->getJxh(),   "Jx_" + s_is, grid->getNXN(), grid->getNYN(), grid->getNZN());
-    file.WriteFields(EMf->getJyh(),   "Jy_" + s_is, grid->getNXN(), grid->getNYN(), grid->getNZN());
-    file.WriteFields(EMf->getJzh(),   "Jz_" + s_is, grid->getNXN(), grid->getNYN(), grid->getNZN());
+    file.WriteFields(EMf->getJxs(is),   "Jx_" + s_is, grid->getNXN(), grid->getNYN(), grid->getNZN());
+    file.WriteFields(EMf->getJys(is),   "Jy_" + s_is, grid->getNXN(), grid->getNYN(), grid->getNZN());
+    file.WriteFields(EMf->getJzs(is),   "Jz_" + s_is, grid->getNXN(), grid->getNYN(), grid->getNZN());
   }
 
   file.CloseFieldsFile();

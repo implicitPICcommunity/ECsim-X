@@ -99,9 +99,9 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
   Jyh = newArr3(double, nxn, nyn, nzn);
   Jzh = newArr3(double, nxn, nyn, nzn);
 
-  J_partx = newArr3(double, nxn, nyn, nzn);
-  J_party = newArr3(double, nxn, nyn, nzn);
-  J_partz = newArr3(double, nxn, nyn, nzn);
+  Jxs = newArr4(double, ns, nxn, nyn, nzn);
+  Jys = newArr4(double, ns, nxn, nyn, nzn);
+  Jzs = newArr4(double, ns, nxn, nyn, nzn);
 
   Mxx = newArr4(double, NE_MASS, nxn, nyn, nzn);
   Mxy = newArr4(double, NE_MASS, nxn, nyn, nzn);
@@ -125,7 +125,6 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
   Byc = newArr3(double, nxc, nyc, nzc);
   Bzc = newArr3(double, nxc, nyc, nzc);
   rhoc = newArr3(double, nxc, nyc, nzc);
-  rhoh = newArr3(double, nxc, nyc, nzc);
 
   // temporary arrays
   tempXC = newArr3(double, nxc, nyc, nzc);
@@ -635,6 +634,34 @@ void EMfields3D::addJzh(double weight[][2][2], int X, int Y, int Z) {
       }
 }
 
+/** add an amount of current density to current density - direction X to current density field on the node*/
+void EMfields3D::addJx(double weight[][2][2], int X, int Y, int Z, int ns) {
+  for (int i = 0; i < 2; i++)
+    for (int j = 0; j < 2; j++)
+      for (int k = 0; k < 2; k++) {
+        const double temp = weight[i][j][k];
+        Jxs[ns][X - i][Y - j][Z - k] += temp*invVOL;
+      }
+}
+/** add an amount of current density - direction Y to current density field on the node */
+void EMfields3D::addJy(double weight[][2][2], int X, int Y, int Z, int ns) {
+  for (int i = 0; i < 2; i++)
+    for (int j = 0; j < 2; j++)
+      for (int k = 0; k < 2; k++) {
+        const double temp = weight[i][j][k];
+        Jys[ns][X - i][Y - j][Z - k] += temp*invVOL;
+      }
+}
+/** add an amount of current density - direction Z to current density field on the node */
+void EMfields3D::addJz(double weight[][2][2], int X, int Y, int Z, int ns) {
+  for (int i = 0; i < 2; i++)
+    for (int j = 0; j < 2; j++)
+      for (int k = 0; k < 2; k++) {
+        const double temp = weight[i][j][k];
+        Jzs[ns][X - i][Y - j][Z - k] += temp*invVOL;
+      }
+}
+
 /** add an amount of current density to mass matrix field at node X,Y */
 void EMfields3D::addMass(double val[3][3], int X, int Y, int Z, int ind) {
   Mxx[ind][X][Y][Z] += val[0][0]*invVOL;
@@ -678,23 +705,28 @@ void EMfields3D::setZeroDensities() {
     for (register int j = 0; j < nyc; j++)
       for (register int k = 0; k < nzc; k++) {
         rhoc[i][j][k] = 0.0;
-        rhoh[i][j][k] = 0.0;
       }
   for (register int kk = 0; kk < ns; kk++)
     for (register int i = 0; i < nxn; i++)
       for (register int j = 0; j < nyn; j++)
         for (register int k = 0; k < nzn; k++) {
           rhons[kk][i][j][k] = 0.0;
+          Jxs[kk][i][j][k] = 0.0;
+          Jys[kk][i][j][k] = 0.0;
+          Jzs[kk][i][j][k] = 0.0;
         }
-
 }
 /*!SPECIES: Sum the charge density of different species on NODES */
 void EMfields3D::sumOverSpecies(VirtualTopology3D * vct) {
   for (int is = 0; is < ns; is++)
     for (register int i = 0; i < nxn; i++)
       for (register int j = 0; j < nyn; j++)
-        for (register int k = 0; k < nzn; k++)
+        for (register int k = 0; k < nzn; k++) {
           rhon[i][j][k] += rhons[is][i][j][k];
+          Jxh[i][j][k]  +=Jxs[is][i][j][k];
+          Jyh[i][j][k]  +=Jys[is][i][j][k];
+          Jzh[i][j][k]  +=Jzs[is][i][j][k];
+        }
 }
 
 
@@ -1880,6 +1912,40 @@ double ***EMfields3D::getJzh() {
   return (Jzh);
 }
 
+/*! get current -Direction X */
+double &EMfields3D::getJxs(int indexX, int indexY, int indexZ, int is) const {
+  return (Jxs[is][indexX][indexY][indexZ]);
+}
+/*! get current array X component * */
+double ****EMfields3D::getJxs() {
+  return (Jxs);
+}
+double ***EMfields3D::getJxs(int is) {
+  return (Jxs[is]);
+}
+/*! get current -Direction Y */
+double &EMfields3D::getJys(int indexX, int indexY, int indexZ, int is) const {
+  return (Jys[is][indexX][indexY][indexZ]);
+}
+/*! get current array Y component * */
+double ****EMfields3D::getJys() {
+  return (Jys);
+}
+double ***EMfields3D::getJys(int is) {
+  return (Jys[is]);
+}
+/*! get current -Direction Z */
+double &EMfields3D::getJzs(int indexX, int indexY, int indexZ, int is) const {
+  return (Jzs[is][indexX][indexY][indexZ]);
+}
+/*! get current array Z component * */
+double ****EMfields3D::getJzs() {
+  return (Jzs);
+}
+double ***EMfields3D::getJzs(int is) {
+  return (Jzs[is]);
+}
+
 /*! get the electric field energy */
 double EMfields3D::getEenergy(void) {
   double localEenergy = 0.0;
@@ -1973,6 +2039,9 @@ EMfields3D::~EMfields3D() {
   delArr3(Jxh, nxn, nyn);
   delArr3(Jyh, nxn, nyn);
   delArr3(Jzh, nxn, nyn);
+  delArr4(Jxs, nxn, nyn, nzn);
+  delArr4(Jys, nxn, nyn, nzn);
+  delArr4(Jzs, nxn, nyn, nzn);
   delArr4(Mxx, NE_MASS, nxn, nyn);
   delArr4(Mxy, NE_MASS, nxn, nyn);
   delArr4(Mxz, NE_MASS, nxn, nyn);
@@ -1989,7 +2058,6 @@ EMfields3D::~EMfields3D() {
   delArr3(Byc, nxc, nyc);
   delArr3(Bzc, nxc, nyc);
   delArr3(rhoc, nxc, nyc);
-  delArr3(rhoh, nxc, nyc);
   // various stuff needs to be deallocated too
   delArr3(tempXC, nxc, nyc);
   delArr3(tempYC, nxc, nyc);

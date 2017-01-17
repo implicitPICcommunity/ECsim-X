@@ -152,7 +152,6 @@ void c_Solver::GatherMoments(){
   for (int i = 0; i < ns; i++)
     part[i].computeMoments(EMf, grid, vct);      // interpolate Particles to Grid(Nodes)
 
-  EMf->sumOverSpecies (vct);
 
   // Communicate everything:
   #ifdef __PROFILING__
@@ -268,6 +267,12 @@ void c_Solver::WriteConserved(int cycle) {
 
 
 void c_Solver::WriteOutput(int cycle) {
+
+  // Compute the charge density and the current of each specie 
+  EMf->setZeroDensities();                  // set to zero the densities
+  for (int i = 0; i < ns; i++)
+    part[i].computeCurrent(EMf, grid, vct);      // interpolate Particles to Grid(Nodes)
+  EMf->sumOverSpecies (vct);
 
   if (col->getWriteMethod() == "h5hut") {
 

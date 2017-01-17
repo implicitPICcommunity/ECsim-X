@@ -89,6 +89,9 @@ class EMfields3D                // :public Field
     void addJxh(double weight[][2][2], int X, int Y, int Z);
     void addJyh(double weight[][2][2], int X, int Y, int Z);
     void addJzh(double weight[][2][2], int X, int Y, int Z);
+    void addJx(double weight[][2][2], int X, int Y, int Z, int ns);
+    void addJy(double weight[][2][2], int X, int Y, int Z, int ns);
+    void addJz(double weight[][2][2], int X, int Y, int Z, int ns);
 
 
     /*! Perfect conductor boundary conditions LEFT wall */
@@ -200,19 +203,34 @@ class EMfields3D                // :public Field
     void UpdateFext(int cycle);
     double getFext();
 
-    /*! get Jx(X,Y,Z) */
+    /*! get Jxh(X,Y,Z) */
     double &getJxh(int indexX, int indexY, int indexZ) const;
     /*! get current -Direction X */
     double ***getJxh();
-    /*! get Jy(X,Y,Z) */
+    /*! get Jyh(X,Y,Z) */
     double &getJyh(int indexX, int indexY, int indexZ) const;
     /*! get current -Direction Y */
     double ***getJyh();
-    /*! get Jz(X,Y,Z) */
+    /*! get Jzh(X,Y,Z) */
     double &getJzh(int indexX, int indexY, int indexZ) const;
     /*! get current -Direction Z */
     double ***getJzh();
-    /*! get Jzs(X,Y,Z,is) */
+
+    /*! get Jxs(X,Y,Z) */
+    double &getJxs(int indexX, int indexY, int indexZ, int is) const;
+    /*! get current -Direction X */
+    double ****getJxs();
+    double ***getJxs(int is);
+    /*! get Jy(X,Y,Z) */
+    double &getJys(int indexX, int indexY, int indexZ, int is) const;
+    /*! get current -Direction Y */
+    double ****getJys();
+    double ***getJys(int is);
+    /*! get Jz(X,Y,Z) */
+    double &getJzs(int indexX, int indexY, int indexZ, int is) const;
+    /*! get current -Direction Z */
+    double ****getJzs();
+    double ***getJzs(int is);
 
     /*! get the electric field energy */
     double getEenergy();
@@ -339,8 +357,6 @@ class EMfields3D                // :public Field
     double ***rhoc;
     /*! Charge density, defined on nodes */
     double ***rhon;
-    /*! Implicit charge density, defined on central points of the cell */
-    double ***rhoh;
     /*! SPECIES: charge density for each species, defined on nodes */
     double ****rhons;
     /*! SPECIES: charge density for each species, defined on central points of the cell */
@@ -352,8 +368,13 @@ class EMfields3D                // :public Field
     /*! Implicit current density Z-component, defined on nodes */
     double ***Jzh;
    
-    double ***J_partx, ***J_party, ***J_partz;
-
+    /*! SPECIES: current density X-component, defined on nodes */
+    double ****Jxs;
+    /*! SPECIES: current density Y-component, defined on nodes */
+    double ****Jys;
+    /*! SPECIES: current density Z-component, defined on nodes */
+    double ****Jzs;
+   
     /*! External magnetic field component-X, defined on nodes */
     double***  Bx_ext;
     /*! External magnetic field component-Y, defined on nodes */

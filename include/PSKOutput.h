@@ -503,7 +503,6 @@ public:
     }
 
     // Js (current density for species s) is written without ghost cells and defined in nodes
-    /*
     if (tag.find("Jsall", 0) != string::npos) {
       for (int i = 0; i < ns; ++i) {
         stringstream ii;
@@ -534,7 +533,6 @@ public:
         this->output_adaptor.write("/moments/species_" + ii.str() + "/Jz/cycle_" + cc.str(), PSK::Dimens(_grid->getNXN() - 2, _grid->getNYN() - 2, _grid->getNZN() - 2), i, _field->getJzs());
       }
     }
-    */
 
     // rhos (number density for species s) is written without ghost cells and defined in nodes
     if (tag.find("rhos", 0) != string::npos) {

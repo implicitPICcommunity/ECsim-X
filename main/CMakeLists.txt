@@ -62,11 +62,6 @@ file(
 #
 # Compilation options
 #
-option(IPIC_PETSC_SOLVER "Uses PETSc to solve the field equations" OFF)
-if(IPIC_PETSC_SOLVER)
-  find_package(PETSc REQUIRED)
-  add_definitions(-D__WITH_PETSC__)
-endif()
 
 option(IPIC_H5HUT_OUTPUT "Output is done using Parallel HDF5 with the H5hut library")
 if(IPIC_H5HUT_OUTPUT)
