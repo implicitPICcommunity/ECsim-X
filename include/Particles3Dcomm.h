@@ -197,6 +197,14 @@ protected:
   double Ly;
   /** Lz = simulation box length - z direction   */
   double Lz;
+  /** center of object immersed - x direction */
+  double x_center;
+  /** center of object immersed - y direction */
+  double y_center;
+  /** center of object immersed - z direction */
+  double z_center;
+  /** size of immersed box - cube */
+  double L_square;
   /** grid spacings */
   double dx, dy, dz;
   /** number of grid 

@@ -49,6 +49,7 @@ class EMfields3D                // :public Field
     void initGEM(VirtualTopology3D * vct, Grid * grid, Collective *col);
     void initDoubleGEM(VirtualTopology3D * vct, Grid * grid, Collective *col);
     void initDoublePeriodicHarrisWithGaussianHumpPerturbation(VirtualTopology3D * vct, Grid * grid, Collective *col);
+    void initWB8(VirtualTopology3D *vct, Grid *grid, Collective *col);
     /*! init beam */
 
     /*! Calculate Electric field using the implicit Maxwell solver */
@@ -73,7 +74,7 @@ class EMfields3D                // :public Field
     /*! communicate ghost for densities and interp rho from node to center */
     void interpDensitiesN2C(VirtualTopology3D * vct, Grid * grid);
     void communicateGhostP2G(VirtualTopology3D * vct);
-    void communicateGhostP2G_Test3(VirtualTopology3D * vct);
+    void communicateGhostP2G_spec(VirtualTopology3D * vct);
     /*! set to 0 all the densities fields */
     void setZeroDensities();
     /*! Sum rhon over species */
@@ -292,6 +293,18 @@ class EMfields3D                // :public Field
     double Ly;
     /*! simulation box length - Z direction */
     double Lz;
+    /** source center - X direction   */
+    double x_center;
+    /** source center - Y direction   */
+    double y_center;
+    /** source center - Z direction   */
+    double z_center;
+    /** Characteristic length */
+    double L_square;
+    /** Coil Parameter: magnetic coil diameter    */
+    double coilD;
+    /** Coil Parameter: magnetic coil spacing   */
+    double coilSpacing;
 
     /*! Ex: electric field X-component (indexX, indexY, indexZ), defined on nodes */
     double ***Ex;
@@ -381,6 +394,13 @@ class EMfields3D                // :public Field
     double***  By_ext;
     /*! External magnetic field component-Z, defined on nodes */
     double***  Bz_ext;
+    /*! External current field component-X, defined on nodes */
+    double***  Jx_ext;
+    /*! External current field component-Y, defined on nodes */
+    double***  Jy_ext;
+    /*! External current field component-Z, defined on nodes */
+    double***  Jz_ext;
+
     /*! Mass matrix */
     double ****Mxx;
     double ****Mxy;

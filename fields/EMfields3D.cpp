@@ -34,6 +34,12 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
   ue0 = col->getU0(0);
   ve0 = col->getV0(0);
   we0 = col->getW0(0);
+  x_center = col->getx_center();
+  y_center = col->gety_center();
+  z_center = col->getz_center();
+  L_square = col->getL_square();
+  coilD = col->getcoilD();
+  coilSpacing = col->getcoilSpacing();
 
   delt = c * th * dt;
   GMREStol = col->getGMREStol();
@@ -102,6 +108,10 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
   Jxs = newArr4(double, ns, nxn, nyn, nzn);
   Jys = newArr4(double, ns, nxn, nyn, nzn);
   Jzs = newArr4(double, ns, nxn, nyn, nzn);
+
+  Jx_ext = newArr3(double, nxn, nyn, nzn);
+  Jy_ext = newArr3(double, nxn, nyn, nzn);
+  Jz_ext = newArr3(double, nxn, nyn, nzn);
 
   Mxx = newArr4(double, NE_MASS, nxn, nyn, nzn);
   Mxy = newArr4(double, NE_MASS, nxn, nyn, nzn);
@@ -542,13 +552,9 @@ void EMfields3D::communicateGhostP2G(VirtualTopology3D * vct) {
   int rank = vct->getCartesian_rank();
 
   // interpolate adding common nodes among processors
-  communicateInterp(nxn, nyn, nzn, rhon, 0, 0, 0, 0, 0, 0, vct);
   communicateInterp(nxn, nyn, nzn, Jxh, 0, 0, 0, 0, 0, 0, vct);
   communicateInterp(nxn, nyn, nzn, Jyh, 0, 0, 0, 0, 0, 0, vct);
   communicateInterp(nxn, nyn, nzn, Jzh, 0, 0, 0, 0, 0, 0, vct);
-  for (int i=0; i<ns; i++) { 
-    communicateInterp(nxn, nyn, nzn, i, rhons, 0, 0, 0, 0, 0, 0, vct);
-  }
   for (int i=0; i<NE_MASS; i++) { 
     communicateInterp(nxn, nyn, nzn, i, Mxx, 0, 0, 0, 0, 0, 0, vct);
     communicateInterp(nxn, nyn, nzn, i, Mxy, 0, 0, 0, 0, 0, 0, vct);
@@ -562,13 +568,9 @@ void EMfields3D::communicateGhostP2G(VirtualTopology3D * vct) {
   }
 
   // put the correct values on ghost cells
-  communicateNode_P(nxn, nyn, nzn, rhon, vct);
   communicateNode_P(nxn, nyn, nzn, Jxh, vct);
   communicateNode_P(nxn, nyn, nzn, Jyh, vct);
   communicateNode_P(nxn, nyn, nzn, Jzh, vct);
-  for (int i=0; i<ns; i++) { 
-    communicateNode_P(nxn, nyn, nzn, rhons, i, vct);
-  }
   for (int i=0; i<NE_MASS; i++) {
     communicateNode_P(nxn, nyn, nzn, Mxx, i, vct);
     communicateNode_P(nxn, nyn, nzn, Mxy, i, vct);
@@ -581,6 +583,30 @@ void EMfields3D::communicateGhostP2G(VirtualTopology3D * vct) {
     communicateNode_P(nxn, nyn, nzn, Mzz, i, vct);
   }
 
+}
+
+/*! communicate ghost for grid -> Particles interpolation: Only curernt and density*/
+void EMfields3D::communicateGhostP2G_spec(VirtualTopology3D * vct) {
+
+  int rank = vct->getCartesian_rank();
+
+  // interpolate adding common nodes among processors
+  communicateInterp(nxn, nyn, nzn, rhon, 0, 0, 0, 0, 0, 0, vct);
+  for (int i=0; i<ns; i++) { 
+    communicateInterp(nxn, nyn, nzn, i, rhons, 0, 0, 0, 0, 0, 0, vct);
+    communicateInterp(nxn, nyn, nzn, i, Jxs, 0, 0, 0, 0, 0, 0, vct);
+    communicateInterp(nxn, nyn, nzn, i, Jys, 0, 0, 0, 0, 0, 0, vct);
+    communicateInterp(nxn, nyn, nzn, i, Jzs, 0, 0, 0, 0, 0, 0, vct);
+  }
+
+  // put the correct values on ghost cells
+  communicateNode_P(nxn, nyn, nzn, rhon, vct);
+  for (int i=0; i<ns; i++) { 
+    communicateNode_P(nxn, nyn, nzn, rhons, i, vct);
+    communicateNode_P(nxn, nyn, nzn, Jxs, i, vct);
+    communicateNode_P(nxn, nyn, nzn, Jys, i, vct);
+    communicateNode_P(nxn, nyn, nzn, Jzs, i, vct);
+  }
 }
 
 
@@ -1251,6 +1277,157 @@ void EMfields3D::initDoublePeriodicHarrisWithGaussianHumpPerturbation(VirtualTop
   }
   else {
     init(vct, grid, col);            // use the fields from restart file
+  }
+}
+
+//Initializes the vacuum fields for EMC2.
+void EMfields3D::initWB8(VirtualTopology3D *vct, Grid *grid, Collective *col){
+  Fext = 1;
+  double distance;
+
+  eqValue(0.0, Bxn, nxn, nyn, nzn);
+  eqValue(0.0, Byn, nxn, nyn, nzn);
+  eqValue(0.0, Bzn, nxn, nyn, nzn);
+  eqValue(0.0, Bx_ext, nxn, nyn, nzn);
+  eqValue(0.0, By_ext, nxn, nyn, nzn);
+  eqValue(0.0, Bz_ext, nxn, nyn, nzn);
+  eqValue(0.0, Bxc, nxc, nyc, nzc);
+  eqValue(0.0, Byc, nxc, nyc, nzc);
+  eqValue(0.0, Bzc, nxc, nyc, nzc);
+
+  //char BlogName[256];
+  //sprintf(BlogName, "/home/aws/VacuumB.%d.csv", vct->getCartesian_rank());
+  //FILE *Blog = fopen(BlogName, "w");
+  //fprintf(Blog, "x,y,z,Bx,By,Bz\n");
+
+   for (int i=0; i < nxn; i++){
+     for (int j=0; j < nyn; j++){
+       for (int k=0; k < nzn; k++){
+         for (int is=0; is < ns; is++){
+           rhons[is][i][j][k] = rhoINIT[is] / FourPI;
+         }
+         Ex[i][j][k] = 0.0;
+         Ey[i][j][k] = 0.0;
+         Ez[i][j][k] = 0.0;
+         double blp[3];
+         double a=coilD/2.0;
+         double xc=Lx/2.0;
+         double yc=Ly/2.0;
+         double zc=Lz/2.0;
+         double deltax=coilSpacing/2.0;
+         double deltay=coilSpacing/2.0;
+         double deltaz=coilSpacing/2.0;
+         double x = grid->getXN(i,j,k);
+         double y = grid->getYN(i,j,k);
+         double z = grid->getZN(i,j,k);
+         /*
+         loopZ(blp, x, y, z, a, xc, yc, zc+deltaz, -B0z);
+         Bxn[i][j][k] = blp[0];
+         Byn[i][j][k] = blp[1];
+         Bzn[i][j][k] = blp[2];
+         loopZ(blp, x, y, z, a, xc, yc, zc-deltaz, B0z);
+         Bxn[i][j][k] += blp[0];
+         Byn[i][j][k] += blp[1];
+         Bzn[i][j][k] += blp[2];
+         loopX(blp, x, y, z, a, xc+deltax, yc, zc, -B0x);
+         Bxn[i][j][k] += blp[0];
+         Byn[i][j][k] += blp[1];
+         Bzn[i][j][k] += blp[2];
+         loopX(blp, x, y, z, a, xc-deltax, yc, zc, B0x);
+         Bxn[i][j][k] += blp[0];
+         Byn[i][j][k] += blp[1];
+         Bzn[i][j][k] += blp[2];
+         */
+         loopY(blp, x, y, z, a, xc, yc+deltay, zc, -B0y);
+         Bx_ext[i][j][k] += blp[0];
+         By_ext[i][j][k] += blp[1];
+         Bz_ext[i][j][k] += blp[2];
+         loopY(blp, x, y, z, a, xc, yc-deltay, zc, B0y);
+         Bx_ext[i][j][k] += blp[0];
+         By_ext[i][j][k] += blp[1];
+         Bz_ext[i][j][k] += blp[2];
+
+        //fprintf(Blog, "%f,%f,%f,%E,%E,%E\n", x, y, z, Bxn[i][j][k], Byn[i][j][k], Bzn[i][j][k]);
+      }
+    }
+  }
+  // communicate ghost
+  communicateNodeBC(nxn, nyn, nzn, Bxn, col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5], vct);
+  communicateNodeBC(nxn, nyn, nzn, Byn, col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5], vct);
+  communicateNodeBC(nxn, nyn, nzn, Bzn, col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct);
+
+#ifdef KKKK
+  // initialize B on centers
+  grid->interpN2C(Bxc,Bxn);
+  grid->interpN2C(Byc,Byn);
+  grid->interpN2C(Bzc,Bzn);
+  for (int i=0; i < nxc; i++){
+    for (int j=0; j < nyc; j++){
+      for (int k=0; k < nzc; k++){
+        double blp[3];
+        double a=coilD/2.0;
+        double xc=Lx/2.0;
+        double yc=Ly/2.0;
+        double zc=Lz/2.0;
+        double deltax=coilSpacing/2.0;
+        double deltay=coilSpacing/2.0;
+        double deltaz=coilSpacing/2.0;
+        double x = grid->getXC(i,j,k);
+        double y = grid->getYC(i,j,k);
+        double z = grid->getZC(i,j,k);
+        /*
+        loopZ(blp, x, y, z, a, xc, yc, zc+deltaz, -B0z);
+        //cout << blp[0] << "   " << x << "   " << xc << "   " << m << endl;
+        Bxc[i][j][k] = blp[0];
+        Byc[i][j][k] = blp[1];
+        Bzc[i][j][k] = blp[2];
+        loopZ(blp, x, y, z, a, xc, yc, zc-deltaz, B0z);
+        Bxc[i][j][k] += blp[0];
+        Byc[i][j][k] += blp[1];
+        Bzc[i][j][k] += blp[2];
+        loopX(blp, x, y, z, a, xc+deltax, yc, zc, -B0x);
+        Bxc[i][j][k] += blp[0];
+        Byc[i][j][k] += blp[1];
+        Bzc[i][j][k] += blp[2];
+        loopX(blp, x, y, z, a, xc-deltax, yc, zc, B0x);
+        Bxc[i][j][k] += blp[0];
+        Byc[i][j][k] += blp[1];
+        Bzc[i][j][k] += blp[2];
+        */
+        loopY(blp, x, y, z, a, xc, yc+deltay, zc, -B0y);
+        Bxc[i][j][k] += blp[0];
+        Byc[i][j][k] += blp[1];
+        Bzc[i][j][k] += blp[2];
+        loopY(blp, x, y, z, a, xc, yc-deltay, zc, B0y);
+        Bxc[i][j][k] += blp[0];
+        Byc[i][j][k] += blp[1];
+        Bzc[i][j][k] += blp[2];
+       
+        //fprintf(Blog, "%f,%f,%f,%E,%E,%E\n", x, y, z, Bxc[i][j][k], Byc[i][j][k], Bzc[i][j][k]);
+      }
+    }
+  }
+  printf("Field in centers initialised\n");
+  MPI_Barrier(MPI_COMM_WORLD);
+  //fclose(Blog);
+
+  communicateCenterBC_P(nxc,nyc,nzc,Bxc,2,2,2,2,2,2,vct);
+  communicateCenterBC_P(nxc,nyc,nzc,Byc,2,2,2,2,2,2,vct);
+  communicateCenterBC_P(nxc,nyc,nzc,Bzc,2,2,2,2,2,2,vct);
+#endif
+  // initialize J on nodes
+  grid->curlC2N(tempXN,tempYN,tempZN,Bxc,Byc,Bzc);
+  scale(Jx_ext,tempXN,c/FourPI,nxn,nyn,nzn);
+  scale(Jy_ext,tempYN,c/FourPI,nxn,nyn,nzn);
+  scale(Jz_ext,tempZN,c/FourPI,nxn,nyn,nzn);
+
+  for (int is=0 ; is<ns; is++)
+    grid->interpN2C(rhocs,is,rhons);
+
+  if (restart1 ==0){
+    //  do nothing
+  } else { // EM initialization from RESTART
+    init(vct,grid,col);  // use the fields from restart file
   }
 }
 
@@ -2039,6 +2216,9 @@ EMfields3D::~EMfields3D() {
   delArr3(Jxh, nxn, nyn);
   delArr3(Jyh, nxn, nyn);
   delArr3(Jzh, nxn, nyn);
+  delArr3(Jx_ext, nxn, nyn);
+  delArr3(Jy_ext, nxn, nyn);
+  delArr3(Jz_ext, nxn, nyn);
   delArr4(Jxs, nxn, nyn, nzn);
   delArr4(Jys, nxn, nyn, nzn);
   delArr4(Jzs, nxn, nyn, nzn);

@@ -61,6 +61,11 @@ class Collective
     double getz_center();
     /*! Get object size - cubic box */
     double getL_square();
+    /** getgeometry coild - Coil Diameter */
+    double getcoilD();
+    /** getgeometry coild - Coil Spacing */
+    double getcoilSpacing();
+
     /*! Get the number of cells - direction X */
     int getNxc();
     /*! Get the number of cells - direction Y */
@@ -269,6 +274,10 @@ class Collective
     double z_center;
     /*! object size - assuming a cubic box */
     double L_square;
+    /** geometry coil - Coil Diameter */
+    double coilD;
+    /** geometry coil - Coil Spacing */
+    double coilSpacing;
     /*! number of cells - X direction */
     int nxc;
     /*! number of cells - Y direction */

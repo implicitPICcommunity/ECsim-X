@@ -177,6 +177,9 @@ void Collective::ReadInput(string inputfile) {
     z_center = config.read < double >("z_center");
     L_square = config.read < double >("L_square");
 
+    coilD = config.read<double>( "CoilD" );
+    coilSpacing = config.read<double>( "CoilSpacing" );
+
     npcelx = new int[ns];
     npcely = new int[ns];
     npcelz = new int[ns];
@@ -806,6 +809,13 @@ double Collective::getz_center() {
 /*! get L_square */
 double Collective::getL_square() {
   return (L_square);
+}
+double Collective::getcoilD(){
+        return(coilD);
+}
+/** get CoilSpacing */
+double Collective::getcoilSpacing(){
+        return(coilSpacing);
 }
 /*! get nxc */
 int Collective::getNxc() {

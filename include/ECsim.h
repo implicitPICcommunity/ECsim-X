@@ -59,6 +59,8 @@ namespace ECsim {
     Particles3D   *part;
     double        *Ke;
     double        *momentum;
+    double        *qom;
+    double        *Qremoved;
 
     PSK::OutputManager < PSK::OutputAdaptor > output_mgr; // Create an Output Manager
     myOutputAgent < PSK::HDF5OutputAdaptor > hdf5_agent;  // Create an Output Agent for HDF5 output
@@ -86,6 +88,11 @@ namespace ECsim {
     double Benergy;
     double TOTenergy;
     double TOTmomentum;
+    double x_center;
+    double y_center;
+    double z_center;
+    double L_square;
+
 
     double totEn0;
 

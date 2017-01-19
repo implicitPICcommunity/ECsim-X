@@ -27,6 +27,17 @@ int c_Solver::Init(int argc, char **argv) {
   restart = col->getRestart_status();
   ns = col->getNs();            // get the number of particle species involved in simulation
   first_cycle = col->getLast_cycle() + 1; // get the last cycle from the restart
+
+  qom  = new double[ns];
+  for (int i=0; i < ns; i++)
+    qom[i] = col->getQOM(i);
+
+  x_center = col->getx_center();
+  y_center = col->gety_center();
+  z_center = col->getz_center();
+  L_square = col->getL_square();
+
+
   // initialize the virtual cartesian topology 
   vct = new VCtopology3D(col);
   // Check if we can map the processes into a matrix ordering defined in Collective.cpp
@@ -71,7 +82,7 @@ int c_Solver::Init(int argc, char **argv) {
     else if (col->getCase()=="DoubleGEM")   EMf->initDoubleGEM(vct, grid,col);
     else if (col->getCase()=="DoubleHarris")EMf->initDoublePeriodicHarrisWithGaussianHumpPerturbation(vct,grid,col);
     else if (col->getCase()=="Whistler")    EMf->initDoublePeriodicHarrisWithGaussianHumpPerturbation(vct,grid,col);
-
+    else if (col->getCase()=="Coils")       EMf->initWB8(vct,grid,col);
     else {
       if (myrank==0) {
         cout << " =========================================================== " << endl;
@@ -93,7 +104,12 @@ int c_Solver::Init(int argc, char **argv) {
   for (int i = 0; i < ns; i++) {
     part[i].allocate(i, 0, col, vct, grid);
     if (col->getCase()=="DoubleGEM") part[i].MaxwellianDoubleGEM(grid, EMf, vct);
-    else                             part[i].maxwellian(grid, EMf, vct);
+    else if (col->getCase()=="Coils"){
+      if (col->getRHOinject(i) == 0.0)
+        part[i].monoenergetic_box(grid,EMf,vct,L_square,x_center,y_center,z_center, 1.0);  // generated maxwellian in a box
+      else
+        part[i].empty(grid, EMf, vct);
+    } else part[i].maxwellian(grid, EMf, vct);
   }
 
 
@@ -127,6 +143,7 @@ int c_Solver::Init(int argc, char **argv) {
     }
   }
 
+  Qremoved = new double[ns];
 
   Eenergy, Benergy, TOTenergy = 0.0, TOTmomentum = 0.0;
   Ke = new double[ns];
@@ -220,6 +237,14 @@ void c_Solver::InjectBoundaryParticles(){
     if (col->getRHOinject(i)>0.0){
       mem_avail = part[i].particle_repopulator(grid,vct,EMf,i);
     }
+    if (col->getCase()=="Coils") {
+      //Remove particles from outside the simulation box
+      //Qremoved[i] = part[i].deleteParticlesOutsideBox(col->getLx());
+      Qremoved[i] = part[i].deleteParticlesOuterFrame(6.0,6.0,0.0);
+      if (col->getRHOinject(i) > 0.0)
+          if (col->getRHOinject(i)>0.0)
+            Qremoved[i] = part[i].deleteParticlesInsideSphere(col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+    }
   }
 }
 
@@ -273,6 +298,7 @@ void c_Solver::WriteOutput(int cycle) {
   for (int i = 0; i < ns; i++)
     part[i].computeCurrent(EMf, grid, vct);      // interpolate Particles to Grid(Nodes)
   EMf->sumOverSpecies (vct);
+  EMf->communicateGhostP2G_spec(vct);
 
   if (col->getWriteMethod() == "h5hut") {
 
@@ -383,6 +409,7 @@ void c_Solver::Finalize() {
   // deallocate
   delete[]Ke;
   delete[]momentum;
+  delete[] Qremoved;
   // close MPI
   mpi->finalize_mpi();
 }
