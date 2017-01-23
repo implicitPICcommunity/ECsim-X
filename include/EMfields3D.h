@@ -400,6 +400,9 @@ class EMfields3D                // :public Field
     double***  Jy_ext;
     /*! External current field component-Z, defined on nodes */
     double***  Jz_ext;
+    double*** Bxc_ext;
+    double*** Byc_ext;
+    double*** Bzc_ext;
 
     /*! Mass matrix */
     double ****Mxx;

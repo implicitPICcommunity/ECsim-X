@@ -236,9 +236,13 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
   double Bxl, Byl, Bzl;
   double beta = 0.5*qom*dt;
 
-  double ***Bx = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBx());
-  double ***By = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBy());
-  double ***Bz = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBz());
+  double ***Bx     = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBx());
+  double ***By     = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBy());
+  double ***Bz     = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBz());
+  double ***Bx_ext = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBx_ext());
+  double ***By_ext = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBy_ext());
+  double ***Bz_ext = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBz_ext());
+  double Fext      = EMf->getFext();
 
  //#pragma omp parallel
   {
@@ -262,9 +266,9 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       for (int i=0; i<=1; i++)
         for (int j=0; j<=1; j++)
           for (int k=0; k<=1; k++) {
-            Bxl += weight[i][j][k] * Bx[ix-i][iy-j][iz-k];
-            Byl += weight[i][j][k] * By[ix-i][iy-j][iz-k];
-            Bzl += weight[i][j][k] * Bz[ix-i][iy-j][iz-k];
+            Bxl += weight[i][j][k] * (Bx[ix-i][iy-j][iz-k] + Fext*Bx_ext[ix-i][iy-j][iz-k]);
+            Byl += weight[i][j][k] * (By[ix-i][iy-j][iz-k] + Fext*By_ext[ix-i][iy-j][iz-k]);
+            Bzl += weight[i][j][k] * (Bz[ix-i][iy-j][iz-k] + Fext*Bz_ext[ix-i][iy-j][iz-k]);
           }
 
       // Rotation matrix alpha:

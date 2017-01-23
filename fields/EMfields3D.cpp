@@ -127,6 +127,9 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
   Bx_ext = newArr3(double,nxn,nyn,nzn);
   By_ext = newArr3(double,nxn,nyn,nzn);
   Bz_ext = newArr3(double,nxn,nyn,nzn);
+  Bxc_ext = newArr3(double,nxc,nyc,nzc);
+  Byc_ext = newArr3(double,nxc,nyc,nzc);
+  Bzc_ext = newArr3(double,nxc,nyc,nzc);
   // involving species
   rhons = newArr4(double, ns, nxn, nyn, nzn);
   rhocs = newArr4(double, ns, nxc, nyc, nzc);
@@ -1282,6 +1285,14 @@ void EMfields3D::initDoublePeriodicHarrisWithGaussianHumpPerturbation(VirtualTop
 
 //Initializes the vacuum fields for EMC2.
 void EMfields3D::initWB8(VirtualTopology3D *vct, Grid *grid, Collective *col){
+  if (vct->getCartesian_rank() == 0) {
+    cout << "------------------------------------------" << endl;
+    cout << "Initialize two coils" << endl;
+    cout << "------------------------------------------" << endl;
+    cout << "B0x                              = " << B0x << endl;
+    cout << "B0y                              = " << B0y << endl;
+    cout << "B0z                              = " << B0z << endl;
+  }
   Fext = 1;
   double distance;
 
@@ -1291,9 +1302,15 @@ void EMfields3D::initWB8(VirtualTopology3D *vct, Grid *grid, Collective *col){
   eqValue(0.0, Bx_ext, nxn, nyn, nzn);
   eqValue(0.0, By_ext, nxn, nyn, nzn);
   eqValue(0.0, Bz_ext, nxn, nyn, nzn);
+  eqValue(0.0, Jx_ext, nxn, nyn, nzn);
+  eqValue(0.0, Jy_ext, nxn, nyn, nzn);
+  eqValue(0.0, Jz_ext, nxn, nyn, nzn);
   eqValue(0.0, Bxc, nxc, nyc, nzc);
   eqValue(0.0, Byc, nxc, nyc, nzc);
   eqValue(0.0, Bzc, nxc, nyc, nzc);
+  eqValue(0.0, Bxc_ext, nxc, nyc, nzc);
+  eqValue(0.0, Byc_ext, nxc, nyc, nzc);
+  eqValue(0.0, Bzc_ext, nxc, nyc, nzc);
 
   //char BlogName[256];
   //sprintf(BlogName, "/home/aws/VacuumB.%d.csv", vct->getCartesian_rank());
@@ -1351,16 +1368,20 @@ void EMfields3D::initWB8(VirtualTopology3D *vct, Grid *grid, Collective *col){
       }
     }
   }
-  // communicate ghost
-  communicateNodeBC(nxn, nyn, nzn, Bxn, col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5], vct);
-  communicateNodeBC(nxn, nyn, nzn, Byn, col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5], vct);
-  communicateNodeBC(nxn, nyn, nzn, Bzn, col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct);
 
-#ifdef KKKK
+  if (nzn  == 4) {
+    if (vct->getCartesian_rank() == 0) {
+      eqValue(0.0, Bz_ext, nxn, nyn, nzn);
+      cout << "-> 2D case: Bz_ext = 0" << endl;
+    }
+  }
+
+  // communicate ghost
+  communicateNodeBC(nxn, nyn, nzn, Bx_ext, col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5], vct);
+  communicateNodeBC(nxn, nyn, nzn, By_ext, col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5], vct);
+  communicateNodeBC(nxn, nyn, nzn, Bz_ext, col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct);
+
   // initialize B on centers
-  grid->interpN2C(Bxc,Bxn);
-  grid->interpN2C(Byc,Byn);
-  grid->interpN2C(Bzc,Bzn);
   for (int i=0; i < nxc; i++){
     for (int j=0; j < nyc; j++){
       for (int k=0; k < nzc; k++){
@@ -1395,13 +1416,13 @@ void EMfields3D::initWB8(VirtualTopology3D *vct, Grid *grid, Collective *col){
         Bzc[i][j][k] += blp[2];
         */
         loopY(blp, x, y, z, a, xc, yc+deltay, zc, -B0y);
-        Bxc[i][j][k] += blp[0];
-        Byc[i][j][k] += blp[1];
-        Bzc[i][j][k] += blp[2];
+        Bxc_ext[i][j][k] += blp[0];
+        Byc_ext[i][j][k] += blp[1];
+        Bzc_ext[i][j][k] += blp[2];
         loopY(blp, x, y, z, a, xc, yc-deltay, zc, B0y);
-        Bxc[i][j][k] += blp[0];
-        Byc[i][j][k] += blp[1];
-        Bzc[i][j][k] += blp[2];
+        Bxc_ext[i][j][k] += blp[0];
+        Byc_ext[i][j][k] += blp[1];
+        Bzc_ext[i][j][k] += blp[2];
        
         //fprintf(Blog, "%f,%f,%f,%E,%E,%E\n", x, y, z, Bxc[i][j][k], Byc[i][j][k], Bzc[i][j][k]);
       }
@@ -1411,15 +1432,15 @@ void EMfields3D::initWB8(VirtualTopology3D *vct, Grid *grid, Collective *col){
   MPI_Barrier(MPI_COMM_WORLD);
   //fclose(Blog);
 
-  communicateCenterBC_P(nxc,nyc,nzc,Bxc,2,2,2,2,2,2,vct);
-  communicateCenterBC_P(nxc,nyc,nzc,Byc,2,2,2,2,2,2,vct);
-  communicateCenterBC_P(nxc,nyc,nzc,Bzc,2,2,2,2,2,2,vct);
-#endif
+  communicateCenterBC_P(nxc,nyc,nzc,Bxc_ext,2,2,2,2,2,2,vct);
+  communicateCenterBC_P(nxc,nyc,nzc,Byc_ext,2,2,2,2,2,2,vct);
+  communicateCenterBC_P(nxc,nyc,nzc,Bzc_ext,2,2,2,2,2,2,vct);
+
   // initialize J on nodes
-  grid->curlC2N(tempXN,tempYN,tempZN,Bxc,Byc,Bzc);
-  scale(Jx_ext,tempXN,c/FourPI,nxn,nyn,nzn);
-  scale(Jy_ext,tempYN,c/FourPI,nxn,nyn,nzn);
-  scale(Jz_ext,tempZN,c/FourPI,nxn,nyn,nzn);
+  //grid->curlC2N(tempXN,tempYN,tempZN,Bxc,Byc,Bzc);
+  //scale(Jx_ext,tempXN,c/FourPI,nxn,nyn,nzn);
+  //scale(Jy_ext,tempYN,c/FourPI,nxn,nyn,nzn);
+  //scale(Jz_ext,tempZN,c/FourPI,nxn,nyn,nzn);
 
   for (int is=0 ; is<ns; is++)
     grid->interpN2C(rhocs,is,rhons);
@@ -2176,14 +2197,20 @@ double EMfields3D::getBenergy(void) {
   double Bxt = 0.0;
   double Byt = 0.0;
   double Bzt = 0.0;
+
   for (int i = 1; i < nxc-1; i++)
     for (int j = 1; j < nyc-1; j++)
       for (int k = 1; k < nzc-1; k++){
         Bxt = Bxc[i][j][k];
         Byt = Byc[i][j][k];
         Bzt = Bzc[i][j][k];
+        Bxt = Bxc[i][j][k]+Fext*Bxc_ext[i][j][k];
+        Byt = Byc[i][j][k]+Fext*Byc_ext[i][j][k];
+        Bzt = Bzc[i][j][k]+Fext*Bzc_ext[i][j][k];
         localBenergy += .5*dx*dy*dz*(Bxt*Bxt + Byt*Byt + Bzt*Bzt)/(FourPI);
       }
+
+
 
   MPI_Allreduce(&localBenergy, &totalBenergy, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
   return (totalBenergy);
