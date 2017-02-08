@@ -71,6 +71,8 @@ int c_Solver::Init(int argc, char **argv) {
     /* -------------------------------------------- */
     /* If using parallel H5hut IO read initial file */
     /* -------------------------------------------- */
+    if (myrank==0) 
+      cout << "INIT FIELDS FROM FILE" << endl;
     ReadFieldsH5hut(ns, false, EMf, col, vct, grid);
 
   }
@@ -109,7 +111,13 @@ int c_Solver::Init(int argc, char **argv) {
         part[i].monoenergetic_box(grid,EMf,vct,L_square,x_center,y_center,z_center, 1.0);  // generated maxwellian in a box
       else
         part[i].empty(grid, EMf, vct);
-    } else part[i].maxwellian(grid, EMf, vct);
+    } else {
+      if (col->getPartInit() == "FromFieldFile") {
+        part[i].MaxwellianFromFieldFile(grid, EMf, vct);
+      } else {
+        part[i].maxwellian(grid, EMf, vct);
+      }
+    }
   }
 
 
@@ -258,7 +266,7 @@ void c_Solver::WriteRestart(int cycle) {
 
 void c_Solver::WriteConserved(int cycle) {
 
-  if (cycle == 0) {
+  if (cycle == first_cycle) {
     totEn0 = EMf->getEenergy() + EMf->getBenergy();
     for (int is = 0; is < ns; is++) {
       totEn0 +=  part[is].getKe();
@@ -305,7 +313,6 @@ void c_Solver::WriteOutput(int cycle) {
     /* -------------------------------------------- */
     /* Parallel HDF5 output using the H5hut library */
     /* -------------------------------------------- */
-
     if (cycle%(col->getFieldOutputCycle())==0)        WriteFieldsH5hut(ns, grid, EMf,  col, vct, cycle);
     if (cycle%(col->getParticlesOutputCycle())==0 &&
         cycle!=col->getLast_cycle() && cycle!=0)      WritePartclH5hut(ns, grid, part, col, vct, cycle);

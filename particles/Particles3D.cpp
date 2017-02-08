@@ -246,6 +246,60 @@ int Particles3D::monoenergetic_box(Grid* grid,Field* EMf,VirtualTopology3D* vct,
   return nop;
 }
 
+void Particles3D::MaxwellianFromFieldFile(Grid* grid,Field* EMf,VirtualTopology3D* vct){
+
+  if (vct->getCartesian_rank() == 0) {
+    cout << "PARTICLES INITIAZLIZED FROM FIELDS WITH MAXWELLIAN DISTRIBUTION" << endl;
+  }
+  /* initialize random generator with different seed on different processor */
+  srand(vct->getCartesian_rank() + 2);
+  /*cout << "Maxwellian From Field File" << endl;*/
+  double harvest;
+  double prob, theta, sign;
+  long long counter = 0;
+  for (int i = 1; i < grid->getNXC() - 1; i++)
+    for (int j = 1; j < grid->getNYC() - 1; j++)
+      for (int k = 1; k < grid->getNZC() - 1; k++) {
+
+        double M_rho = EMf->getRHOcs(i, j, k, ns);
+        double M_u0  = EMf->getJxcs (i,j,k,ns)/M_rho;
+        double M_v0  = EMf->getJycs (i,j,k,ns)/M_rho;
+        double M_w0  = EMf->getJzcs (i,j,k,ns)/M_rho;
+        // The module of rho to be used for computing the charge
+        double M_rho_abs = fabs(EMf->getRHOcs(i, j, k, ns));
+
+        for (int ii = 0; ii < npcelx; ii++){
+          for (int jj = 0; jj < npcely; jj++){
+            for (int kk = 0; kk < npcelz; kk++) {
+              x[counter] = (ii + .5) * (dx / npcelx) + grid->getXN(i, j, k);
+              y[counter] = (jj + .5) * (dy / npcely) + grid->getYN(i, j, k);
+              z[counter] = (kk + .5) * (dz / npcelz) + grid->getZN(i, j, k);
+
+              // q = charge
+              q[counter] = (qom / fabs(qom)) * (M_rho_abs / npcel) * (1.0 / grid->getInvVOL());
+              // u
+              harvest = rand() / (double) RAND_MAX;
+              prob = sqrt(-2.0 * log(1.0 - .999999 * harvest));
+              harvest = rand() / (double) RAND_MAX;
+              theta = 2.0 * M_PI * harvest;
+              u[counter] = M_u0 + uth * prob * cos(theta);
+              // v
+              v[counter] = M_v0 + vth * prob * sin(theta);
+              // w
+              harvest = rand() / (double) RAND_MAX;
+              prob = sqrt(-2.0 * log(1.0 - .999999 * harvest));
+              harvest = rand() / (double) RAND_MAX;
+              theta = 2.0 * M_PI * harvest;
+              w[counter] = M_w0 + wth * prob * cos(theta);
+              if (TrackParticleID)
+                ParticleID[counter] = counter * (unsigned long) pow(10.0, BirthRank[1]) + BirthRank[0];
+              counter++;
+            }
+          }
+        }
+      }
+}
+
 void Particles3D::empty(Grid* grid,Field* EMf,VirtualTopology3D* vct){
         nop = 0;
 }

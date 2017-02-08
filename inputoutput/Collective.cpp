@@ -177,8 +177,10 @@ void Collective::ReadInput(string inputfile) {
     z_center = config.read < double >("z_center");
     L_square = config.read < double >("L_square");
 
-    coilD = config.read<double>( "CoilD" );
-    coilSpacing = config.read<double>( "CoilSpacing" );
+    if (Case == "Coils") {
+      coilD = config.read<double>( "CoilD" );
+      coilSpacing = config.read<double>( "CoilSpacing" );
+    } 
 
     npcelx = new int[ns];
     npcely = new int[ns];

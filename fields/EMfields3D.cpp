@@ -2144,6 +2144,45 @@ double ***EMfields3D::getJzs(int is) {
   return (Jzs[is]);
 }
 
+double EMfields3D::getJxcs (int i,int j,int k,int is) {
+  double ret = .125 * (Jxs[is][i][j][k]     +
+                       Jxs[is][i + 1][j][k] +
+                       Jxs[is][i][j + 1][k] +
+                       Jxs[is][i][j][k + 1] +
+                       Jxs[is][i + 1][j + 1][k] +
+                       Jxs[is][i + 1][j][k + 1] +
+                       Jxs[is][i][j + 1][k + 1] +
+                       Jxs[is][i + 1][j + 1][k + 1]);
+
+  return ret;
+}
+
+double EMfields3D::getJycs (int i,int j,int k,int is) {
+  double ret = .125 * (Jys[is][i][j][k]     +
+                       Jys[is][i + 1][j][k] +
+                       Jys[is][i][j + 1][k] +
+                       Jys[is][i][j][k + 1] +
+                       Jys[is][i + 1][j + 1][k] +
+                       Jys[is][i + 1][j][k + 1] +
+                       Jys[is][i][j + 1][k + 1] +
+                       Jys[is][i + 1][j + 1][k + 1]);
+
+  return ret;
+}
+
+double EMfields3D::getJzcs (int i,int j,int k,int is) {
+  double ret = .125 * (Jzs[is][i][j][k]     +
+                       Jzs[is][i + 1][j][k] +
+                       Jzs[is][i][j + 1][k] +
+                       Jzs[is][i][j][k + 1] +
+                       Jzs[is][i + 1][j + 1][k] +
+                       Jzs[is][i + 1][j][k + 1] +
+                       Jzs[is][i][j + 1][k + 1] +
+                       Jzs[is][i + 1][j + 1][k + 1]);
+
+  return ret;
+}
+
 /*! get the electric field energy */
 double EMfields3D::getEenergy(void) {
   double localEenergy = 0.0;

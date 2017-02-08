@@ -319,6 +319,9 @@ void ReadFieldsH5hut(int nspec, bool readext, EMfields3D *EMf, Collective *col, 
     ss << is;
     std::string s_is = ss.str();
     infile.ReadFields(EMf->getRHOns(is), "rho_"+s_is, grid->getNXN(), grid->getNYN(), grid->getNZN());
+    infile.ReadFields(EMf->getJxs(is), "Jx_"+s_is, grid->getNXN(), grid->getNYN(), grid->getNZN());
+    infile.ReadFields(EMf->getJys(is), "Jy_"+s_is, grid->getNXN(), grid->getNYN(), grid->getNZN());
+    infile.ReadFields(EMf->getJzs(is), "Jz_"+s_is, grid->getNXN(), grid->getNYN(), grid->getNZN());
   }
 
   infile.CloseFieldsFile();
@@ -334,6 +337,10 @@ void ReadFieldsH5hut(int nspec, bool readext, EMfields3D *EMf, Collective *col, 
   grid->interpN2C(EMf->getBxc(), EMf->getBx());
   grid->interpN2C(EMf->getByc(), EMf->getBy());
   grid->interpN2C(EMf->getBzc(), EMf->getBz());
+
+  communicateCenterBC(grid->getNXC(), grid->getNYC(), grid->getNZC(), EMf->getBxc(), col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5], vct);
+  communicateCenterBC(grid->getNXC(), grid->getNYC(), grid->getNZC(), EMf->getByc(), col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5], vct);
+  communicateCenterBC(grid->getNXC(), grid->getNYC(), grid->getNZC(), EMf->getBzc(), col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct);
 
 
   // communicate E

@@ -48,8 +48,6 @@ int main(int argc, char **argv) {
     /* --------------- */
     /* 3- Output files */
     /* --------------- */
-
-    //KCode.WriteOutputASCII(i);
     clocks->start(4);
     KCode.WriteOutput(i);
     KCode.WriteConserved(i);

@@ -232,6 +232,10 @@ class EMfields3D                // :public Field
     /*! get current -Direction Z */
     double ****getJzs();
     double ***getJzs(int is);
+   
+    double getJxcs (int i,int j,int k, int is);
+    double getJycs (int i,int j,int k, int is);
+    double getJzcs (int i,int j,int k, int is);
 
     /*! get the electric field energy */
     double getEenergy();
