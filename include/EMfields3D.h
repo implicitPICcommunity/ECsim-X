@@ -290,7 +290,8 @@ class EMfields3D                // :public Field
     /*! local grid boundaries coordinate */
     double xStart, xEnd, yStart, yEnd, zStart, zEnd;
     /*! grid spacing */
-    double dx, dy, dz, invVOL;
+    double dx, dy, dz;
+    double ***invVOLn;
     /*! simulation box length - X direction */
     double Lx;
     /*! simulation box length - Y direction */

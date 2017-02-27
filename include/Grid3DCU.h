@@ -121,7 +121,10 @@ public:
   /** get Zend */
   double getZend();
   /** get the inverse of volume */
-  double getInvVOL();
+  double getInvVOLc(int i, int j, int k);
+  double getInvVOLn(int i, int j, int k);
+  double*** getInvVOLc();
+  double*** getInvVOLn();
 
   // /////////// PRIVATE VARIABLES //////////////
 private:
@@ -150,7 +153,7 @@ private:
   /** invdz = 1/dz */
   double invdz;
   /** invol = inverse of volume*/
-  double invVOL;
+  double ***invVOLc,***invVOLn;
 
   double *node_xcoord; /** Node X coordinate */
   double *node_ycoord; /** Node Y coordinate */

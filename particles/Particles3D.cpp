@@ -87,7 +87,7 @@ void Particles3D::uniform_background(Grid * grid, Field * EMf) {
               u[counter] = 0.0;
               v[counter] = 0.0;
               w[counter] = 0.0;
-              q[counter] = (qom / fabs(qom)) * (EMf->getRHOcs(i, j, k, ns) / npcel) * (1.0 / grid->getInvVOL());
+              q[counter] = (qom / fabs(qom)) * (EMf->getRHOcs(i, j, k, ns) / npcel) * (1.0 / grid->getInvVOLc(i,j,k));
               if (TrackParticleID)
                 ParticleID[counter] = counter * (unsigned long) pow(10.0, BirthRank[1]) + BirthRank[0];
               counter++;
@@ -138,7 +138,7 @@ void Particles3D::maxwellian(Grid * grid, Field * EMf, VirtualTopology3D * vct) 
               y[counter] = (jj + Drand48(seed)) * (dy / npcely) + grid->getYN(i, j, k);
               z[counter] = (kk + Drand48(seed)) * (dz / npcelz) + grid->getZN(i, j, k);
               // q = charge
-              q[counter] = (qom / fabs(qom)) * (fabs(EMf->getRHOcs(i, j, k, ns)) / npcel) * (1.0 / grid->getInvVOL());
+              q[counter] = (qom / fabs(qom)) * (fabs(EMf->getRHOcs(i, j, k, ns)) / npcel) * (1.0 / grid->getInvVOLc(i,j,k));
 
               // u
               prob = sqrt(-2.0 * log(1.0 - .999999 * Drand48(seed)));
@@ -182,7 +182,7 @@ void Particles3D::MaxwellianDoubleGEM(Grid * grid, Field * EMf, VirtualTopology3
               y[counter] = (jj + .5) * (dy / npcely) + grid->getYN(i, j, k);
               z[counter] = (kk + .5) * (dz / npcelz) + grid->getZN(i, j, k);
               // q = charge
-              q[counter] = (qom / fabs(qom)) * (fabs(EMf->getRHOcs(i, j, k, ns)) / npcel) * (1.0 / grid->getInvVOL());
+              q[counter] = (qom / fabs(qom)) * (fabs(EMf->getRHOcs(i, j, k, ns)) / npcel) * (1.0 / grid->getInvVOLc(i,j,k));
               // u
               prob = sqrt(-2.0 * log(1.0 - .999999 * Drand48(seed)));
               theta = 2.0 * M_PI * Drand48(seed);
@@ -223,7 +223,7 @@ int Particles3D::monoenergetic_box(Grid* grid,Field* EMf,VirtualTopology3D* vct,
               z[counter] = (kk + .5)*(dz/npcelz) + grid->getZN(i,j,k);
               if (fabs(x[counter] - x_center) < L_square/2 && fabs(y[counter] - y_center) < L_square/2 && fabs(z[counter] - z_center) < L_square/2){
                 // q = charg
-                q[counter] =  (qom/fabs(qom))*(EMf->getRHOcs(i,j,k,ns)/npcel)*(1.0/grid->getInvVOL());
+                q[counter] =  (qom/fabs(qom))*(EMf->getRHOcs(i,j,k,ns)/npcel)*(1.0/grid->getInvVOLc(i,j,k));
                 if (ii == 0 && jj == 0 && kk == 0 && i == 1 && j == 1 && k == 1)
                 	cout << "Q at ("<< i<<","<<j<<","<<k<<") = "<<q[counter]<<endl;
                 // u
@@ -276,7 +276,7 @@ void Particles3D::MaxwellianFromFieldFile(Grid* grid,Field* EMf,VirtualTopology3
               z[counter] = (kk + .5) * (dz / npcelz) + grid->getZN(i, j, k);
 
               // q = charge
-              q[counter] = (qom / fabs(qom)) * (M_rho_abs / npcel) * (1.0 / grid->getInvVOL());
+              q[counter] = (qom / fabs(qom)) * (M_rho_abs / npcel) * (1.0 / grid->getInvVOLc(i,j,k));
               // u
               harvest = rand() / (double) RAND_MAX;
               prob = sqrt(-2.0 * log(1.0 - .999999 * harvest));
@@ -631,7 +631,7 @@ int Particles3D::particle_repopulator(Grid* grid,VirtualTopology3D* vct, Field* 
                    if (rtype==FFIELD)  rho = EMf->getRHOcs(i,j,k,is);
                    if (rtype==LINEAR)  rho = (0.1 + 0.9*(grid->getXC(i, j, k)/Lx)) / FourPI;
                    if (rtype==INITIAL) rho = rhoINJECT/FourPI;
-                   q[particles_index] = (qom / fabs(qom))*(fabs(rho)/npcel)*(1.0/grid->getInvVOL());
+                   q[particles_index] = (qom / fabs(qom))*(fabs(rho)/npcel)*(1.0/grid->getInvVOLc(i,j,k));
                 // u
                 prob  = sqrt(-2.0*log(1.0-.999999*Drand48(seed)));
                 theta = 2.0*M_PI*Drand48(seed);
@@ -687,7 +687,7 @@ int Particles3D::particle_repopulator(Grid* grid,VirtualTopology3D* vct, Field* 
                    if (rtype==FFIELD)  rho = EMf->getRHOcs(i,j,k,is);
                    if (rtype==LINEAR)  rho = (0.1 + 0.9*(grid->getXC(i, j, k)/Lx)) / FourPI;
                    if (rtype==INITIAL) rho = rhoINJECT/FourPI;
-                   q[particles_index] = (qom / fabs(qom))*(fabs(rho)/npcel)*(1.0/grid->getInvVOL());
+                   q[particles_index] = (qom / fabs(qom))*(fabs(rho)/npcel)*(1.0/grid->getInvVOLc(i,j,k));
                 // u
                 prob  = sqrt(-2.0*log(1.0-.999999*Drand48(seed)));
                 theta = 2.0*M_PI*Drand48(seed);
@@ -739,7 +739,7 @@ int Particles3D::particle_repopulator(Grid* grid,VirtualTopology3D* vct, Field* 
                    if (rtype==FFIELD)  rho = EMf->getRHOcs(i,j,k,is);
                    if (rtype==LINEAR)  rho = (0.1 + 0.9*(grid->getXC(i, j, k)/Lx)) / FourPI;
                    if (rtype==INITIAL) rho = rhoINJECT/FourPI;
-                   q[particles_index] = (qom / fabs(qom))*(fabs(rho)/npcel)*(1.0/grid->getInvVOL());
+                   q[particles_index] = (qom / fabs(qom))*(fabs(rho)/npcel)*(1.0/grid->getInvVOLc(i,j,k));
                 // u
                 prob  = sqrt(-2.0*log(1.0-.999999*Drand48(seed)));
                 theta = 2.0*M_PI*Drand48(seed);
@@ -790,7 +790,7 @@ int Particles3D::particle_repopulator(Grid* grid,VirtualTopology3D* vct, Field* 
                    if (rtype==FFIELD)  rho = EMf->getRHOcs(i,j,k,is);
                    if (rtype==LINEAR)  rho = (0.1 + 0.9*(grid->getXC(i, j, k)/Lx)) / FourPI;
                    if (rtype==INITIAL) rho = rhoINJECT/FourPI;
-                   q[particles_index] = (qom / fabs(qom))*(fabs(rho)/npcel)*(1.0/grid->getInvVOL());
+                   q[particles_index] = (qom / fabs(qom))*(fabs(rho)/npcel)*(1.0/grid->getInvVOLc(i,j,k));
                 // u
                 prob  = sqrt(-2.0*log(1.0-.999999*Drand48(seed)));
                 theta = 2.0*M_PI*Drand48(seed);
@@ -842,7 +842,7 @@ int Particles3D::particle_repopulator(Grid* grid,VirtualTopology3D* vct, Field* 
                    if (rtype==FFIELD)  rho = EMf->getRHOcs(i,j,k,is);
                    if (rtype==LINEAR)  rho = (0.1 + 0.9*(grid->getXC(i, j, k)/Lx)) / FourPI;
                    if (rtype==INITIAL) rho = rhoINJECT/FourPI;
-                   q[particles_index] = (qom / fabs(qom))*(fabs(rho)/npcel)*(1.0/grid->getInvVOL());
+                   q[particles_index] = (qom / fabs(qom))*(fabs(rho)/npcel)*(1.0/grid->getInvVOLc(i,j,k));
                 // u
                 prob  = sqrt(-2.0*log(1.0-.999999*Drand48(seed)));
                 theta = 2.0*M_PI*Drand48(seed);
@@ -894,7 +894,7 @@ int Particles3D::particle_repopulator(Grid* grid,VirtualTopology3D* vct, Field* 
                    if (rtype==FFIELD)  rho = EMf->getRHOcs(i,j,k,is);
                    if (rtype==LINEAR)  rho = (0.1 + 0.9*(grid->getXC(i, j, k)/Lx)) / FourPI;
                    if (rtype==INITIAL) rho = rhoINJECT/FourPI;
-                   q[particles_index] = (qom / fabs(qom))*(fabs(rho)/npcel)*(1.0/grid->getInvVOL());
+                   q[particles_index] = (qom / fabs(qom))*(fabs(rho)/npcel)*(1.0/grid->getInvVOLc(i,j,k));
                 // u
                 prob  = sqrt(-2.0*log(1.0-.999999*Drand48(seed)));
                 theta = 2.0*M_PI*Drand48(seed);
@@ -1218,7 +1218,7 @@ int Particles3D::injector_rand_box(Grid* grid,VirtualTopology3D* vct, Field* EMf
 		npinject = (int)floor(Iinj);
 
 	if (vct->getCartesian_rank() == 0){
-			cout << "*** Injector Rand Box species " << ns << " ***" << NiterMover <<" ITERATIONS : INJECTING " << npinject << " particles, each with a charge of " << (qom/fabs(qom))*(EMf->getRHOcs(1,1,1,ns)/npcel)*(1.0/grid->getInvVOL()) << " C  ****" << endl;
+			cout << "*** Injector Rand Box species " << ns << " ***" << NiterMover <<" ITERATIONS : INJECTING " << npinject << " particles, each with a charge of " << (qom/fabs(qom))*(EMf->getRHOcs(1,1,1,ns)/npcel)*(1.0/grid->getInvVOLc(1,1,1)) << " C  ****" << endl;
 
 
 		for (int inject = 0; inject < npinject; inject++)
@@ -1231,7 +1231,7 @@ int Particles3D::injector_rand_box(Grid* grid,VirtualTopology3D* vct, Field* EMf
 			z[nop] = z_center+(harvest-0.5)*L_square;
 			//cout << "x=" <<x[nop] << "y=" << y[nop]<< "z=" << z[nop] <<endl;
 			//this assigns charge the same as does maxwell_box
-			q[nop] =  (qom/fabs(qom))*(EMf->getRHOcs(1,1,1,ns)/npcel)*(1.0/grid->getInvVOL());
+			q[nop] =  (qom/fabs(qom))*(EMf->getRHOcs(1,1,1,ns)/npcel)*(1.0/grid->getInvVOLc(1,1,1));
 
 			// random numbers for Maxwellian
 			harvest =   rand()/(double)RAND_MAX;
@@ -1313,7 +1313,7 @@ int Particles3D::injector_rand_box_mono(Grid* grid,VirtualTopology3D* vct, Field
 		npinject = (int)floor(Iinj);
 
 	if (vct->getCartesian_rank() == 0){
-			cout << "*** Injector Rand Box species " << ns << " ***" << NiterMover <<" ITERATIONS : INJECTING " << npinject << " particles, each with a charge of " << (qom/fabs(qom))*(EMf->getRHOcs(1,1,1,ns)/npcel)*(1.0/grid->getInvVOL()) << " C  ****" << endl;
+			cout << "*** Injector Rand Box species " << ns << " ***" << NiterMover <<" ITERATIONS : INJECTING " << npinject << " particles, each with a charge of " << (qom/fabs(qom))*(EMf->getRHOcs(1,1,1,ns)/npcel)*(1.0/grid->getInvVOLc(1,1,1)) << " C  ****" << endl;
 
 
 		for (long long inject = 0; inject < npinject; inject++)

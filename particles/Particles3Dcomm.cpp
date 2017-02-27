@@ -136,7 +136,7 @@ void Particles3Dcomm::allocate(int species, long long initnpmax, Collective * co
   nxn = grid->getNXN();
   nyn = grid->getNYN();
   nzn = grid->getNZN();
-  invVOL = grid->getInvVOL();
+  invVOL = 1.0/(dx*dy*dz);
   // info from VirtualTopology3D
   cVERBOSE = vct->getcVERBOSE();
 

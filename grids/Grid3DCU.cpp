@@ -31,7 +31,6 @@ Grid3DCU::Grid3DCU(Collective * col, VirtualTopology3D * vct) {
   dx = col->getLx() / col->getNxc();
   dy = col->getLy() / col->getNyc();
   dz = col->getLz() / col->getNzc();
-  invVOL = 1.0 / (dx * dy * dz);
   invdx = 1.0 / dx;
   invdy = 1.0 / dy;
   invdz = 1.0 / dz;
@@ -63,6 +62,24 @@ Grid3DCU::Grid3DCU(Collective * col, VirtualTopology3D * vct) {
   for(int i=0; i<nxc; i++) center_xcoord[i] = .5*(node_xcoord[i]+node_xcoord[i+1]);
   for(int j=0; j<nyc; j++) center_ycoord[j] = .5*(node_ycoord[j]+node_ycoord[j+1]);
   for(int k=0; k<nzc; k++) center_zcoord[k] = .5*(node_zcoord[k]+node_zcoord[k+1]);
+
+
+  // Init the inverse of the volume of each cell and node
+  invVOLc = newArr3(double, nxc, nyc, nzc); 
+  invVOLn = newArr3(double, nxn, nyn, nzn); 
+
+  for(int i=0; i<nxc; i++)
+    for(int j=0; j<nyc; j++)
+      for(int k=0; k<nzc; k++) {
+        invVOLc[i][j][k] = invdx*invdy*invdz;
+      }
+
+  for(int i=0; i<nxn; i++)
+    for(int j=0; j<nyn; j++)
+      for(int k=0; k<nzn; k++) {
+        invVOLn[i][j][k] = invdx*invdy*invdz;
+      }
+
 }
 
 /** deallocate the local grid */
@@ -490,7 +507,19 @@ double Grid3DCU::getZend() {
   return (zEnd);
 }
 
-/** get the inverse of volume */
-double Grid3DCU::getInvVOL() {
-  return (invVOL);
+/** get the inverse of cell volume */
+double Grid3DCU::getInvVOLc(int i,int j,int k) {
+  return (invVOLc[i][j][k]);
+}
+/** get the inverse of node volume */
+double Grid3DCU::getInvVOLn(int i,int j,int k) {
+  return (invVOLn[i][j][k]);
+}
+/** get the inverse of cell volume */
+double*** Grid3DCU::getInvVOLc() {
+  return (invVOLc);
+}
+/** get the inverse of node volume */
+double*** Grid3DCU::getInvVOLn() {
+  return (invVOLn);
 }

@@ -17,7 +17,6 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
   dx = grid->getDX();
   dy = grid->getDY();
   dz = grid->getDZ();
-  invVOL = grid->getInvVOL();
   xStart = grid->getXstart();
   xEnd = grid->getXend();
   yStart = grid->getYstart();
@@ -40,6 +39,8 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
   L_square = col->getL_square();
   coilD = col->getcoilD();
   coilSpacing = col->getcoilSpacing();
+
+  invVOLn = grid->getInvVOLn();
 
   delt = c * th * dt;
   GMREStol = col->getGMREStol();
@@ -285,11 +286,15 @@ void EMfields3D::MaxwellSource(double *bkrylov, Grid * grid, VirtualTopology3D *
 
   smoothJh(Smooth, vct, col);
 
+  double invV= grid->getInvVOLn(1,1,1);
   // E - 4 pi dt th Jhat
-  double invVol = grid->getInvVOL();
-  scale(tempX, Jxh, -4*M_PI*th*dt*invVOL, nxn, nyn, nzn);
-  scale(tempY, Jyh, -4*M_PI*th*dt*invVOL, nxn, nyn, nzn);
-  scale(tempZ, Jzh, -4*M_PI*th*dt*invVOL, nxn, nyn, nzn);
+  scale(tempX, Jxh, -4*M_PI*th*dt*invV, nxn, nyn, nzn);
+  scale(tempY, Jyh, -4*M_PI*th*dt*invV, nxn, nyn, nzn);
+  scale(tempZ, Jzh, -4*M_PI*th*dt*invV, nxn, nyn, nzn);
+  //sumscalprod(tempX, -4*M_PI*th*dt, Jxh, grid->getInvVOLn(), nxn, nyn, nzn);
+  //sumscalprod(tempY, -4*M_PI*th*dt, Jyh, grid->getInvVOLn(), nxn, nyn, nzn);
+  //sumscalprod(tempZ, -4*M_PI*th*dt, Jzh, grid->getInvVOLn(), nxn, nyn, nzn);
+
   addscale(1, tempX, Ex, nxn, nyn, nzn);
   addscale(1, tempY, Ey, nxn, nyn, nzn);
   addscale(1, tempZ, Ez, nxn, nyn, nzn);
@@ -368,15 +373,16 @@ void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTo
   addscale(1, imageBY, tempY, nxn, nyn, nzn);
   addscale(1, imageBZ, tempZ, nxn, nyn, nzn);
 
-  double fac = dt*th*FourPI*grid->getInvVOL();
+  double fac = dt*th*FourPI;
   for (int i=1; i<nxn-1; i++) 
     for (int j=1; j<nyn-1; j++) 
       for (int k=1; k<nzn-1; k++) {
         double MEx, MEy, MEz;
+        double invV = grid->getInvVOLn(i, j, k);
         productMassE(&MEx, &MEy, &MEz, EFxth, EFyth, EFzth, i, j, k);
-        imageBX[i][j][k] += fac*MEx;
-        imageBY[i][j][k] += fac*MEy;
-        imageBZ[i][j][k] += fac*MEz;
+        imageBX[i][j][k] += invV*fac*MEx;
+        imageBY[i][j][k] += invV*fac*MEy;
+        imageBZ[i][j][k] += invV*fac*MEz;
       }
   #endif
 
@@ -632,7 +638,7 @@ void EMfields3D::addRho(double weight[][2][2], int X, int Y, int Z, int is) {
     for (int j = 0; j < 2; j++)
       for (int k = 0; k < 2; k++) {
         const double temp = weight[i][j][k];
-        rhons[is][X - i][Y - j][Z - k] += temp * invVOL;
+        rhons[is][X - i][Y - j][Z - k] += temp * invVOLn[X - i][Y - j][Z - k];
       }
 }
 
@@ -670,7 +676,7 @@ void EMfields3D::addJx(double weight[][2][2], int X, int Y, int Z, int ns) {
     for (int j = 0; j < 2; j++)
       for (int k = 0; k < 2; k++) {
         const double temp = weight[i][j][k];
-        Jxs[ns][X - i][Y - j][Z - k] += temp*invVOL;
+        Jxs[ns][X - i][Y - j][Z - k] += temp*invVOLn[X - i][Y - j][Z - k];
       }
 }
 /** add an amount of current density - direction Y to current density field on the node */
@@ -679,7 +685,7 @@ void EMfields3D::addJy(double weight[][2][2], int X, int Y, int Z, int ns) {
     for (int j = 0; j < 2; j++)
       for (int k = 0; k < 2; k++) {
         const double temp = weight[i][j][k];
-        Jys[ns][X - i][Y - j][Z - k] += temp*invVOL;
+        Jys[ns][X - i][Y - j][Z - k] += temp*invVOLn[X - i][Y - j][Z - k];
       }
 }
 /** add an amount of current density - direction Z to current density field on the node */
@@ -688,7 +694,7 @@ void EMfields3D::addJz(double weight[][2][2], int X, int Y, int Z, int ns) {
     for (int j = 0; j < 2; j++)
       for (int k = 0; k < 2; k++) {
         const double temp = weight[i][j][k];
-        Jzs[ns][X - i][Y - j][Z - k] += temp*invVOL;
+        Jzs[ns][X - i][Y - j][Z - k] += temp*invVOLn[X - i][Y - j][Z - k];
       }
 }
 
