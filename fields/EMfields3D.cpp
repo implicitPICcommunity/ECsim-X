@@ -433,14 +433,13 @@ void EMfields3D::MaxwellSource(double *bkrylov, Grid * grid, VirtualTopology3D *
 
   smoothJh(Smooth, vct, col);
 
-  double invV= grid->getInvVOLn(1,1,1);
-  // E - 4 pi dt th Jhat
-  scale(tempX, Jxh, -4*M_PI*th*dt*invV, nxn, nyn, nzn);
-  scale(tempY, Jyh, -4*M_PI*th*dt*invV, nxn, nyn, nzn);
-  scale(tempZ, Jzh, -4*M_PI*th*dt*invV, nxn, nyn, nzn);
-  //sumscalprod(tempX, -4*M_PI*th*dt, Jxh, grid->getInvVOLn(), nxn, nyn, nzn);
-  //sumscalprod(tempY, -4*M_PI*th*dt, Jyh, grid->getInvVOLn(), nxn, nyn, nzn);
-  //sumscalprod(tempZ, -4*M_PI*th*dt, Jzh, grid->getInvVOLn(), nxn, nyn, nzn);
+  for (int i=0; i<nxn-0; i++)
+    for (int j=0; j<nyn-0; j++) 
+      for (int k=0; k<nzn-0; k++) {
+         tempX[i][j][k] = -4*M_PI*th*dt*Jxh[i][j][k]*grid->getInvVOLn(i,j,k);
+         tempY[i][j][k] = -4*M_PI*th*dt*Jyh[i][j][k]*grid->getInvVOLn(i,j,k);
+         tempZ[i][j][k] = -4*M_PI*th*dt*Jzh[i][j][k]*grid->getInvVOLn(i,j,k);
+      }
 
   addscale(1, tempX, Ex, nxn, nyn, nzn);
   addscale(1, tempY, Ey, nxn, nyn, nzn);
