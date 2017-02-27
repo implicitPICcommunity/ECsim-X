@@ -286,9 +286,10 @@ void EMfields3D::MaxwellSource(double *bkrylov, Grid * grid, VirtualTopology3D *
   smoothJh(Smooth, vct, col);
 
   // E - 4 pi dt th Jhat
-  scale(tempX, Jxh, -4*M_PI*th*dt, nxn, nyn, nzn);
-  scale(tempY, Jyh, -4*M_PI*th*dt, nxn, nyn, nzn);
-  scale(tempZ, Jzh, -4*M_PI*th*dt, nxn, nyn, nzn);
+  double invVol = grid->getInvVOL();
+  scale(tempX, Jxh, -4*M_PI*th*dt*invVOL, nxn, nyn, nzn);
+  scale(tempY, Jyh, -4*M_PI*th*dt*invVOL, nxn, nyn, nzn);
+  scale(tempZ, Jzh, -4*M_PI*th*dt*invVOL, nxn, nyn, nzn);
   addscale(1, tempX, Ex, nxn, nyn, nzn);
   addscale(1, tempY, Ey, nxn, nyn, nzn);
   addscale(1, tempZ, Ez, nxn, nyn, nzn);
@@ -367,7 +368,7 @@ void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTo
   addscale(1, imageBY, tempY, nxn, nyn, nzn);
   addscale(1, imageBZ, tempZ, nxn, nyn, nzn);
 
-  double fac = dt*th*FourPI;
+  double fac = dt*th*FourPI*grid->getInvVOL();
   for (int i=1; i<nxn-1; i++) 
     for (int j=1; j<nyn-1; j++) 
       for (int k=1; k<nzn-1; k++) {
@@ -641,7 +642,7 @@ void EMfields3D::addJxh(double weight[][2][2], int X, int Y, int Z) {
     for (int j = 0; j < 2; j++)
       for (int k = 0; k < 2; k++) {
         const double temp = weight[i][j][k];
-        Jxh[X - i][Y - j][Z - k] += temp*invVOL;
+        Jxh[X - i][Y - j][Z - k] += temp;
       }
 }
 /** add an amount of current density - direction Y to current density field on the node */
@@ -650,7 +651,7 @@ void EMfields3D::addJyh(double weight[][2][2], int X, int Y, int Z) {
     for (int j = 0; j < 2; j++)
       for (int k = 0; k < 2; k++) {
         const double temp = weight[i][j][k];
-        Jyh[X - i][Y - j][Z - k] += temp*invVOL;
+        Jyh[X - i][Y - j][Z - k] += temp;
       }
 }
 /** add an amount of current density - direction Z to current density field on the node */
@@ -659,7 +660,7 @@ void EMfields3D::addJzh(double weight[][2][2], int X, int Y, int Z) {
     for (int j = 0; j < 2; j++)
       for (int k = 0; k < 2; k++) {
         const double temp = weight[i][j][k];
-        Jzh[X - i][Y - j][Z - k] += temp*invVOL;
+        Jzh[X - i][Y - j][Z - k] += temp;
       }
 }
 
@@ -693,15 +694,15 @@ void EMfields3D::addJz(double weight[][2][2], int X, int Y, int Z, int ns) {
 
 /** add an amount of current density to mass matrix field at node X,Y */
 void EMfields3D::addMass(double val[3][3], int X, int Y, int Z, int ind) {
-  Mxx[ind][X][Y][Z] += val[0][0]*invVOL;
-  Mxy[ind][X][Y][Z] += val[0][1]*invVOL;
-  Mxz[ind][X][Y][Z] += val[0][2]*invVOL;
-  Myx[ind][X][Y][Z] += val[1][0]*invVOL;
-  Myy[ind][X][Y][Z] += val[1][1]*invVOL;
-  Myz[ind][X][Y][Z] += val[1][2]*invVOL;
-  Mzx[ind][X][Y][Z] += val[2][0]*invVOL;
-  Mzy[ind][X][Y][Z] += val[2][1]*invVOL;
-  Mzz[ind][X][Y][Z] += val[2][2]*invVOL;
+  Mxx[ind][X][Y][Z] += val[0][0];
+  Mxy[ind][X][Y][Z] += val[0][1];
+  Mxz[ind][X][Y][Z] += val[0][2];
+  Myx[ind][X][Y][Z] += val[1][0];
+  Myy[ind][X][Y][Z] += val[1][1];
+  Myz[ind][X][Y][Z] += val[1][2];
+  Mzx[ind][X][Y][Z] += val[2][0];
+  Mzy[ind][X][Y][Z] += val[2][1];
+  Mzz[ind][X][Y][Z] += val[2][2];
 }
 
 /*! set to 0 all the densities fields */
