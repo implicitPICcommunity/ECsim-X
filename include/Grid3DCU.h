@@ -48,12 +48,16 @@ public:
   void gradN2C(double ***gradXC, double ***gradYC, double ***gradZC, double ***scFieldN);
   /** calculate divergence on central points, given a vector field defined on nodes  */
   void divN2C(double ***divC, double ***vecFieldXN, double ***vecFieldYN, double ***vecFieldZN);
+  void divN2C_cyl(double ***divC, double ***vecFieldXN, double ***vecFieldYN, double ***vecFieldZN);
   /** calculate divergence on nodes, given a vector field defined on central points  */
   void divC2N(double ***divN, double ***vecFieldXC, double ***vecFieldYC, double ***vecFieldZC);
+  void divC2N_cyl(double ***divN, double ***vecFieldXC, double ***vecFieldYC, double ***vecFieldZC);
   /** calculate curl on nodes, given a vector field defined on central points  */
   void curlC2N(double ***curlXN, double ***curlYN, double ***curlZN, double ***vecFieldXC, double ***vecFieldYC, double ***vecFieldZC);
+  void curlC2N_cyl(double ***curlXN, double ***curlYN, double ***curlZN, double ***vecFieldXC, double ***vecFieldYC, double ***vecFieldZC);
   /** calculate curl on central points, given a vector field defined on nodes  */
   void curlN2C(double ***curlXC, double ***curlYC, double ***curlZC, double ***vecFieldXN, double ***vecFieldYN, double ***vecFieldZN);
+  void curlN2C_cyl(double ***curlXC, double ***curlYC, double ***curlZC, double ***vecFieldXN, double ***vecFieldYN, double ***vecFieldZN);
 
   /** calculate divergence on central points, given a Tensor field defined on nodes  */
   void divSymmTensorN2C(double ***divCX, double ***divCY, double ***divCZ, double ****pXX, double ****pXY, double ****pXZ, double ****pYY, double ****pYZ, double ****pZZ, int ns);

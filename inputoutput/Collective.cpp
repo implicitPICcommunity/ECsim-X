@@ -48,6 +48,7 @@ void Collective::ReadInput(string inputfile) {
     wmethod           = config.read<string>("WriteMethod");
     SimName           = config.read<string>("SimulationName");
     PoissonCorrection = config.read<string>("PoissonCorrection");
+    Cylindrical = config.read < int >("Cylindrical");
 
     rhoINIT = new double[ns];
     array_double rhoINIT0 = config.read < array_double > ("rhoINIT");
@@ -1111,4 +1112,8 @@ int Collective::getRestartOutputCycle() {
 /*! output of fields */
 int Collective::getDiagnosticsOutputCycle() {
   return (DiagnosticsOutputCycle);
+}
+
+int Collective::getCylindrical() {
+  return Cylindrical;
 }

@@ -549,14 +549,32 @@ int Particles3D::mover_ECIMM(Grid * grid, VirtualTopology3D * vct, Field * EMf) 
     up = 2.0 * uptilde - u[rest];
     vp = 2.0 * vptilde - v[rest];
     wp = 2.0 * wptilde - w[rest];
-    u[rest] = up;
-    v[rest] = vp;
-    w[rest] = wp;
+    // Update the positions with the new velocity
+    xp += up * dt;
+    yp += vp * dt;
+    zp += wp * dt;
 
-    // Update the positions with the old velocity
-    x[rest] += up * dt;
-    y[rest] += vp * dt;
-    z[rest] += wp * dt;
+
+     if (Cylindrical == 1) {
+        double gamma = atan2(zp,xp);
+        xp=xp*cos(gamma)+zp*sin(gamma);
+        zp=0.0;
+        double uprot=up*cos(gamma)+wp*sin(gamma);
+        wp=-up*sin(gamma)+wp*cos(gamma);
+        up=uprot;
+  
+       if (xp > Lx) {
+          xp = 2*Lx - xp;
+          up = -up;
+        }
+     }
+
+     x[rest] = xp;
+     y[rest] = yp;
+     z[rest] = zp;
+     u[rest] = up;
+     v[rest] = vp;
+     w[rest] = wp;
 
 
 
@@ -579,6 +597,7 @@ int Particles3D::mover_ECIMM(Grid * grid, VirtualTopology3D * vct, Field * EMf) 
     MPI_Barrier(MPI_COMM_WORLD);
   }
   // timeTasks.addto_communicate();
+  
  
   return (0);                   // exit succcesfully (hopefully) 
 }

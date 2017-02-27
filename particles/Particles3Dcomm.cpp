@@ -139,6 +139,7 @@ void Particles3Dcomm::allocate(int species, long long initnpmax, Collective * co
   invVOL = 1.0/(dx*dy*dz);
   // info from VirtualTopology3D
   cVERBOSE = vct->getcVERBOSE();
+  Cylindrical = col->getCylindrical();
 
   // boundary condition for particles
   bcPfaceXright = col->getBcPfaceXright();

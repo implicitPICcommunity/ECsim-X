@@ -50,7 +50,14 @@ class EMfields3D                // :public Field
     void initDoubleGEM(VirtualTopology3D * vct, Grid * grid, Collective *col);
     void initDoublePeriodicHarrisWithGaussianHumpPerturbation(VirtualTopology3D * vct, Grid * grid, Collective *col);
     void initWB8(VirtualTopology3D *vct, Grid *grid, Collective *col);
-    /*! init beam */
+    void initBessel1D(VirtualTopology3D * vct, Grid * grid, Collective *col);
+    void initBessel2D(VirtualTopology3D * vct, Grid * grid, Collective *col);
+
+    /* Fix boundary conditions in cylindrical coordinate */
+    void fixGhostB();
+    void fixBC_Cyl_Image(double ***ImX, double ***ImY, double ***ImZ, double ***nEx, double ***nEy, double ***nEz);
+    void fixBC_Cyl_Source(double ***SoX, double ***SoY, double ***SoZ);
+
 
     /*! Calculate Electric field using the implicit Maxwell solver */
     void calculateE(Grid * grid, VirtualTopology3D * vct, Collective *col);
@@ -249,6 +256,8 @@ class EMfields3D                // :public Field
     // OpenBC
     void updateInfoFields(Grid *grid,VirtualTopology3D *vct,Collective *col);
 
+    void testCurl(Grid* grid);
+
     /* ********************************* // VARIABLES ********************************* */
   private:
     /*! light speed */
@@ -291,7 +300,7 @@ class EMfields3D                // :public Field
     double xStart, xEnd, yStart, yEnd, zStart, zEnd;
     /*! grid spacing */
     double dx, dy, dz;
-    double ***invVOLn;
+    double ***invVOLn, ***invVOLc;
     /*! simulation box length - X direction */
     double Lx;
     /*! simulation box length - Y direction */
@@ -457,6 +466,8 @@ class EMfields3D                // :public Field
 
     /*! GMRES tolerance criterium for stopping iterations */
     double GMREStol;
+
+    int Cylindrical;
 
 };
 

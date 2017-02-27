@@ -1,6 +1,8 @@
 
 #include "Grid3DCU.h"
 
+//#define FINITE_VOLUME
+
 /*! constructor */
 Grid3DCU::Grid3DCU(Collective * col, VirtualTopology3D * vct) {
   // FOR TESTS - this must be uncommented next
@@ -68,17 +70,41 @@ Grid3DCU::Grid3DCU(Collective * col, VirtualTopology3D * vct) {
   invVOLc = newArr3(double, nxc, nyc, nzc); 
   invVOLn = newArr3(double, nxn, nyn, nzn); 
 
-  for(int i=0; i<nxc; i++)
-    for(int j=0; j<nyc; j++)
-      for(int k=0; k<nzc; k++) {
-        invVOLc[i][j][k] = invdx*invdy*invdz;
-      }
+  if (col->getCylindrical()== 1) {
+    for(int i=0; i<nxc; i++)
+      for(int j=0; j<nyc; j++)
+        for(int k=0; k<nzc; k++) {
+          double r0 = node_xcoord[i];
+          double r1 = node_xcoord[i+1];
+          if (r0 < 0) r0 = 0;
+          invVOLc[i][j][k] = 2.0/(dy*(r1*r1 - r0*r0));
+        }
+   
+    for(int i=0; i<nxn; i++)
+      for(int j=0; j<nyn; j++)
+        for(int k=0; k<nzn; k++) {
+          double r0 = center_xcoord[i-1];
+          double r1 = center_xcoord[i];
+          if (r0 < 0) { 
+            invVOLn[i][j][k] = 1.0/(dy*r1*r1);
+          } else {
+            invVOLn[i][j][k] = 2.0/(dy*(r1*r1 - r0*r0));
+          }
+        }
 
-  for(int i=0; i<nxn; i++)
-    for(int j=0; j<nyn; j++)
-      for(int k=0; k<nzn; k++) {
-        invVOLn[i][j][k] = invdx*invdy*invdz;
-      }
+  } else {
+    for(int i=0; i<nxc; i++)
+      for(int j=0; j<nyc; j++)
+        for(int k=0; k<nzc; k++) {
+          invVOLc[i][j][k] = invdx*invdy*invdz;
+        }
+   
+    for(int i=0; i<nxn; i++)
+      for(int j=0; j<nyn; j++)
+        for(int k=0; k<nzn; k++) {
+          invVOLn[i][j][k] = invdx*invdy*invdz;
+        }
+  }
 
 }
 
@@ -522,4 +548,247 @@ double*** Grid3DCU::getInvVOLc() {
 /** get the inverse of node volume */
 double*** Grid3DCU::getInvVOLn() {
   return (invVOLn);
+}
+
+
+/**********************************************************/
+/***  OPERATORS IN CYLINDRICAL COORDINATES              ***/
+/**********************************************************/
+/** Curl in cylindrical coordinates: field defined in nodes -> curl in centers */
+// ATENTION; 2D -> d/d phi = 0
+// x = r   y = z  z = phi
+void Grid3DCU::curlN2C_cyl(double ***curlXC, double ***curlYC, double ***curlZC, double ***vecXN, double ***vecYN, double ***vecZN) {
+
+  double Dr = dx;
+  double Dz = dy;
+  for (register int i = 1; i < nxc - 1; i++)
+    for (register int j = 1; j < nyc - 1; j++)
+      for (register int k = 1; k < nzc - 1; k++) {
+         int i0 = i;
+         int i1 = i+1;
+         int j0 = j;
+         int j1 = j+1;
+         double r0 = getXN(i0,j,k);
+
+         double r1 = getXN(i1,j,k);
+
+         double Ar_00 = vecXN[i0][j0][k];
+         double Ar_01 = vecXN[i0][j1][k];
+         double Ar_10 = vecXN[i1][j0][k];
+         double Ar_11 = vecXN[i1][j1][k];
+    
+         double Az_00 = vecYN[i0][j0][k];
+         double Az_01 = vecYN[i0][j1][k];
+         double Az_10 = vecYN[i1][j0][k];
+         double Az_11 = vecYN[i1][j1][k];
+    
+         double At_00 = vecZN[i0][j0][k];
+         double At_01 = vecZN[i0][j1][k];
+         double At_10 = vecZN[i1][j0][k];
+         double At_11 = vecZN[i1][j1][k];
+
+#ifdef FINITE_VOLUME
+       // r component
+       curlXC[i][j][k] = -0.5*Dr*invVOLc[i][j][k]*( r0*vecZN[i0][j1][k] + r1*vecZN[i1][j1][k]
+                                                     -r0*vecZN[i0][j0][k] - r1*vecZN[i1][j0][k]);
+       // z component
+       curlYC[i][j][k] =  0.5*Dz*invVOLc[i][j][k]*( r1*(vecZN[i1][j0][k] + vecZN[i1][j1][k]) 
+                                                     -r0*(vecZN[i0][j0][k] + vecZN[i0][j1][k]));
+       // phi component
+       curlZC[i][j][k] =  0.5*Dr*invVOLc[i][j][k]*( r0*vecXN[i0][j1][k] + r1*vecXN[i1][j1][k]
+                                                  -r0*vecXN[i0][j0][k] - r1*vecXN[i1][j0][k])
+                         -0.5*Dz*invVOLc[i][j][k]*( r1*vecYN[i1][j0][k] - r0*vecYN[i0][j0][k] - 0.5*Dr*(vecYN[i1][j0][k] + vecYN[i0][j0][k])
+                                                   +r1*vecYN[i1][j1][k] - r0*vecYN[i0][j1][k] - 0.5*Dr*(vecYN[i1][j1][k] + vecYN[i0][j1][k]));
+
+
+       curlXC[i][j][k] = Dr*(At_00*(r0*2.0 + r1) - At_01*(r0*2.0 + r1) + At_10*(r0 + r1*2.0) - At_11*(r0 +r1*2.0))*(1.0/6.0); 
+       curlYC[i][j][k] = -0.5*Dz*(r0*(At_00 + At_01) - r1*(At_10 + At_11));
+       curlZC[i][j][k] = Dr*(Ar_00*(r0*2.0 + r1) - Ar_01*(r0*2.0 + r1) + Ar_10*(r0 + r1*2.0) - Ar_11*(r0 + r1*2.0))*(-1.0/6.0)-
+                         (Dz*(r0*r0-r1*r1)*(Az_00+Az_01-Az_10-Az_11)*(1.0/4.0))/Dr;
+
+       curlXC[i][j][k] *= invVOLc[i][j][k];
+       curlYC[i][j][k] *= invVOLc[i][j][k];
+       curlZC[i][j][k] *= invVOLc[i][j][k];
+
+#else
+       // Finite differences:
+       curlXC[i][j][k] = -0.5*(At_01-At_00 + At_11-At_10)/Dz;
+
+       double r = getXC(i,j,k);
+       curlYC[i][j][k] = 0.5*((1.0/r)*0.5*(At_00+At_10) + (At_10 - At_00)/Dr) +
+                         0.5*((1.0/r)*0.5*(At_01+At_11) + (At_11 - At_01)/Dr);
+
+       curlZC[i][j][k] = 0.5*(Ar_01-Ar_00 + Ar_11-Ar_10)/Dz -
+                         0.5*(Az_10-Az_00 + Az_11-Az_01)/Dr;
+
+       // New Approach (Atilde = At*r)
+     
+       //curlXC[i][j][k] = -(r0*At_01 - r0*At_00 + r1*At_11 - r1*At_10)/(Dz*r);
+       //curlYC[i][j][k] = (r1*At_10 - r0*At_00 + r1*At_11 - r0*Ar_01)/(Dr*r);
+
+       
+#endif
+      }
+}
+/** Curl in cylindrical coordinates: field defined in centers -> curl in nodes */
+// ATENTION; 2D -> d/d phi = 0
+void Grid3DCU::curlC2N_cyl(double ***curlXN, double ***curlYN, double ***curlZN, double ***vecXC, double ***vecYC, double ***vecZC) {
+
+  double Dz = dy;
+  for (register int i = 1; i < nxn - 1; i++)
+    for (register int j = 1; j < nyn - 1; j++)
+      for (register int k = 1; k < nzn - 1; k++) {
+
+         int i0 = i-1;
+         int i1 = i;
+         int j0 = j-1;
+         int j1 = j;
+         double r0 = getXC(i0,j,k);
+         if (r0 < 0) r0 = 0;
+         double r1 = getXC(i1,j,k);
+         double Dr = (r1-r0);
+         
+
+         double Ar_00 = vecXC[i0][j0][k];
+         double Ar_01 = vecXC[i0][j1][k];
+         double Ar_10 = vecXC[i1][j0][k];
+         double Ar_11 = vecXC[i1][j1][k];
+    
+         double Az_00 = vecYC[i0][j0][k];
+         double Az_01 = vecYC[i0][j1][k];
+         double Az_10 = vecYC[i1][j0][k];
+         double Az_11 = vecYC[i1][j1][k];
+    
+         double At_00 = vecZC[i0][j0][k];
+         double At_01 = vecZC[i0][j1][k];
+         double At_10 = vecZC[i1][j0][k];
+         double At_11 = vecZC[i1][j1][k];
+
+#ifdef FINITE_VOLUME
+          // r component
+          curlXN[i][j][k] = -0.5*Dr*invVOLn[i][j][k]*( r0*vecZC[i0][j1][k] + r1*vecZC[i1][j1][k]
+                                                     -r0*vecZC[i0][j0][k] - r1*vecZC[i1][j0][k]);
+          // z component
+          curlYN[i][j][k] =  0.5*Dz*invVOLn[i][j][k]*( r1*(vecZC[i1][j0][k] + vecZC[i1][j1][k]) 
+                                                     -r0*(vecZC[i0][j0][k] + vecZC[i0][j1][k]));
+          // phi component
+          curlZN[i][j][k] =  0.5*Dr*invVOLn[i][j][k]*( r0*vecXC[i0][j1][k] + r1*vecXC[i1][j1][k]
+                                                     -r0*vecXC[i0][j0][k] - r1*vecXC[i1][j0][k])
+                            -0.5*Dz*invVOLn[i][j][k]*( r1*vecYC[i1][j0][k] - r0*vecYC[i0][j0][k] - 0.5*(r1-r0)*(vecYC[i1][j0][k] + vecYC[i0][j0][k])
+                                                     +r1*vecYC[i1][j1][k] - r0*vecYC[i0][j1][k] - 0.5*(r1-r0)*(vecYC[i1][j1][k] + vecYC[i0][j1][k]));
+
+       curlXN[i][j][k] = Dr*(At_00*(r0*2.0 + r1) - At_01*(r0*2.0 + r1) + At_10*(r0 + r1*2.0) - At_11*(r0 +r1*2.0))*(1.0/6.0); 
+       curlYN[i][j][k] = -0.5*Dz*(r0*(At_00 + At_01) - r1*(At_10 + At_11));
+       curlZN[i][j][k] = Dr*(Ar_00*(r0*2.0 + r1) - Ar_01*(r0*2.0 + r1) + Ar_10*(r0 + r1*2.0) - Ar_11*(r0 + r1*2.0))*(-1.0/6.0)-
+                         (Dz*(r0*r0-r1*r1)*(Az_00+Az_01-Az_10-Az_11)*(1.0/4.0))/Dr;
+
+
+       curlXN[i][j][k] *= invVOLc[i][j][k];
+       curlYN[i][j][k] *= invVOLc[i][j][k];
+       curlZN[i][j][k] *= invVOLc[i][j][k];
+
+
+#else
+       curlXN[i][j][k] = -0.5*(At_01-At_00 + At_11-At_10)/Dz;
+
+       double r = getXN(i,j,k);
+       curlYN[i][j][k] = 0.5*((1.0/r)*0.5*(At_00+At_10) + (At_10 - At_00)/Dr) +
+                         0.5*((1.0/r)*0.5*(At_01+At_11) + (At_11 - At_01)/Dr);
+
+       curlZN[i][j][k] = 0.5*(Ar_01-Ar_00 + Ar_11-Ar_10)/Dz -
+                         0.5*(Az_10-Az_00 + Az_11-Az_01)/Dr;
+
+       //curlXN[i][j][k] = -(r0*At_01 - r0*At_00 + r1*At_11 - r1*At_10)/(Dz*r);
+       //curlYN[i][j][k] =  (r1*At_10 - r0*At_00 + r1*At_11 - r0*Ar_01)/(Dr*r);
+#endif
+      }
+}
+
+  /** Divergence in cylindrical coordinates: field defined in centers -> divergence in nodes */
+  // ATENTION; 2D -> d/d phi = 0
+void Grid3DCU::divC2N_cyl(double ***divN, double ***vecXC, double ***vecYC, double ***vecZC) {
+  double Dz = dy;
+  for (register int i = 1; i < nxn - 1; i++)
+    for (register int j = 1; j < nyn - 1; j++)
+      for (register int k = 1; k < nzn - 1; k++) {
+         int i0 = i-1;
+         int i1 = i;
+         int j0 = j-1;
+         int j1 = j;
+         double r0 = getXC(i0,j,k);
+         if (r0 < 0) r0 = 0;
+         double r1 = getXC(i1,j,k);
+         double Dr = (r1-r0);
+
+         double Ar_00 = vecXC[i0][j0][k];
+         double Ar_01 = vecXC[i0][j1][k];
+         double Ar_10 = vecXC[i1][j0][k];
+         double Ar_11 = vecXC[i1][j1][k];
+   
+         double Az_00 = vecYC[i0][j0][k];
+         double Az_01 = vecYC[i0][j1][k];
+         double Az_10 = vecYC[i1][j0][k];
+         double Az_11 = vecYC[i1][j1][k];
+   
+         double At_00 = vecZC[i0][j0][k];
+         double At_01 = vecZC[i0][j1][k];
+         double At_10 = vecZC[i1][j0][k];
+         double At_11 = vecZC[i1][j1][k];
+   
+
+#ifdef FINITE_VOLUME
+         divN[i][j][k] = Dz*(Ar_00*r0+Ar_01*r0-Ar_10*r1-Ar_11*r1)*(-1.0/2.0)-Dr*(Az_00*r0*2.0+Az_00*r1-Az_01*r0*2.0
+                        -Az_01*r1+Az_10*r0+Az_10*r1*2.0-Az_11*r0-Az_11*r1*2.0)*(1.0/6.0);
+#else
+         double r = getXN(i,j,k);
+         divN[i][j][k] = 0.5*((1.0/r)*0.5*(Ar_00+Ar_10) + (Ar_10 - Ar_00)/Dr)  +  0.5*((1.0/r)*0.5*(Ar_01+Ar_11) + (Ar_11 - Ar_01)/Dr)
+                       + 0.5*(Az_01-Az_00 + Az_11-Az_10)/Dz; 
+#endif
+      }
+  }
+
+/** Divergence in cylindrical coordinates: field defined in nodes -> divergence in centers */
+// ATENTION; 2D -> d/d phi = 0
+// x = r   y = z  z = phi
+void Grid3DCU::divN2C_cyl(double ***divC, double ***vecXN, double ***vecYN, double ***vecZN) {
+
+  double Dr = dx;
+  double Dz = dy;
+  for (register int i = 1; i < nxc - 1; i++)
+    for (register int j = 1; j < nyc - 1; j++)
+      for (register int k = 1; k < nzc - 1; k++) {
+         int i0 = i;
+         int i1 = i+1;
+         int j0 = j;
+         int j1 = j+1;
+         double r0 = getXN(i0,j,k);
+
+         double r1 = getXN(i1,j,k);
+
+
+         double Ar_00 = vecXN[i0][j0][k];
+         double Ar_01 = vecXN[i0][j1][k];
+         double Ar_10 = vecXN[i1][j0][k];
+         double Ar_11 = vecXN[i1][j1][k];
+
+         double Az_00 = vecYN[i0][j0][k];
+         double Az_01 = vecYN[i0][j1][k];
+         double Az_10 = vecYN[i1][j0][k];
+         double Az_11 = vecYN[i1][j1][k];
+
+         double At_00 = vecZN[i0][j0][k];
+         double At_01 = vecZN[i0][j1][k];
+         double At_10 = vecZN[i1][j0][k];
+         double At_11 = vecZN[i1][j1][k];
+
+#ifdef FINITE_VOLUME
+         divC[i][j][k] = Dz*(Ar_00*r0+Ar_01*r0-Ar_10*r1-Ar_11*r1)*(-1.0/2.0)-Dr*(Az_00*r0*2.0+Az_00*r1-Az_01*r0*2.0
+                        -Az_01*r1+Az_10*r0+Az_10*r1*2.0-Az_11*r0-Az_11*r1*2.0)*(1.0/6.0);
+#else
+         double r = getXC(i,j,k);
+         divC[i][j][k] = 0.5*((1.0/r)*0.5*(Ar_00+Ar_10) + (Ar_10 - Ar_00)/Dr)  +  0.5*((1.0/r)*0.5*(Ar_01+Ar_11) + (Ar_11 - Ar_01)/Dr)
+                       + 0.5*(Az_01-Az_00 + Az_11-Az_10)/Dz; 
+
+#endif
+      }
 }

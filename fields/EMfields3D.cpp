@@ -5,6 +5,35 @@
 //#include "MaxwellECIMM.h"
 extern MyClock *clocks;
 
+
+#define ZERO_J1 3.83170597020751
+long double factorial(int k) {
+  if (k == 0) return 1;
+  else if (k == 1) return k;
+  else return k*factorial(k-1);
+}
+
+double besselJ(int alpha, double x) {
+  double val = 0;
+  int iter_max = 1000;
+  double TOL = 1e-16;
+  int sign = -1;
+
+  double err;
+  for (int k=0; k<iter_max; k++) {
+    sign *= -1;
+    double v = sign*pow(x/2,2*k+alpha)/(factorial(k)*factorial(alpha+k));
+    val += v;
+    err = fabs(v);
+    if (err < TOL) {
+      return val;
+    }
+  }
+  return val;
+}
+
+
+
 #define NE_MASS 14
 /*! constructor */
 EMfields3D::EMfields3D(Collective * col, Grid * grid) {
@@ -39,8 +68,10 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
   L_square = col->getL_square();
   coilD = col->getcoilD();
   coilSpacing = col->getcoilSpacing();
+  Cylindrical = col->getCylindrical();
 
   invVOLn = grid->getInvVOLn();
+  invVOLc = grid->getInvVOLc();
 
   delt = c * th * dt;
   GMREStol = col->getGMREStol();
@@ -166,7 +197,123 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
   vectZ = newArr3(double, nxn, nyn, nzn);
   arr = newArr3(double,nxn,nyn,nzn);
 
+
+
+  #ifdef _TEST_CURL_
+    testCurl(grid);
+    exit(0);
+  #endif
+
 }
+
+/*! Fix the boundary conditions for r=0. BC are only needed for the electric field.
+ *  In this point, we assume that the electric field has cylindrical symetry. Hence:
+ *  Ex(phi) = -Ex(phi + 180) r-component
+ *  Ey(phi) =  Ey(phi + 180) z-component
+ *  Ez(phi) = -Ez(phi + 180) phi-component
+ *
+ *  Then: 
+ *  Ex(0) = 0     -> Ex[1] = 0
+ *  Ey(0) = E(dr) -> Ey[1] - Ey[2] = 0
+ *  Ez(0) = 0     -> Ez[1] = 0
+ */
+void EMfields3D::fixBC_Cyl_Image(double ***ImX, double ***ImY, double ***ImZ, double ***nEx, double ***nEy, double ***nEz) {
+  if (xStart == 0) {
+    for (int j=0; j<nyn; j++) 
+      for (int k=0; k<nzn; k++) {
+        ImX[1][j][k] = nEx[1][j][k];
+        ImY[1][j][k] = nEy[1][j][k] - nEy[2][j][k];
+        ImZ[1][j][k] = nEz[1][j][k];
+      }
+  }
+  if (xEnd == Lx) {
+    for (int j=0; j<nyn; j++) 
+      for (int k=0; k<nzn; k++) {
+        ImX[nxn-2][j][k] = nEx[nxn-2][j][k];
+        ImY[nxn-2][j][k] = nEy[nxn-2][j][k];
+        ImZ[nxn-2][j][k] = nEz[nxn-2][j][k];
+      }
+  }
+}
+
+/*! Fix the boundary conditions for r=0. BC are only needed for the electric field.
+ *  In this point, we assume that the electric field has cylindrical symetry. Hence:
+ *  Ex(phi) = -Ex(phi + 180) r-component
+ *  Ey(phi) =  Ey(phi + 180) z-component
+ *  Ez(phi) = -Ez(phi + 180) phi-component
+ *
+ *  Then: 
+ *  Ex(0) = 0     -> Ex[1] = 0
+ *  Ey(0) = E(dr) -> Ey[1] - Ey[2] = 0
+ *  Ez(0) = 0     -> Ez[1] = 0
+ */
+void EMfields3D::fixBC_Cyl_Source(double ***SoX, double ***SoY, double ***SoZ) {
+  if (xStart == 0) {
+    for (int j=0; j<nyn; j++) 
+      for (int k=0; k<nzn; k++) {
+        SoX[1][j][k] = 0;
+        SoY[1][j][k] = 0;
+        SoZ[1][j][k] = 0;
+      }
+    for (int j=0; j<nyn; j++) 
+      for (int k=0; k<nzn; k++) 
+        for (int c=0; c<NE_MASS; c++) {
+          Mxx[c][1][j][k] = 0;
+          Mxy[c][1][j][k] = 0;
+          Mxz[c][1][j][k] = 0;
+          Myx[c][1][j][k] = 0;
+          Myy[c][1][j][k] = 0;
+          Myz[c][1][j][k] = 0;
+          Mzx[c][1][j][k] = 0;
+          Mzy[c][1][j][k] = 0;
+          Mzz[c][1][j][k] = 0;
+        }
+  }
+  if (xEnd == Lx) {
+    for (int j=0; j<nyn; j++) 
+      for (int k=0; k<nzn; k++) {
+        SoX[nxn-2][j][k] = 0;
+        SoY[nxn-2][j][k] = 0;
+        SoZ[nxn-2][j][k] = 0;
+      }
+    for (int j=0; j<nyn; j++) 
+      for (int k=0; k<nzn; k++) 
+        for (int c=0; c<NE_MASS; c++) {
+          Mxx[c][nxn-2][j][k] = 0;
+          Mxy[c][nxn-2][j][k] = 0;
+          Mxz[c][nxn-2][j][k] = 0;
+          Myx[c][nxn-2][j][k] = 0;
+          Myy[c][nxn-2][j][k] = 0;
+          Myz[c][nxn-2][j][k] = 0;
+          Mzx[c][nxn-2][j][k] = 0;
+          Mzy[c][nxn-2][j][k] = 0;
+          Mzz[c][nxn-2][j][k] = 0;
+        }
+  }
+}
+
+void EMfields3D::fixGhostB() {
+
+  if (Cylindrical == 1) {
+    if (xStart == 0) {
+      for (int j=0; j<nyc; j++) 
+        for (int k=0; k<nzc; k++) {
+          Bxc[0][j][k] = -Bxc[1][j][k];
+          Byc[0][j][k] = Byc[1][j][k];
+          Bzc[0][j][k] = -Bzc[1][j][k];
+        }
+    }
+    if (xEnd == Lx) {
+      for (int j=0; j<nyc; j++) 
+        for (int k=0; k<nzc; k++) {
+          Bxc[nxc-1][j][k] = Bxc[nxc-1][j][k];
+          Byc[nxc-1][j][k] = Byc[nxc-1][j][k];
+          Bzc[nxc-1][j][k] = Bzc[nxc-1][j][k];
+        }
+    }
+  }
+}
+
 
 
 /* Prepare the memory for E calculation */
@@ -299,6 +446,8 @@ void EMfields3D::MaxwellSource(double *bkrylov, Grid * grid, VirtualTopology3D *
   addscale(1, tempY, Ey, nxn, nyn, nzn);
   addscale(1, tempZ, Ez, nxn, nyn, nzn);
 
+  
+  if (Cylindrical == 1)  fixBC_Cyl_Source(tempX, tempY, tempZ);
 
   // physical space -> Krylov space
   phys2solver(bkrylov, tempX, tempY, tempZ, tempXC, tempYC, tempZC, nxn, nyn, nzn);
@@ -349,7 +498,11 @@ void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTo
   eq(EFzth, tempZ, nxn, nyn, nzn);
   smoothEth(Smooth, vct, col);
 
-  grid->curlN2C(imageEX, imageEY, imageEZ, EFxth, EFyth, EFzth);
+  if (Cylindrical == 1) {
+    grid->curlN2C_cyl(imageEX, imageEY, imageEZ, EFxth, EFyth, EFzth);
+  } else {
+    grid->curlN2C(imageEX, imageEY, imageEZ, EFxth, EFyth, EFzth);
+  }
   scale(imageEX, cthdt, nxc, nyc, nzc);
   scale(imageEY, cthdt, nxc, nyc, nzc);
   scale(imageEZ, cthdt, nxc, nyc, nzc);
@@ -364,7 +517,11 @@ void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTo
   eqValue(0, imageBY, nxn, nyn, nzn);
   eqValue(0, imageBZ, nxn, nyn, nzn);
   #else
-  grid->curlC2N(imageBX, imageBY, imageBZ, tempXC, tempYC, tempZC);
+  if (Cylindrical == 1) {
+    grid->curlC2N_cyl(imageBX, imageBY, imageBZ, tempXC, tempYC, tempZC);
+  } else {
+    grid->curlC2N(imageBX, imageBY, imageBZ, tempXC, tempYC, tempZC);
+  }
   scale(imageBX, -cthdt, nxn, nyn, nzn);
   scale(imageBY, -cthdt, nxn, nyn, nzn);
   scale(imageBZ, -cthdt, nxn, nyn, nzn);
@@ -385,6 +542,8 @@ void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTo
         imageBZ[i][j][k] += invV*fac*MEz;
       }
   #endif
+
+  if (Cylindrical == 1)  fixBC_Cyl_Image(imageBX, imageBY, imageBZ, EFxth, EFyth, EFzth);
 
   // move from physical space to krylov space
   phys2solver(im, imageBX, imageBY, imageBZ, imageEX, imageEY, imageEZ, nxn, nyn, nzn);
@@ -622,6 +781,7 @@ void EMfields3D::communicateGhostP2G_spec(VirtualTopology3D * vct) {
 
 /* Interpolate the magnetic fields from centers to nodes */
 void EMfields3D::centers2nodesB(VirtualTopology3D *vct, Grid *grid, Collective *col) {
+  if (Cylindrical == 1) fixGhostB();
   grid->interpC2N(Bxn,Bxc);
   grid->interpC2N(Byn,Byc);
   grid->interpC2N(Bzn,Bzc);
@@ -1459,6 +1619,96 @@ void EMfields3D::initWB8(VirtualTopology3D *vct, Grid *grid, Collective *col){
   }
 }
 
+/*! initiliaze EM for Bessel test */
+void EMfields3D::initBessel1D(VirtualTopology3D * vct, Grid * grid, Collective *col) {
+  // perturbation localized in X
+  if (restart1 == 0) {
+    // initialize
+    if (vct->getCartesian_rank() == 0) {
+      cout << "------------------------------------------" << endl;
+      cout << "Initialize Bessel function 1D            " << endl;
+      cout << "------------------------------------------" << endl;
+    }
+    for (int i = 0; i < nxn; i++)
+      for (int j = 0; j < nyn; j++)
+        for (int k = 0; k < nzn; k++) {
+          // initialize the density for species
+          for (int is = 0; is < ns; is++) {
+              rhons[is][i][j][k] = rhoINIT[is] / FourPI;
+          }
+          // electric field
+          double x = grid->getXN(i,j,k);
+          double y = grid->getYN(i,j,k);
+          Ex[i][j][k] = 0;
+          Ey[i][j][k] = 0;
+          Ez[i][j][k] = besselJ(1, x*ZERO_J1/Lx); //besselJ(1, x*ZERO_J1/Lx);
+          // Magnetic field
+          Bxn[i][j][k] = 0;
+          Byn[i][j][k] = 0;
+          Bzn[i][j][k] = 0;
+        }
+    // initialize B on centers
+    for (int i = 0; i < nxc; i++)
+      for (int j = 0; j < nyc; j++)
+        for (int k = 0; k < nzc; k++) {
+          // Magnetic field
+          Bxc[i][j][k] = 0;
+          Byc[i][j][k] = 0;
+          Bzc[i][j][k] = 0;
+        }
+    for (int is = 0; is < ns; is++)
+      grid->interpN2C(rhocs, is, rhons);
+  }
+  else {
+    init(vct, grid, col);            // use the fields from restart file
+  }
+}
+void EMfields3D::initBessel2D(VirtualTopology3D * vct, Grid * grid, Collective *col) {
+  // perturbation localized in X
+  if (restart1 == 0) {
+    // initialize
+    if (vct->getCartesian_rank() == 0) {
+      cout << "------------------------------------------" << endl;
+      cout << "Initialize Bessel function 2D            " << endl;
+      cout << "------------------------------------------" << endl;
+    }
+    for (int i = 0; i < nxn; i++)
+      for (int j = 0; j < nyn; j++)
+        for (int k = 0; k < nzn; k++) {
+          // initialize the density for species
+          for (int is = 0; is < ns; is++) {
+              rhons[is][i][j][k] = rhoINIT[is] / FourPI;
+          }
+          // electric field
+          double x = grid->getXN(i,j,k);
+          double y = grid->getYN(i,j,k);
+          Ex[i][j][k] = 0;
+          Ey[i][j][k] = 0;
+          Ez[i][j][k] = cos(y*2*M_PI/Ly)*besselJ(1, x*ZERO_J1/Lx); 
+          // Magnetic field
+          Bxn[i][j][k] = 0;
+          Byn[i][j][k] = 0;
+          Bzn[i][j][k] = 0;
+        }
+    // initialize B on centers
+    for (int i = 0; i < nxc; i++)
+      for (int j = 0; j < nyc; j++)
+        for (int k = 0; k < nzc; k++) {
+          // Magnetic field
+          double x = grid->getXN(i,j,k);
+          Bxc[i][j][k] = 0;
+          Byc[i][j][k] = 0;
+          Bzc[i][j][k] = 0;
+        }
+    for (int is = 0; is < ns; is++)
+      grid->interpN2C(rhocs, is, rhons);
+  }
+  else {
+    init(vct, grid, col);            // use the fields from restart file
+  }
+}
+
+
 
 /*! Calculate the susceptibility on the boundary leftX */
 void EMfields3D::sustensorLeftX(double **susxx, double **susyx, double **suszx) {
@@ -2200,7 +2450,7 @@ double EMfields3D::getEenergy(void) {
   for (int i = 1; i < nxn-2 ; i++)
     for (int j = 1; j < nyn-2 ; j++)
       for (int k = 1; k < nzn-2 ; k++) {
-        localEenergy += .5 * dx * dy * dz * (Ex[i][j][k] * Ex[i][j][k] + Ey[i][j][k] * Ey[i][j][k] + Ez[i][j][k] * Ez[i][j][k]) / (FourPI);
+        localEenergy += .5*(Ex[i][j][k] * Ex[i][j][k] + Ey[i][j][k] * Ey[i][j][k] + Ez[i][j][k] * Ez[i][j][k]) / (FourPI*invVOLn[i][j][k]);
         //localEenergy += dx * dy * dz * (Ex[i][j][k]*Exth[i][j][k] + Ey[i][j][k]*Eyth[i][j][k] + Ez[i][j][k]*Ezth[i][j][k]) / (FourPI);
       }
 
@@ -2253,7 +2503,7 @@ double EMfields3D::getBenergy(void) {
         Bxt = Bxc[i][j][k]+Fext*Bxc_ext[i][j][k];
         Byt = Byc[i][j][k]+Fext*Byc_ext[i][j][k];
         Bzt = Bzc[i][j][k]+Fext*Bzc_ext[i][j][k];
-        localBenergy += .5*dx*dy*dz*(Bxt*Bxt + Byt*Byt + Bzt*Bzt)/(FourPI);
+        localBenergy += .5*(Bxt*Bxt + Byt*Byt + Bzt*Bzt)/(FourPI*invVOLc[i][j][k]);
       }
 
 
@@ -2335,3 +2585,159 @@ EMfields3D::~EMfields3D() {
   delArr3(vectY, nxn, nyn);
   delArr3(vectZ, nxn, nyn);
 }
+
+
+
+
+/*! Test of the curl in cylindrical coordinates */
+//#define TEST_NODES
+#ifdef TEST_NODES
+void EMfields3D::testCurl(Grid* grid)
+{
+  printf("Test Curl Nodes -> Centers\n");
+  FILE* fd = fopen("testCurl.txt","w");
+
+  for (int i=0; i<nxn; i++)
+    for (int j=0; j<nyn; j++) 
+      for (int k=0; k<nzn; k++) {
+        double r = grid->getXN(i,j,k);
+        double z = grid->getYN(i,j,k);
+        double p = grid->getZN(i,j,k);
+        //Ex[i][j][k] = sin(z);
+        //Ey[i][j][k] = sin(z);
+        //Ez[i][j][k] = sin(z);
+        //Ex[i][j][k] = cos(z);
+        //Ey[i][j][k] = cos(z);
+        //Ez[i][j][k] = cos(z);
+        //Ex[i][j][k] = cos(r);
+        //Ey[i][j][k] = cos(r);
+        //Ez[i][j][k] = cos(r);
+        Ex[i][j][k] = cos(r*z);
+        Ey[i][j][k] = cos(r*z);
+        Ez[i][j][k] = cos(r*z);
+        fprintf(fd,"%8.4f %8.4f %8.4f  %13.6e  %13.6e  %13.6e\n", r,z,p,Ex[i][j][k],Ey[i][j][k],Ez[i][j][k]);
+      } 
+
+  fprintf(fd,"\n\n\n\n");
+
+  grid->curlN2C_cyl(Bxc, Byc, Bzc, Ex, Ey, Ez);
+
+  int ntc = (nxc-2)*(nyc-2)*(nzc-2);
+  double errR = 0;
+  double errZ = 0;
+  double errP = 0;
+  for (int i=1; i<nxc-1; i++)
+    for (int j=1; j<nyc-1; j++) 
+      for (int k=1; k<nzc-1; k++) {
+        double r = grid->getXC(i,j,k);
+        double z = grid->getYC(i,j,k);
+        double p = grid->getZC(i,j,k);
+
+        // Sin(z)
+        //double cR = -cos(z);
+        //double cZ = sin(z)/r;
+        //double cP = -cos(z);
+        // Cos(z)
+        //double cR = sin(z);
+        //double cZ = cos(z)/r;
+        //double cP = -sin(z);
+        // Cos(r)
+        //double cR = 0.0;
+        //double cZ = (cos(r)-r*sin(r))/r;
+        //double cP = sin(r);
+        // Cos(r*z)
+        double cR = r*sin(r*z);
+        double cZ = (cos(r*z)/r-z*sin(r*z));
+        double cP = z*sin(r*z) - r*sin(r*z);
+
+        double nR = Bxc[i][j][k];
+        double nZ = Byc[i][j][k];
+        double nP = Bzc[i][j][k];
+
+        double eR = fabs(cR - nR);
+        double eZ = fabs(cZ - nZ);
+        double eP = fabs(cP - nP);
+        errR += eR;
+        errZ += eZ;
+        errP += eP;
+        fprintf(fd,"%8.4f %8.4f %8.4f  %13.6e  %13.6e  %13.6e   %13.6e  %13.6e  %13.6e  %13.6e  %13.6e  %13.6e\n", r,z,p,nR,nZ,nP, cR, cZ, cP, eR, eZ, eP);
+      } 
+  fprintf(stderr,"%3d %3d  %13.6e %13.6e %13.6e  %13.6e \n",nxc-2, nyc-2, sqrt(errR)/ntc, sqrt(errZ)/ntc, errP/ntc, sqrt(errR+errZ+errP)/ntc);
+  fclose(fd);
+}
+#else
+void EMfields3D::testCurl(Grid* grid)
+{
+  printf("Test Curl Centers -> Nodes\n");
+  FILE* fd = fopen("testCurl.txt","w");
+
+  for (int i=0; i<nxc; i++)
+    for (int j=0; j<nyc; j++) 
+      for (int k=0; k<nzc; k++) {
+        double r = grid->getXC(i,j,k);
+        double z = grid->getYC(i,j,k);
+        double p = grid->getZC(i,j,k);
+        //Bxc[i][j][k] = cos(z);
+        //Byc[i][j][k] = cos(z);
+        //Bzc[i][j][k] = cos(z);
+        //Bxc[i][j][k] = cos(r);
+        //Byc[i][j][k] = cos(r);
+        //Bzc[i][j][k] = cos(r);
+        Bxc[i][j][k] = cos(r*z);
+        Byc[i][j][k] = cos(r*z);
+        Bzc[i][j][k] = cos(r*z);
+        //Bxc[i][j][k] = 0;
+        //Byc[i][j][k] = 0;
+        //Bzc[i][j][k] = r*cos(r*z);
+        fprintf(fd,"%8.4f %8.4f %8.4f  %13.6e  %13.6e  %13.6e\n", r,z,p,Bxc[i][j][k],Byc[i][j][k],Bzc[i][j][k]);
+      } 
+
+  fprintf(fd,"\n\n\n\n");
+
+  grid->curlC2N_cyl(Ex, Ey, Ez, Bxc, Byc, Bzc);
+
+  int ntc = (nxn-4)*(nyn-2)*(nzn-2);
+  double errR = 0;
+  double errZ = 0;
+  double errP = 0;
+  for (int i=2; i<nxn-2; i++)
+    for (int j=1; j<nyn-1; j++) 
+      for (int k=1; k<nzn-1; k++) {
+        double r = grid->getXN(i,j,k);
+        double z = grid->getYN(i,j,k);
+        double p = grid->getZN(i,j,k);
+
+        // Cos(z)
+        //double cR = sin(z);
+        //double cZ = cos(z)/r;
+        //double cP = -sin(z);
+        // Cos(r)
+        //double cR = 0.0;
+        //double cZ = (cos(r)-r*sin(r))/r;
+        //double cP = sin(r);
+        // Cos(r*z)
+        double cR = r*sin(r*z);
+        double cZ = (cos(r*z)/r-z*sin(r*z));
+        double cP = z*sin(r*z) - r*sin(r*z);
+        // Bx = 0 By = 0 Bz=r*cos(r*z);
+        //double cR = r*r*sin(r*z);
+        //double cZ = (2*cos(r*z)-r*z*sin(r*z));
+        //double cP = 0;
+      
+        //cR /= grid->getInvVOLn(i,j,k);
+        //cZ /= grid->getInvVOLn(i,j,k);
+        //cP /= grid->getInvVOLn(i,j,k);
+
+        double eR = fabs(cR - Ex[i][j][k]);
+        double eZ = fabs(cZ - Ey[i][j][k]);
+        double eP = fabs(cP - Ez[i][j][k]);
+        errR += eR;
+        errZ += eZ;
+        errP += eP;
+        fprintf(fd,"%8.4f %8.4f %8.4f  %13.6e  %13.6e  %13.6e   %13.6e  %13.6e  %13.6e  %13.6e  %13.6e  %13.6e\n", r,z,p,Ex[i][j][k],Ey[i][j][k],Ez[i][j][k], cR, cZ, cP, eR, eZ, eP);
+      } 
+  fprintf(stderr,"%3d %3d  %13.6e %13.6e %13.6e  %13.6e \n",nxc-2, nyc-2, sqrt(errR)/ntc, sqrt(errZ)/ntc, errP/ntc, sqrt(errR+errZ+errP)/ntc);
+  fclose(fd);
+}
+#endif
+
