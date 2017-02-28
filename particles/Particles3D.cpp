@@ -550,9 +550,9 @@ int Particles3D::mover_ECIMM(Grid * grid, VirtualTopology3D * vct, Field * EMf) 
     vp = 2.0 * vptilde - v[rest];
     wp = 2.0 * wptilde - w[rest];
     // Update the positions with the new velocity
-    xp += up * dt;
-    yp += vp * dt;
-    zp += wp * dt;
+    xp = x[rest] + up * dt;
+    yp = y[rest] + vp * dt;
+    zp = z[rest] + wp * dt;
 
 
      if (Cylindrical == 1) {
@@ -575,8 +575,6 @@ int Particles3D::mover_ECIMM(Grid * grid, VirtualTopology3D * vct, Field * EMf) 
      u[rest] = up;
      v[rest] = vp;
      w[rest] = wp;
-
-
 
   }                             // END OF ALL THE PARTICLES
 
@@ -1167,16 +1165,28 @@ double Particles3D::deleteParticlesInsideSphere(double R, double x_center, doubl
 double Particles3D::deleteParticlesOuterFrame(double multx, double multy, double multz){
 	// calculate accumulated charge on the spacecraft
 	long long np_current = 0, nplast = nop-1;
-	while (np_current < nplast+1) {
-		if (x[np_current] < multx*dx || x[np_current] > (Lx-multx*dx) ||
-		    y[np_current] < multy*dy || y[np_current] > (Ly-multy*dx) ||
-		    z[np_current] < multz*dz || z[np_current] > (Lz-multz*dx)) {
-			Q_removed += q[np_current];
-			del_pack(np_current,&nplast);
-		} else {
-			np_current++;
-		}
-	}
+        if (Cylindrical == 1) {
+	  while (np_current < nplast+1) {
+            if (x[np_current] > (Lx-multx*dx) ||
+                y[np_current] < multy*dy || y[np_current] > (Ly-multy*dx)) {
+                Q_removed += q[np_current];
+                del_pack(np_current,&nplast);
+            } else {
+              np_current++;
+            }
+	  }
+        } else {
+	  while (np_current < nplast+1) {
+            if (x[np_current] < multx*dx || x[np_current] > (Lx-multx*dx) ||
+                y[np_current] < multy*dy || y[np_current] > (Ly-multy*dx) ||
+                z[np_current] < multz*dz || z[np_current] > (Lz-multz*dx)) {
+                Q_removed += q[np_current];
+                del_pack(np_current,&nplast);
+            } else {
+              np_current++;
+            }
+	  }
+        }
 
 	nop = nplast +1;
 	return(Q_removed);
@@ -1406,3 +1416,9 @@ int Particles3D::injector_rand_box_mono(Grid* grid,VirtualTopology3D* vct, Field
 
 }
 
+void Particles3D::fixZcylindrical()
+{
+  for (int i=0; i<nop; i++) {
+    z[i] = 0;
+  }
+}

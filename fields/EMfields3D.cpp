@@ -1494,9 +1494,9 @@ void EMfields3D::initWB8(VirtualTopology3D *vct, Grid *grid, Collective *col){
          Ez[i][j][k] = 0.0;
          double blp[3];
          double a=coilD/2.0;
-         double xc=Lx/2.0;
-         double yc=Ly/2.0;
-         double zc=Lz/2.0;
+         double xc=x_center;
+         double yc=y_center;
+         double zc=z_center;
          double deltax=coilSpacing/2.0;
          double deltay=coilSpacing/2.0;
          double deltaz=coilSpacing/2.0;

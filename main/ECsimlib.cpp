@@ -120,6 +120,8 @@ int c_Solver::Init(int argc, char **argv) {
         part[i].maxwellian(grid, EMf, vct);
       }
     }
+    
+    if (col->getCylindrical() == 1) part[i].fixZcylindrical();
   }
 
 

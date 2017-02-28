@@ -78,6 +78,7 @@ class Particles3D:public Particles3Dcomm {
     /** Delete the particles outside the cube with dimension L */
     double deleteParticlesOutsideBox(double L);
     double deleteParticlesOuterFrame(double multx, double multy, double multz);
+    void fixZcylindrical();
 
 };
 
