@@ -263,6 +263,7 @@ class EMfields3D                // :public Field
 
     void testCurl(Grid* grid);
     void computeRhotilde(VirtualTopology3D * vct, Collective *col, Grid* grid, int is);
+    void testJdotE(Grid* grid);
 
     /* ********************************* // VARIABLES ********************************* */
   private:

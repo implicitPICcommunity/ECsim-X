@@ -2846,3 +2846,41 @@ void EMfields3D::testCurl(Grid* grid)
 }
 #endif
 
+void EMfields3D::testJdotE(Grid* grid) 
+{
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  char name[128];
+  sprintf(name, "testJdotE_%d.txt",rank);
+  FILE* fd = fopen(name,"w");
+
+  for (int i=1; i<nxn-1; i++)
+    for (int j=1; j<nyn-1; j++) 
+      for (int k=1; k<nzn-1; k++) {
+        double Jxbar = 0;
+        double Jybar = 0;
+        double Jzbar = 0;
+        for (int s=0; s<ns; s++) { 
+          Jxbar += Jxs[s][i][j][k];
+          Jybar += Jys[s][i][j][k];
+          Jzbar += Jzs[s][i][j][k];
+        }
+        Jxbar /= grid->getInvVOLn(i, j, k);
+        Jybar /= grid->getInvVOLn(i, j, k);
+        Jzbar /= grid->getInvVOLn(i, j, k);
+        double JE_part   = Jxbar*Exth[i][j][k] + Jybar*Eyth[i][j][k] + Jzbar*Ezth[i][j][k];
+        double mex, mey, mez;
+        productMassE(&mex, &mey, &mez, Exth, Eyth, Ezth, i, j, k);
+        double Jxfield = Jxh[i][j][k] + mex;
+        double Jyfield = Jyh[i][j][k] + mey;
+        double Jzfield = Jzh[i][j][k] + mez;
+        //double Jxfield = mex;
+        //double Jyfield = mey;
+        //double Jzfield = mez;
+        double JE_fields =  Jxfield*Exth[i][j][k] + Jyfield*Eyth[i][j][k] + Jzfield*Ezth[i][j][k];
+        double err = fabs(JE_part - JE_fields);
+        fprintf(fd, "%2d %2d %2d %13.6e %13.6e %13.6e   %13.6e %13.6e %13.6e   %13.6e %13.6e %13.6e\n", i,j,k,Jxbar,Jybar,Jzbar, Jxfield, Jyfield, Jzfield, JE_part, JE_fields, err);
+        //fprintf(fd, "%2d %2d %2d %13.6e %13.6e %13.6e\n", i,j,k,JE_part, JE_fields, err);
+      }
+  fclose(fd);
+}

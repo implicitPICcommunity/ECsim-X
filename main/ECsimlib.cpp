@@ -215,10 +215,21 @@ bool c_Solver::ParticlesMover() {
   /*  Particle mover */
   /*  -------------- */
 
-  for (int i = 0; i < ns; i++)  // move each species
-  {
-    mem_avail = part[i].mover_ECIMM(grid, vct, EMf); // use the Predictor Corrector scheme 
-  }
+  // move each species
+  for (int i = 0; i < ns; i++)  
+    mem_avail = part[i].updateVelocity(grid, vct, EMf);
+
+  #ifdef  __JDOTE_TEST__
+  for (int i = 0; i < ns; i++)  
+    part[i].computeCurrentBar(EMf, grid, vct); 
+  EMf->communicateGhostP2G_spec(vct);
+  EMf->testJdotE(grid);
+  printf("J dot E test\n");
+  getchar();
+  #endif
+
+  for (int i = 0; i < ns; i++)  
+    mem_avail = part[i].updatePosition(grid, vct, EMf);
 
   if (mem_avail < 0) {          // not enough memory space allocated for particles: stop the simulation
     if (myrank == 0) {

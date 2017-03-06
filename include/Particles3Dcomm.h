@@ -7,6 +7,8 @@ developers: Stefano Markidis, Giovanni Lapenta, Diego Gonzalez
 #ifndef Part3DCOMM_H
 #define Part3DCOMM_H
 
+#define  __JDOTE_TEST__
+
 #include "Particles.h"
 #include "NeighboringNodes.h"
 
@@ -35,6 +37,7 @@ public:
   void computeMassMatrices(Field * EMf, Grid * grid, VirtualTopology3D * vct);
   /** Compute the current (for writting the results) */
   void computeCurrent(Field * EMf, Grid * grid, VirtualTopology3D * vct);
+  void computeCurrentBar(Field * EMf, Grid * grid, VirtualTopology3D * vct);
   /** method for communicating exiting particles to X-RIGHT, X-LEFT, Y-RIGHT, Y-LEFT, Z-RIGHT, Z-LEFT processes */
   int communicate(VirtualTopology3D * ptVCT);
   /** put a particle exiting to X-LEFT in the bufferXLEFT for communication and check if you're sending the particle to the right subdomain*/
@@ -127,6 +130,7 @@ public:
   void Add_vDist3D();
   void Write_vDist3D(string SaveDirName);
 
+  double *ubar, *vbar, *wbar;
 protected:
   /** number of species */
   int ns;
@@ -172,6 +176,7 @@ protected:
   double *v;
   /** Velocities array - Z component */
   double *w;
+
 
   /** TrackParticleID */
   bool TrackParticleID;

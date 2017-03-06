@@ -431,7 +431,7 @@ void Particles3D::get_Bl(const double weights[2][2][2], int ix, int iy, int iz, 
 }
 
 // Particles mover for the ECIMM algorithm
-int Particles3D::mover_ECIMM(Grid * grid, VirtualTopology3D * vct, Field * EMf) {
+int Particles3D::updateVelocity(Grid * grid, VirtualTopology3D * vct, Field * EMf) {
   if (vct->getCartesian_rank() == 0) {
     cout << "*** ECIMM MOVER species " << ns << " ***"<< endl;
   }
@@ -599,20 +599,44 @@ int Particles3D::mover_ECIMM(Grid * grid, VirtualTopology3D * vct, Field * EMf) 
     up = 2.0 * uptilde - u[rest];
     vp = 2.0 * vptilde - v[rest];
     wp = 2.0 * wptilde - w[rest];
+
+    #ifdef __JDOTE_TEST__
+    ubar[rest] = uptilde;
+    vbar[rest] = vptilde;
+    wbar[rest] = wptilde;
+    #endif
+    u[rest] = up;
+    v[rest] = vp;
+    w[rest] = wp;
+  }
+
+  return (0);                   // exit succcesfully (hopefully) 
+}
+
+int Particles3D::updatePosition(Grid * grid, VirtualTopology3D * vct, Field * EMf) {
+
+#pragma omp parallel for
+#pragma simd                    // this just slows things down (why?)
+  for (long long rest = 0; rest < nop; rest++) {
+    double xp = x[rest];
+    double yp = y[rest];
+    double zp = z[rest];
+    double up = u[rest];
+    double vp = v[rest];
+    double wp = w[rest];
     // Update the positions with the new velocity
     xp = x[rest] + up * dt;
     yp = y[rest] + vp * dt;
     zp = z[rest] + wp * dt;
 
-
-     if (Cylindrical == 1) {
-        double gamma = atan2(zp,xp);
-        xp=xp*cos(gamma)+zp*sin(gamma);
-        zp=0.0;
-        double uprot=up*cos(gamma)+wp*sin(gamma);
-        wp=-up*sin(gamma)+wp*cos(gamma);
-        up=uprot;
-  
+    if (Cylindrical == 1) {
+       double gamma = atan2(zp,xp);
+       xp=xp*cos(gamma)+zp*sin(gamma);
+       zp=0.0;
+       double uprot=up*cos(gamma)+wp*sin(gamma);
+       wp=-up*sin(gamma)+wp*cos(gamma);
+       up=uprot;
+ 
        if (xp > Lx) {
           xp = 2*Lx - xp;
           up = -up;
@@ -625,7 +649,6 @@ int Particles3D::mover_ECIMM(Grid * grid, VirtualTopology3D * vct, Field * EMf) 
      u[rest] = up;
      v[rest] = vp;
      w[rest] = wp;
-
   }                             // END OF ALL THE PARTICLES
 
   // ********************//

@@ -163,6 +163,11 @@ void Particles3Dcomm::allocate(int species, long long initnpmax, Collective * co
   u = new double[npmax];
   v = new double[npmax];
   w = new double[npmax];
+  #ifdef __JDOTE_TEST__
+  ubar = new double[npmax];
+  vbar = new double[npmax];
+  wbar = new double[npmax];
+  #endif
 
   // charge
   q = new double[npmax];
@@ -484,6 +489,56 @@ void Particles3Dcomm::computeCurrent(Field * EMf, Grid * grid, VirtualTopology3D
         for (int jj = 0; jj < 2; jj++)
           for (int kk = 0; kk < 2; kk++)
             temp[ii][jj][kk] = q[ip]*w[ip]*weight[ii][jj][kk];
+      EMf->addJz(temp, ix, iy, iz, ns);
+
+    }
+  }
+}
+/** Compute the currents (for writting the results) */
+void Particles3Dcomm::computeCurrentBar(Field * EMf, Grid * grid, VirtualTopology3D * vct) {
+
+  const double inv_dx = 1.0 / dx;
+  const double inv_dy = 1.0 / dy;
+  const double inv_dz = 1.0 / dz;
+ //#pragma omp parallel
+  {
+    //#pragma omp for
+    for (register long long ip = 0; ip < nop; ip++)
+    {
+      const int ix = 2 + int (floor((x[ip] - xstart) * inv_dx));
+      const int iy = 2 + int (floor((y[ip] - ystart) * inv_dy));
+      const int iz = 2 + int (floor((z[ip] - zstart) * inv_dz));
+      double weight[2][2][2];
+      double temp[2][2][2];
+      calculateWeights( weight, x[ip], y[ip], z[ip], ix, iy, iz, grid);
+
+      // add charge density               
+      for (int ii = 0; ii < 2; ii++)
+        for (int jj = 0; jj < 2; jj++)
+          for (int kk = 0; kk < 2; kk++) {
+            temp[ii][jj][kk] = q[ip]*weight[ii][jj][kk];
+          }
+      EMf->addRho(temp, ix, iy, iz, ns);
+
+      // add current density - X
+      for (int ii = 0; ii < 2; ii++)
+        for (int jj = 0; jj < 2; jj++)
+          for (int kk = 0; kk < 2; kk++)
+            temp[ii][jj][kk] = q[ip]*ubar[ip]*weight[ii][jj][kk];
+      EMf->addJx(temp, ix, iy, iz, ns);
+
+      // add current density - Y
+      for (int ii = 0; ii < 2; ii++)
+        for (int jj = 0; jj < 2; jj++)
+          for (int kk = 0; kk < 2; kk++)
+            temp[ii][jj][kk] = q[ip]*vbar[ip]*weight[ii][jj][kk];
+      EMf->addJy(temp, ix, iy, iz, ns);
+
+      // add current density - Z
+      for (int ii = 0; ii < 2; ii++)
+        for (int jj = 0; jj < 2; jj++)
+          for (int kk = 0; kk < 2; kk++)
+            temp[ii][jj][kk] = q[ip]*wbar[ip]*weight[ii][jj][kk];
       EMf->addJz(temp, ix, iy, iz, ns);
 
     }
