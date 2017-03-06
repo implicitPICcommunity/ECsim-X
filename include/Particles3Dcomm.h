@@ -7,8 +7,6 @@ developers: Stefano Markidis, Giovanni Lapenta, Diego Gonzalez
 #ifndef Part3DCOMM_H
 #define Part3DCOMM_H
 
-#define  __JDOTE_TEST__
-
 #include "Particles.h"
 #include "NeighboringNodes.h"
 
