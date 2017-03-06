@@ -2613,7 +2613,6 @@ void EMfields3D::RhoImage(double *im, double *vector, Grid * grid, VirtualTopolo
     for (int j = 1; j < nyn-1; j++)
       for (int k = 1; k < nzn-1; k++, ind++) {
         im[ind] = tempY[i][j][k];
-printf("%d %d %d %g \n", im[ind]);
       }
 
 }
