@@ -388,6 +388,57 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
   }
 }
 
+/** Compute the mass matrix for the charge initialization */
+void Particles3Dcomm::computeMassMatrices(Field * EMf, Grid * grid, VirtualTopology3D * vct) {
+  const double inv_dx = 1.0 / dx;
+  const double inv_dy = 1.0 / dy;
+  const double inv_dz = 1.0 / dz;
+
+  EMf->setZeroMass();
+
+ //#pragma omp parallel
+  {
+    //#pragma omp for
+    for (register long long ip = 0; ip < nop; ip++)
+    {
+      const int ix = 2 + int (floor((x[ip] - xstart) * inv_dx));
+      const int iy = 2 + int (floor((y[ip] - ystart) * inv_dy));
+      const int iz = 2 + int (floor((z[ip] - zstart) * inv_dz));
+      double weight[2][2][2];
+      calculateWeights( weight, x[ip], y[ip], z[ip], ix, iy, iz, grid);
+
+      //  Each node of the cell in which the particle is:
+      for (int i=0; i<2; i++) 
+        for (int j=0; j<2; j++) 
+          for (int k=0; k<2; k++) {
+            int ni = ix-i;
+            int nj = iy-j;
+            int nk = iz-k;
+
+            // Only half of the possible nodes  (M is symetric)
+            for (int c=0; c<14; c++) {
+            //for (int c=0; c<27; c++) {
+              int n2i = ni + NeNo.getX(c);
+              int n2j = nj + NeNo.getY(c);
+              int n2k = nk + NeNo.getZ(c);
+
+              int i2 = ix - n2i;
+              int j2 = iy - n2j;
+              int k2 = iz - n2k;
+
+              // Check if this node is one of the cell in which the particle is:
+              if (i2>=0 && i2<2 && j2>=0 && j2<2 && k2>=0 && k2<2) {
+                //Mass[i][j][j] 
+                double ww = weight[i][j][k]*weight[i2][j2][k2];
+                EMf->addMassXX(ww, ni, nj, nk, c);
+              }
+
+            }
+          }
+    }
+  }
+}
+
 /** Compute the currents (for writting the results) */
 void Particles3Dcomm::computeCurrent(Field * EMf, Grid * grid, VirtualTopology3D * vct) {
 

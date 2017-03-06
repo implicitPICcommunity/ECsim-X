@@ -31,6 +31,8 @@ public:
   void calculateWeights(double weight[][2][2], double xp, double yp, double zp, int ix, int iy, int iz, Grid * grid);
   /** Compute the implicit current and the mass matrix */
   void computeMoments(Field * EMf, Grid * grid, VirtualTopology3D * vct);
+  /** Compute the mass matrices for the charge initialization */
+  void computeMassMatrices(Field * EMf, Grid * grid, VirtualTopology3D * vct);
   /** Compute the current (for writting the results) */
   void computeCurrent(Field * EMf, Grid * grid, VirtualTopology3D * vct);
   /** method for communicating exiting particles to X-RIGHT, X-LEFT, Y-RIGHT, Y-LEFT, Z-RIGHT, Z-LEFT processes */

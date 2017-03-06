@@ -137,6 +137,8 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
   Jyh = newArr3(double, nxn, nyn, nzn);
   Jzh = newArr3(double, nxn, nyn, nzn);
 
+  rhotilde = newArr4(double, ns, nxn, nyn, nzn);
+
   Jxs = newArr4(double, ns, nxn, nyn, nzn);
   Jys = newArr4(double, ns, nxn, nyn, nzn);
   Jzs = newArr4(double, ns, nxn, nyn, nzn);
@@ -217,12 +219,15 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
  *  Ey(0) = E(dr) -> Ey[1] - Ey[2] = 0
  *  Ez(0) = 0     -> Ez[1] = 0
  */
-void EMfields3D::fixBC_Cyl_Image(double ***ImX, double ***ImY, double ***ImZ, double ***nEx, double ***nEy, double ***nEz) {
+void EMfields3D::fixBC_Cyl_Image(double ***ImX, double ***ImY, double ***ImZ, double ***nEx, double ***nEy, double ***nEz, double ***cBx, double ***cBy, double ***cBz) {
   if (xStart == 0) {
+    double r1 = dx/2.0;
+    double vol = dy*r1*r1/2.0;
     for (int j=0; j<nyn; j++) 
       for (int k=0; k<nzn; k++) {
         ImX[1][j][k] = nEx[1][j][k];
-        ImY[1][j][k] = nEy[1][j][k] - nEy[2][j][k];
+        //ImY[1][j][k] = nEy[1][j][k] - nEy[2][j][k];
+        //ImY[1][j][k] = th*dt*r1/(2*dy*vol)*(cBz[0][j][k] + cBz[1][j][k]) -  nEy[1][j][k];
         ImZ[1][j][k] = nEz[1][j][k];
       }
   }
@@ -252,7 +257,8 @@ void EMfields3D::fixBC_Cyl_Source(double ***SoX, double ***SoY, double ***SoZ) {
     for (int j=0; j<nyn; j++) 
       for (int k=0; k<nzn; k++) {
         SoX[1][j][k] = 0;
-        SoY[1][j][k] = 0;
+        //SoY[1][j][k] = 0;
+        //SoY[1][j][k] = th*dt*4*M_PI*Jzh[1][j][k] + Ex[1][j][k];
         SoZ[1][j][k] = 0;
       }
     for (int j=0; j<nyn; j++) 
@@ -542,7 +548,7 @@ void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTo
       }
   #endif
 
-  if (Cylindrical == 1)  fixBC_Cyl_Image(imageBX, imageBY, imageBZ, EFxth, EFyth, EFzth);
+  if (Cylindrical == 1)  fixBC_Cyl_Image(imageBX, imageBY, imageBZ, EFxth, EFyth, EFzth, tempXC, tempYC, tempZC);
 
   // move from physical space to krylov space
   phys2solver(im, imageBX, imageBY, imageBZ, imageEX, imageEY, imageEZ, nxn, nyn, nzn);
@@ -707,6 +713,30 @@ void EMfields3D::productMassE(double* MEx, double* MEy, double* MEz, double ***v
   *MEz = resZ;
 }
 
+double EMfields3D::productMassEV(double ***vX, int i, int j, int k, Grid* grid)
+{
+  double res = 0;
+
+  // First the nodes that have been computed in the node i,j,k
+  for (int g=0; g<NE_MASS; g++) {
+    int i1 = i + NeNo.getX(g);
+    int j1 = j + NeNo.getY(g);
+    int k1 = k + NeNo.getZ(g);
+
+    double V1 = 1.0/grid->getInvVOLn(i1,j1,k1);
+    res += V1*vX[i1][j1][k1]*Mxx[g][i][j][k];
+                              
+    if (g == 0) continue;
+    int i2 = i - NeNo.getX(g);
+    int j2 = j - NeNo.getY(g);
+    int k2 = k - NeNo.getZ(g);
+    double V2 = 1.0/grid->getInvVOLn(i2,j2,k2);
+    res += V2*vX[i2][j2][k2]*Mxx[g][i2][j2][k2];
+
+  }
+  return res;
+}
+
 
 /*! interpolate charge density and pressure density from node to center */
 void EMfields3D::interpDensitiesN2C(VirtualTopology3D * vct, Grid * grid) {
@@ -869,6 +899,9 @@ void EMfields3D::addMass(double val[3][3], int X, int Y, int Z, int ind) {
   Mzy[ind][X][Y][Z] += val[2][1];
   Mzz[ind][X][Y][Z] += val[2][2];
 }
+void EMfields3D::addMassXX(double val, int X, int Y, int Z, int ind) {
+  Mxx[ind][X][Y][Z] += val;
+}
 
 /*! set to 0 all the densities fields */
 void EMfields3D::setZeroDensities() {
@@ -881,20 +914,7 @@ void EMfields3D::setZeroDensities() {
         rhon[i][j][k] = 0.0;
       }
 
-  for (register int c = 0; c < NE_MASS; c++) 
-    for (register int i = 0; i < nxn; i++)
-      for (register int j = 0; j < nyn; j++)
-        for (register int k = 0; k < nzn; k++) {
-         Mxx[c][i][j][k] = 0;
-         Mxy[c][i][j][k] = 0;
-         Mxz[c][i][j][k] = 0;
-         Myx[c][i][j][k] = 0;
-         Myy[c][i][j][k] = 0;
-         Myz[c][i][j][k] = 0;
-         Mzx[c][i][j][k] = 0;
-         Mzy[c][i][j][k] = 0;
-         Mzz[c][i][j][k] = 0;
-        }
+  setZeroMass();
 
   for (register int i = 0; i < nxc; i++)
     for (register int j = 0; j < nyc; j++)
@@ -909,6 +929,23 @@ void EMfields3D::setZeroDensities() {
           Jxs[kk][i][j][k] = 0.0;
           Jys[kk][i][j][k] = 0.0;
           Jzs[kk][i][j][k] = 0.0;
+        }
+}
+
+void EMfields3D::setZeroMass() {
+  for (register int c = 0; c < NE_MASS; c++) 
+    for (register int i = 0; i < nxn; i++)
+      for (register int j = 0; j < nyn; j++)
+        for (register int k = 0; k < nzn; k++) {
+         Mxx[c][i][j][k] = 0;
+         Mxy[c][i][j][k] = 0;
+         Mxz[c][i][j][k] = 0;
+         Myx[c][i][j][k] = 0;
+         Myy[c][i][j][k] = 0;
+         Myz[c][i][j][k] = 0;
+         Mzx[c][i][j][k] = 0;
+         Mzy[c][i][j][k] = 0;
+         Mzz[c][i][j][k] = 0;
         }
 }
 /*!SPECIES: Sum the charge density of different species on NODES */
@@ -2290,6 +2327,10 @@ double ***& EMfields3D::getRHOcs(int is, int dummy) {
   return (rhocs[is]);
 }
 
+double ***EMfields3D::getRhotilde(int is) {
+  return rhotilde[is];
+}
+
 /*! get Bx_ext(X,Y,Z)  */
 double &EMfields3D::getBx_ext(int indexX, int indexY, int indexZ) const{
   return(Bx_ext[indexX][indexY][indexZ]);
@@ -2512,6 +2553,71 @@ double EMfields3D::getBenergy(void) {
 }
 
 
+void EMfields3D::computeRhotilde(VirtualTopology3D * vct, Collective *col, Grid* grid, int is)
+{
+  // IMPORTANT: rhons has to have the desired value of the density
+    cout << "*** RHO CALCULATION ***" << endl;
+
+  int dim = (nxn - 2) * (nyn - 2) * (nzn - 2);
+  double *xkrylov = new double[dim];  
+  double *bkrylov = new double[dim];  
+
+  // set to zero all the stuff 
+  eqValue(0.0, xkrylov, dim);
+  eqValue(0.0, bkrylov, dim);
+
+  // prepare the source 
+  int ind = 0;
+  for (int i = 1; i < nxn-1; i++)
+    for (int j = 1; j < nyn-1; j++)
+      for (int k = 1; k < nzn-1; k++, ind++) {
+        bkrylov[ind] = rhons[is][i][j][k]/grid->getInvVOLn(i,j,k);
+        xkrylov[ind] = rhons[is][i][j][k]/grid->getInvVOLn(i,j,k);
+      }
+  // solver
+  GMRES(&Field::RhoImage, xkrylov, dim, bkrylov, 20, 200, 1e-16, grid, vct, col, this);
+
+  ind = 0;
+  for (int i = 1; i < nxn-1; i++)
+    for (int j = 1; j < nyn-1; j++)
+      for (int k = 1; k < nzn-1; k++, ind++) {
+        rhotilde[is][i][j][j] = xkrylov[ind];
+      }
+  delete [] xkrylov;
+  delete [] bkrylov;
+}
+
+void EMfields3D::RhoImage(double *im, double *vector, Grid * grid, VirtualTopology3D * vct, Collective *col) {
+  int dim = (nxn - 2) * (nyn - 2) * (nzn - 2);
+  eqValue(0.0, im, dim);
+  // move from krylov space to physical space: E -> vect   B -> temp
+  int ind = 0;
+  for (int i = 1; i < nxn-1; i++)
+    for (int j = 1; j < nyn-1; j++)
+      for (int k = 1; k < nzn-1; k++, ind++) {
+        tempX[i][j][k] = vector[ind];
+      }
+
+  communicateNodeBC(nxn, nyn, nzn, tempX, 2, 2, 2, 2, 2, 2, vct);
+
+  for (int i=1; i<nxn-1; i++) 
+    for (int j=1; j<nyn-1; j++) 
+      for (int k=1; k<nzn-1; k++) {
+        double MEx, MEy, MEz;
+        double VrhoM = productMassEV(tempX, i, j, k, grid);
+        tempY[i][j][k] = VrhoM;
+      }
+
+  ind = 0;
+  for (int i = 1; i < nxn-1; i++)
+    for (int j = 1; j < nyn-1; j++)
+      for (int k = 1; k < nzn-1; k++, ind++) {
+        im[ind] = tempY[i][j][k];
+printf("%d %d %d %g \n", im[ind]);
+      }
+
+}
+
 /*! Print info about electromagnetic field */
 void EMfields3D::print(void) const {
 }
@@ -2555,6 +2661,7 @@ EMfields3D::~EMfields3D() {
   delArr4(Mzz, NE_MASS, nxn, nyn);
   // nodes and species
   delArr4(rhons, ns, nxn, nyn);
+  delArr4(rhotilde, ns, nxn, nyn);
   // central points
   delArr3(Bxc, nxc, nyc);
   delArr3(Byc, nxc, nyc);

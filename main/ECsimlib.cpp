@@ -121,6 +121,9 @@ int c_Solver::Init(int argc, char **argv) {
       }
     }
     
+    // Compute the charge of the particles using the mass matrices
+    //part[i].fixCharge(grid, EMf, vct, col);
+
     if (col->getCylindrical() == 1) part[i].fixZcylindrical();
   }
 
@@ -323,6 +326,7 @@ void c_Solver::WriteOutput(int cycle) {
     double ***Bx = EMf->getBx();
     double ***By = EMf->getBy();
     double ***Bz = EMf->getBz();
+    double ***rhon = EMf->getRHOn();
     int nxn = grid->getNXN();
     int nyn = grid->getNYN();
     int nzn = grid->getNZN();
@@ -332,10 +336,11 @@ void c_Solver::WriteOutput(int cycle) {
           double x = grid->getXN(i,j,k);
           double y = grid->getYN(i,j,k);
           double z = grid->getZN(i,j,k);
-          fprintf(fd,"%8.4f %8.4f %8.4f   %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e \n"
+          fprintf(fd,"%8.4f %8.4f %8.4f   %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e %13.6e \n"
                     ,x,y,z
                     ,Ex[i][j][k], Ey[i][j][k], Ez[i][j][k]
                     ,Bx[i][j][k], By[i][j][k], Bz[i][j][k]
+                    ,rhon[i][j][k]
                   );
         }
     fclose(fd);

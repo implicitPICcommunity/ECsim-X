@@ -134,9 +134,12 @@ void Particles3D::maxwellian(Grid * grid, Field * EMf, VirtualTopology3D * vct) 
         for (int ii = 0; ii < npcelx; ii++)
           for (int jj = 0; jj < npcely; jj++)
             for (int kk = 0; kk < npcelz; kk++) {
-              x[counter] = (ii + Drand48(seed)) * (dx / npcelx) + grid->getXN(i, j, k);  
-              y[counter] = (jj + Drand48(seed)) * (dy / npcely) + grid->getYN(i, j, k);
-              z[counter] = (kk + Drand48(seed)) * (dz / npcelz) + grid->getZN(i, j, k);
+              //x[counter] = (ii + Drand48(seed)) * (dx / npcelx) + grid->getXN(i, j, k);  
+              //y[counter] = (jj + Drand48(seed)) * (dy / npcely) + grid->getYN(i, j, k);
+              //z[counter] = (kk + Drand48(seed)) * (dz / npcelz) + grid->getZN(i, j, k);
+              x[counter] = (ii + 0.5) * (dx / npcelx) + grid->getXN(i, j, k);  
+              y[counter] = (jj + 0.5) * (dy / npcely) + grid->getYN(i, j, k);
+              z[counter] = (kk + 0.5) * (dz / npcelz) + grid->getZN(i, j, k);
               // q = charge
               q[counter] = (qom / fabs(qom)) * (fabs(EMf->getRHOcs(i, j, k, ns)) / npcel) * (1.0 / grid->getInvVOLc(i,j,k));
 
@@ -302,6 +305,53 @@ void Particles3D::MaxwellianFromFieldFile(Grid* grid,Field* EMf,VirtualTopology3
 
 void Particles3D::empty(Grid* grid,Field* EMf,VirtualTopology3D* vct){
         nop = 0;
+}
+
+/* Fix the charge of each particles by using the mass matrices */
+void Particles3D::fixCharge(Grid* grid,Field* EMf,VirtualTopology3D* vct, Collective *col){
+
+  computeMassMatrices(EMf, grid, vct);
+  EMf->communicateGhostP2G(vct);
+  EMf->computeRhotilde(vct, col, grid, ns);
+
+  double ***rhotilde = EMf->getRhotilde(ns); 
+  const double inv_dx = 1.0 / dx, inv_dy = 1.0 / dy, inv_dz = 1.0 / dz;
+  for (int ip=0; ip<nop; ip++) {
+    const double ixd = floor((x[ip] - xstart) * inv_dx);
+    const double iyd = floor((y[ip] - ystart) * inv_dy);
+    const double izd = floor((z[ip] - zstart) * inv_dz);
+    int ix = 2 + int (ixd);
+    int iy = 2 + int (iyd);
+    int iz = 2 + int (izd);
+    double xi[2], eta[2], zeta[2];
+    xi  [0] = x[ip] - grid->getXN(ix-1,iy  ,iz  );
+    eta [0] = y[ip] - grid->getYN(ix  ,iy-1,iz  );
+    zeta[0] = z[ip] - grid->getZN(ix  ,iy  ,iz-1);
+    xi  [1] = grid->getXN(ix,iy,iz) - x[ip];
+    eta [1] = grid->getYN(ix,iy,iz) - y[ip];
+    zeta[1] = grid->getZN(ix,iy,iz) - z[ip];
+
+    double qp = 0.0;
+    const double weight000 = xi[0] * eta[0] * zeta[0] * invVOL;
+    const double weight001 = xi[0] * eta[0] * zeta[1] * invVOL;
+    const double weight010 = xi[0] * eta[1] * zeta[0] * invVOL;
+    const double weight011 = xi[0] * eta[1] * zeta[1] * invVOL;
+    const double weight100 = xi[1] * eta[0] * zeta[0] * invVOL;
+    const double weight101 = xi[1] * eta[0] * zeta[1] * invVOL;
+    const double weight110 = xi[1] * eta[1] * zeta[0] * invVOL;
+    const double weight111 = xi[1] * eta[1] * zeta[1] * invVOL;
+    // 
+    qp += weight000 *(rhotilde[ix][iy][iz]            )/grid->getInvVOLn(ix, iy, iz);
+    qp += weight001 *(rhotilde[ix][iy][iz - 1]        )/grid->getInvVOLn(ix, iy, iz-1);
+    qp += weight010 *(rhotilde[ix][iy - 1][iz]        )/grid->getInvVOLn(ix, iy-1, iz);
+    qp += weight011 *(rhotilde[ix][iy - 1][iz - 1]    )/grid->getInvVOLn(ix, iy-1, iz-1);
+    qp += weight100 *(rhotilde[ix - 1][iy][iz]        )/grid->getInvVOLn(ix-1, iy, iz);
+    qp += weight101 *(rhotilde[ix - 1][iy][iz - 1]    )/grid->getInvVOLn(ix-1, iy, iz-1);
+    qp += weight110 *(rhotilde[ix - 1][iy - 1][iz]    )/grid->getInvVOLn(ix-1, iy-1, iz);
+    qp += weight111 *(rhotilde[ix - 1][iy - 1][iz - 1])/grid->getInvVOLn(ix-1, iy-1, iz-1);
+	
+    q[ip] = qp;
+  }
 }
 
 void Particles3D::get_weights(Grid * grid, double xp, double yp, double zp, int& ix, int& iy, int& iz, double weights[2][2][2]){
@@ -1422,3 +1472,5 @@ void Particles3D::fixZcylindrical()
     z[i] = 0;
   }
 }
+
+
