@@ -1453,6 +1453,110 @@ void EMfields3D::initWB8(VirtualTopology3D *vct, Grid *grid, Collective *col){
   }
 }
 
+//Initializes Dipole
+void EMfields3D::initDipole(VirtualTopology3D *vct, Grid *grid, Collective *col){
+  if (vct->getCartesian_rank() == 0) {
+    cout << "------------------------------------------" << endl;
+    cout << "Initialize dipole" << endl;
+    cout << "------------------------------------------" << endl;
+    cout << "B1x                              = " << B1x << endl;
+    cout << "B1y                              = " << B1y << endl;
+    cout << "B1z                              = " << B1z << endl;
+  }
+  Fext = 1;
+  double distance;
+
+  double ebc[3];
+  cross_product(ue0,ve0,we0,B0x,B0y,B0z,ebc);
+  scale(ebc,-1.0,3);
+
+  eqValue(0.0, Bxn, nxn, nyn, nzn);
+  eqValue(0.0, Byn, nxn, nyn, nzn);
+  eqValue(0.0, Bzn, nxn, nyn, nzn);
+  eqValue(0.0, Bx_ext, nxn, nyn, nzn);
+  eqValue(0.0, By_ext, nxn, nyn, nzn);
+  eqValue(0.0, Bz_ext, nxn, nyn, nzn);
+  eqValue(0.0, Jx_ext, nxn, nyn, nzn);
+  eqValue(0.0, Jy_ext, nxn, nyn, nzn);
+  eqValue(0.0, Jz_ext, nxn, nyn, nzn);
+  eqValue(0.0, Bxc, nxc, nyc, nzc);
+  eqValue(0.0, Byc, nxc, nyc, nzc);
+  eqValue(0.0, Bzc, nxc, nyc, nzc);
+  eqValue(0.0, Bxc_ext, nxc, nyc, nzc);
+  eqValue(0.0, Byc_ext, nxc, nyc, nzc);
+  eqValue(0.0, Bzc_ext, nxc, nyc, nzc);
+
+  double a=0.5*L_square;
+  double xc=x_center;
+  double yc=y_center;
+  double zc=z_center;
+
+   for (int i=0; i < nxn; i++){
+     for (int j=0; j < nyn; j++){
+       for (int k=0; k < nzn; k++){
+         for (int is=0; is < ns; is++){
+           rhons[is][i][j][k] = rhoINIT[is] / FourPI;
+         }
+         Ex[i][j][k] = ebc[0];
+         Ey[i][j][k] = ebc[1];
+         Ez[i][j][k] = ebc[2];
+         double blp[3];
+         double x = grid->getXN(i,j,k);
+         double y = grid->getYN(i,j,k);
+         double z = grid->getZN(i,j,k);
+         loopZ(blp, x, y, z, a, xc, yc, zc, -B1z);
+         Bx_ext[i][j][k] += blp[0];
+         By_ext[i][j][k] += blp[1];
+         Bz_ext[i][j][k] += blp[2];
+
+         Bxn[i][j][k] = B0x;
+         Byn[i][j][k] = B0y;
+         Bzn[i][j][k] = B0z;
+      }
+    }
+  }
+
+  // communicate ghost
+  communicateNodeBC(nxn, nyn, nzn, Bx_ext, col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5], vct);
+  communicateNodeBC(nxn, nyn, nzn, By_ext, col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5], vct);
+  communicateNodeBC(nxn, nyn, nzn, Bz_ext, col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct);
+
+  // initialize B on centers
+  for (int i=0; i < nxc; i++){
+    for (int j=0; j < nyc; j++){
+      for (int k=0; k < nzc; k++){
+        double blp[3];
+        double x = grid->getXC(i,j,k);
+        double y = grid->getYC(i,j,k);
+        double z = grid->getZC(i,j,k);
+        loopZ(blp, x, y, z, a, xc, yc, zc, -B0y);
+        Bxc_ext[i][j][k] += blp[0];
+        Byc_ext[i][j][k] += blp[1];
+        Bzc_ext[i][j][k] += blp[2];
+        Bxc[i][j][k] = B0x;
+        Byc[i][j][k] = B0y;
+        Bzc[i][j][k] = B0z;
+      }
+    }
+  }
+  MPI_Barrier(MPI_COMM_WORLD);
+  //fclose(Blog);
+
+  communicateCenterBC_P(nxc,nyc,nzc,Bxc_ext,2,2,2,2,2,2,vct);
+  communicateCenterBC_P(nxc,nyc,nzc,Byc_ext,2,2,2,2,2,2,vct);
+  communicateCenterBC_P(nxc,nyc,nzc,Bzc_ext,2,2,2,2,2,2,vct);
+
+  for (int is=0 ; is<ns; is++)
+    grid->interpN2C(rhocs,is,rhons);
+
+  if (restart1 ==0){
+    //  do nothing
+  } else { // EM initialization from RESTART
+    init(vct,grid,col);  // use the fields from restart file
+  }
+}
+
+
 
 /*! Calculate the susceptibility on the boundary leftX */
 void EMfields3D::sustensorLeftX(double **susxx, double **susyx, double **suszx) {

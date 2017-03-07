@@ -85,6 +85,7 @@ int c_Solver::Init(int argc, char **argv) {
     else if (col->getCase()=="DoubleHarris")EMf->initDoublePeriodicHarrisWithGaussianHumpPerturbation(vct,grid,col);
     else if (col->getCase()=="Whistler")    EMf->initDoublePeriodicHarrisWithGaussianHumpPerturbation(vct,grid,col);
     else if (col->getCase()=="Coils")       EMf->initWB8(vct,grid,col);
+    else if (col->getCase()=="Dipole")      EMf->initDipole(vct,grid,col);
     else {
       if (myrank==0) {
         cout << " =========================================================== " << endl;
@@ -252,6 +253,8 @@ void c_Solver::InjectBoundaryParticles(){
       if (col->getRHOinject(i) > 0.0)
           if (col->getRHOinject(i)>0.0)
             Qremoved[i] = part[i].deleteParticlesInsideSphere(col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+    } else if (col->getCase()=="Dipole") {
+      Qremoved[i] = part[i].deleteParticlesInsideSphere(col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
     }
   }
 }

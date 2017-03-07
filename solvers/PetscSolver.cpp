@@ -51,7 +51,7 @@ PetscSolver::PetscSolver(EMfields3D *EMf, Grid* grid, VirtualTopology3D *vct, Co
   //PCSetType(pc, PCNONE);
   
   // Tolerance and number of iterations
-  KSPSetTolerances(ksp,1e-20,tol,10000,2000);
+  KSPSetTolerances(ksp,1e-20,tol,10000,10000);
 
   KSPSetFromOptions(ksp);
 
