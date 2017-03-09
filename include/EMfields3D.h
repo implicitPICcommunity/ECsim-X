@@ -67,6 +67,8 @@ class EMfields3D                // :public Field
     void calculateEB(Grid*, VirtualTopology3D*, Collective*);
     void productMassE(double*, double*, double*, double***, double***, double***, int, int, int);
     void smoothEth(double value, VirtualTopology3D * vct, Collective *col);
+    
+    void smoothBth(double value, double ***Bxth, double ***Byth, double ***Bzth, VirtualTopology3D * vct, Collective *col);
     void smoothJh(double value, VirtualTopology3D * vct, Collective *col);
     void centers2nodesB(VirtualTopology3D*, Grid*, Collective*);
 
@@ -119,7 +121,6 @@ class EMfields3D                // :public Field
     /*! get Electric field X component array */
     double ***getEx();
     double ***getExth();
-    double ***getEFxth();
     /*! get Electric field X component cell array without the ghost cells */
     double ***getExc();
     /*! get Electric Field component Y defined on node(indexX,indexY,indexZ) */
@@ -127,7 +128,6 @@ class EMfields3D                // :public Field
     /*! get Electric field Y component array */
     double ***getEy();
     double ***getEyth();
-    double ***getEFyth();
     /*! get Electric field Y component cell array without the ghost cells */
     double ***getEyc();
     /*! get Electric Field component Z defined on node(indexX,indexY,indexZ) */
@@ -135,7 +135,6 @@ class EMfields3D                // :public Field
     /*! get Electric field Z component array */
     double ***getEz();
     double ***getEzth();
-    double ***getEFzth();
     /*! get Electric field Z component cell array without the ghost cells */
     double ***getEzc();
     /*! get Magnetic Field component X defined on node(indexX,indexY,indexZ) */
@@ -314,15 +313,15 @@ class EMfields3D                // :public Field
     /*! Ex: electric field X-component (indexX, indexY, indexZ), defined on nodes */
     double ***Ex;
     /*! Exth: implicit electric field X-component (indexX, indexY, indexZ), defined on nodes */
-    double ***Exth, ***EFxth;
+    double ***Exth;
     /*! Ey: electric field Y-component (indexX, indexY, indexZ), defined on nodes */
     double ***Ey;
     /*! Eyth: implicit electric field Y-component (indexX, indexY, indexZ), defined on nodes */
-    double ***Eyth, ***EFyth;
+    double ***Eyth;
     /*! Ez: electric field Z-component (indexX, indexY, indexZ, #species), defined on nodes */
     double ***Ez;
     /*! Ezth: implicit electric field Z-component (indexX, indexY, indexZ), defined on nodes */
-    double ***Ezth, ***EFzth;
+    double ***Ezth;
     /*! Bxc: magnetic field X-component (indexX, indexY, indexZ), defined on central points between nodes */
     double ***Bxc;
     /*! Byc: magnetic field Y-component (indexX, indexY, indexZ), defined on central points between nodes */

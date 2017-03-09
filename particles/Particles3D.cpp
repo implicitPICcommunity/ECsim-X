@@ -386,9 +386,9 @@ int Particles3D::mover_ECIMM(Grid * grid, VirtualTopology3D * vct, Field * EMf) 
     cout << "*** ECIMM MOVER species " << ns << " ***"<< endl;
   }
   double start_mover_PC = MPI_Wtime();
-  double ***Exth= asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getEFxth());
-  double ***Eyth= asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getEFyth());
-  double ***Ezth= asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getEFzth());
+  double ***Exth= asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getExth());
+  double ***Eyth= asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getEyth());
+  double ***Ezth= asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getEzth());
   double ***Bx = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBx());
   double ***By = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBy());
   double ***Bz = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBz());
