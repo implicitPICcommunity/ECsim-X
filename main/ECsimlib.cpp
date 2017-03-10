@@ -169,7 +169,6 @@ void c_Solver::GatherMoments(){
   #ifdef __PROFILING__
   clocks->start(5);
   #endif
-  EMf->centers2nodesB(vct, grid, col);
   EMf->setZeroDensities();                  // set to zero the densities
   #ifdef __PROFILING__
   clocks->stop(5);
@@ -236,6 +235,9 @@ bool c_Solver::ParticlesMover() {
     }
     return (true);              // exit from the time loop
   }
+
+  // Update the values of the magnetic field in the nodes: n+1
+  EMf->centers2nodesB(vct, grid, col);
 
   return (false);
 }
