@@ -44,9 +44,8 @@ int c_Solver::Init(int argc, char **argv) {
   if (nprocs != vct->getNprocs()) {
     if (myrank == 0) {
       cerr << "Error: " << nprocs << " processes cant be mapped into " << vct->getXLEN() << "x" << vct->getYLEN() << "x" << vct->getZLEN() << " matrix: Change XLEN,YLEN, ZLEN in method VCtopology3D.init()" << endl;
-      exit(EXIT_FAILURE);
-      mpi->finalize_mpi();
-      return (1);
+      MPI_Abort(MPI_COMM_WORLD, -1);
+      return (-1);
     }
   }
   // We create a new communicator with a 3D virtual Cartesian topology
