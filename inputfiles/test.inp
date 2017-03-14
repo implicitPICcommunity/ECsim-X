@@ -1,87 +1,93 @@
-# TEST INPUT FILE 
-# 2 Species
+# INPUTFILE for Bessel wave in 1D
+
 
 #  %%%%%%%%%%%%%%%%%%% Input/Output flags %%%%%%%%%%%%%%%%%%
-SaveDirName    = data    # Output directory
-RestartDirName = data    # Restart directory (for WriteMethod=default)
+SaveDirName    = data   # Output directory
+RestartDirName = data   # Restart directory (for WriteMethod=default)
 
 #  %%%%%%%%%%%%%%%%%%% Input/Output flags %%%%%%%%%%%%%%%%%%
+Case              = default                          # Case [ GEM | Dipole | ... ]
+FieldsInit        = ./data/Initial-Fields_000000.h5  # Initial fields h5 file
+PartInit          = maxwell                          # Initial particles [ Maxwell | File ]
+WriteMethod       = h5hut                            # Output method [ default | Parallel ]
+PoissonCorrection = no                               # Poisson correction [ yes | no ]
+SimulationName    = test                             # Simulation name for the output
+Cylindrical = 0                                      # Cylindrical coordinates (true = 1, false = 0)
 
-Case              = default                         # Case [ GEM | Dipole | ... ]
-FieldsInit        = ./data/Initial-Fields_000000.h5 # Initial fields h5 file
-PartInit          = Maxwell                         # Initial particles [ Maxwell | File ]
-WriteMethod       = h5hut                           # Output method [ default | Parallel ]
-PoissonCorrection = no                              # Poisson correction [ yes | no ]
-SimulationName    = test                            # Simulation name for the output
 
 #  %%%%%%%%%%%%%%%%%%% Magnetic Reconnection %%%%%%%%%%%%%%%%%%
-B0x = 0.000 
-B0y = 0.000
-B0z = 0.000
+B0x = 0.0
+B0y = 0.0
+B0z = 0.0
 
-# External magnetic field parameters:
-B1x = 0.000
-B1y = 0.000
-B1z = 0.000
+B1x = 0.0
+B1y = 0.0
+B1z = 0.0
 
-delta = 0.5
+delta = 3.0
 
 #  %%%%%%%%%%%%%%%%%%% TIME %%%%%%%%%%%%%%%%%%
-dt = 0.2             # dt = time step  
-ncycles = 201        # cycles
-th = 0.5             # th =   decentering parameter
-c = 1.0              # c = light speed 
+dt = 0.125        # dt = time step this is still in wp-1
+ncycles = 101     # cycles -- should run to 100us range for steady state
+th = 0.5          # th =   decentering parameter
+c = 1.0           # c = light speed 
 
 #  %%%%%%%%%%%%%%%%%%% SMOOTH %%%%%%%%%%%%%%%%%%
-Smooth = 1.0           # Smoothing value (5-points stencil) (1.0 = no smoothing)
+Smooth = 1.0      # Smoothing value (5-points stencil)
+Nvolte = 6        # Cyles of smoothing and this must be even
 
+#  %%%%%%%%%%%%%%%%%%% SMOOTH %%%%%%%%%%%%%%%%%%
 
 # %%%%%%%%%%%%%%%%%% BOX SIZE %%%%%%%%%%%%%%%
-Lx =  8.0            # Lx = simulation box length - x direction   
-Ly =  1.0            # Ly = simulation box length - y direction
-Lz =  1.0            # Lz = simulation box length - z direction   
+Lx =   6.0        # Lx = simulation box length - x direction in m  
+Ly =   6.0        # Ly = simulation box length - y direction in m
+Lz =   6.0        # Lz = simulation box length - z direction in m  
 
-x_center =   1.        # Lx = simulation box length - x direction in m  
-y_center =   1.        # Ly = simulation box length - y direction in m
-z_center =   1.        # Lz = simulation box length - z direction in m  
-L_square =  .1
+x_center =   37.5 # center of initial square - x direction in m  
+y_center =   37.5 # center of initial square - y direction in m
+z_center =   0.05 # center of initial square - z direction in m  
+L_square =   14.4 # side of initial square 
 
-CoilD = 25.2			#magnetic coil diameter -- Proposed WB8 simulation dimensions. 
-CoilSpacing= 40.0	                #spacing parameter for magnets 
+CoilD = 25.2      # magnetic coil diameter -- Proposed WB8 simulation dimensions. 
+CoilSpacing= 40.0 # spacing parameter for magnets 
 
+nxc =  16         # nxc = number of cells - x direction  
+nyc =  16         # nyc = number of cells - y direction
+nzc =  16         # nzc = number of cells - z direction     
 
-nxc =  128         # nxc = number of cells - x direction        
-nyc =  1           # nyc = number of cells - y direction
-nzc =  1           # nzc = number of cells - z direction        
 
 # %%%%%%%%%%%%%%%%%% MPI TOPOLOGY %%%%%%%%%%%%%%%
-XLEN = 1               # Number of subdomains in the X direction
-YLEN = 1               # Number of subdomains in the X direction
-ZLEN = 1               # Number of subdomains in the X direction
+XLEN = 2          # Number of subdomains in the X direction
+YLEN = 2          # Number of subdomains in the X direction
+ZLEN = 1          # Number of subdomains in the X direction
+   
 
 # %%%%%%%%%%%%%% PARTICLES %%%%%%%%%%%%%%%%%
+#    ns = number of species
 #    0 = electrons
 #    1 = protons
 #    2,3,4,5,... = ions
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ns = 2
 
-ns = 2                               # Number of particles
-rhoINIT         = 1.0  1.0   1.0       # Initial density (make sure you are neutral)
-rhoINJECT       = 1.0  1.0   1.0       # Injection density (make sure you are neutral)
-TrackParticleID = 0    0     0         # TrackParticleID[species] = 1=true, 0=false 
+rhoINIT         =    0.2     0.2        # Initial density (make sure you are neutral)
+rhoINJECT       =    0.0     0.0        # Injected density 
 
-npcelx          = 1    1    2        # Particles per cell in X
-npcely          = 1    1    2        # Particles per cell in Y
-npcelz          = 1    1    5        # Particles per cell in Z
-NpMaxNpRatio    = 3.0                # Maximum number of particles allocated
+TrackParticleID =    0       0          # TrackParticleID[species] = 1=true, 0=false 
 
-qom             =  1.0   1.0   100    # Charge/mass ratio
-uth             =  0.01   0.01   0.02    # Thermal velocity in X
-vth             =  0.01   0.01   0.1    # Thermal velocity in Y
-wth             =  0.01   0.01   0.1    # Thermal velocity in Z
-u0              =  0.20  -0.15    0.0    # Drift velocity in X
-v0              =  0.00   0.00    0.0    # Drift velocity in X
-w0              =  0.00   0.00    0.0    # Drift velocity in X
+npcelx          =    2      2          # Particles per cell in X
+npcely          =    2      2          # Particles per cell in Y
+npcelz          =    2      2          # Particles per cell in Z
+NpMaxNpRatio    =    3.0               # Maximum number of particles allocated
+
+
+qom             =  -1.0     1.0        # qom = charge to mass ratio for different species 			
+uth             =   0.01    0.0 1      # uth = thermal velocity for different species - Direction X 
+vth             =   0.01    0.0 1      # vth = thermal velocity for different species - Direction Y 
+wth             =   0.01    0.0 1      # wth = thermal velocity for different species - Direction Z
+  
+u0              =   0.04    0.0         # u0 = drift velocity   - Direction X  
+v0              =   0.0     0.0         # v0 = drift velocity   - Direction Y 
+w0              =   0.0     0.0         # w0 = drift velocity   - Direction Z    
 
 # %%%%%%%%%%%% Periodicity in each direction %%%%%%%%%%%%%%%
 PERIODICX       = 1                  # In direction X (1=true, 0=false)
@@ -116,20 +122,24 @@ PERIODICZ       = 1                  # In direction Z (1=true, 0=false)
 #    0 = exit
 #    1 = perfect mirror
 #    2 = riemission
-    bcPfaceXright = 1
-    bcPfaceXleft =  1
-    bcPfaceYright = 1
-    bcPfaceYleft =  1
-    bcPfaceZright = 1
-    bcPfaceZleft =  1
+    bcPfaceXright = 0
+    bcPfaceXleft =  0
+    bcPfaceYright = 0
+    bcPfaceYleft =  0
+    bcPfaceZright = 0
+    bcPfaceZleft =  0
+
 
 # %%%%%%%%%%%% Numerics options %%%%%%%%%%%%%%%
 verbose                = 1        # Print to video results
-Vinj                   = 0.0      # Velocity of the injection from the wall
+Vinj                   = 10       # Velocity of the injection from the wall
 CGtol                  = 1E-3     # CG solver stopping criterium tolerance
-GMREStol               = 1E-12    # GMRES solver stopping criterium tolerance
+GMREStol               = 1E-17    # GMRES solver stopping criterium tolerance
 NiterMover             = 3        # mover predictor corrector iteration
-FieldOutputCycle       = 10       # Output for field
-ParticlesOutputCycle   = 100      # Output for particles if 1 it doesnt save particles data
-RestartOutputCycle     = 4000     # restart cycle
+FieldOutputCycle       = 10      # Output for field
+ParticlesOutputCycle   = 100000   # Output for particles if 1 it doesnt save particles data
+RestartOutputCycle     = 200     # restart cycle
 DiagnosticsOutputCycle = 1        # Diagnostics cycle
+
+
+
