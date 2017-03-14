@@ -86,6 +86,8 @@ int c_Solver::Init(int argc, char **argv) {
     else if (col->getCase()=="Whistler")    EMf->initDoublePeriodicHarrisWithGaussianHumpPerturbation(vct,grid,col);
     else if (col->getCase()=="Coils")       EMf->initWB8(vct,grid,col);
     else if (col->getCase()=="Dipole")      EMf->initDipole(vct,grid,col);
+    else if (col->getCase()=="Bessel1D")    EMf->initBessel1D(vct,grid,col);
+    else if (col->getCase()=="Bessel2D")    EMf->initBessel2D(vct,grid,col);
     else {
       if (myrank==0) {
         cout << " =========================================================== " << endl;
@@ -119,6 +121,11 @@ int c_Solver::Init(int argc, char **argv) {
         part[i].maxwellian(grid, EMf, vct);
       }
     }
+    
+    // Compute the charge of the particles using the mass matrices
+    //part[i].fixCharge(grid, EMf, vct, col);
+
+    if (col->getCylindrical() == 1) part[i].fixZcylindrical();
   }
 
 
@@ -208,10 +215,21 @@ bool c_Solver::ParticlesMover() {
   /*  Particle mover */
   /*  -------------- */
 
-  for (int i = 0; i < ns; i++)  // move each species
-  {
-    mem_avail = part[i].mover_ECIMM(grid, vct, EMf); // use the Predictor Corrector scheme 
-  }
+  // move each species
+  for (int i = 0; i < ns; i++)  
+    mem_avail = part[i].updateVelocity(grid, vct, EMf);
+
+  #ifdef  __JDOTE_TEST__
+  for (int i = 0; i < ns; i++)  
+    part[i].computeCurrentBar(EMf, grid, vct); 
+  EMf->communicateGhostP2G_spec(vct);
+  EMf->testJdotE(grid);
+  printf("J dot E test\n");
+  getchar();
+  #endif
+
+  for (int i = 0; i < ns; i++)  
+    mem_avail = part[i].updatePosition(grid, vct, EMf);
 
   if (mem_avail < 0) {          // not enough memory space allocated for particles: stop the simulation
     if (myrank == 0) {
@@ -313,7 +331,36 @@ void c_Solver::WriteOutput(int cycle) {
   EMf->sumOverSpecies (vct);
   EMf->communicateGhostP2G_spec(vct);
 
-  if (col->getWriteMethod() == "h5hut") {
+  if (col->getWriteMethod() == "ascii") {
+    char place[128];
+    const char* dirtxt = SaveDirName.c_str();
+    sprintf(place,"%s/filedsProc%02d_%06d.txt",dirtxt, myrank, cycle);
+    FILE *fd = fopen(place,"w");
+    double ***Ex = EMf->getEx();
+    double ***Ey = EMf->getEy();
+    double ***Ez = EMf->getEz();
+    double ***Bx = EMf->getBx();
+    double ***By = EMf->getBy();
+    double ***Bz = EMf->getBz();
+    double ***rhon = EMf->getRHOn();
+    int nxn = grid->getNXN();
+    int nyn = grid->getNYN();
+    int nzn = grid->getNZN();
+    for (int i=1; i<nxn-1; i++) 
+      for (int j=1; j<nyn-1; j++) 
+        for (int k=1; k<nzn-1; k++) {
+          double x = grid->getXN(i,j,k);
+          double y = grid->getYN(i,j,k);
+          double z = grid->getZN(i,j,k);
+          fprintf(fd,"%8.4f %8.4f %8.4f   %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e %13.6e \n"
+                    ,x,y,z
+                    ,Ex[i][j][k], Ey[i][j][k], Ez[i][j][k]
+                    ,Bx[i][j][k], By[i][j][k], Bz[i][j][k]
+                    ,rhon[i][j][k]
+                  );
+        }
+    fclose(fd);
+  } else if (col->getWriteMethod() == "h5hut") {
 
     /* -------------------------------------------- */
     /* Parallel HDF5 output using the H5hut library */
@@ -322,9 +369,7 @@ void c_Solver::WriteOutput(int cycle) {
     if (cycle%(col->getParticlesOutputCycle())==0 &&
         cycle!=col->getLast_cycle() && cycle!=0)      WritePartclH5hut(ns, grid, part, col, vct, cycle);
 
-  }
-  else
-  {
+  } else {
 
     // OUTPUT to large file, called proc**
     if (cycle % (col->getFieldOutputCycle()) == 0 || cycle == first_cycle) {
@@ -342,76 +387,6 @@ void c_Solver::WriteOutput(int cycle) {
 
 }
 
-
-void c_Solver::WriteOutputASCII(int cycle) {
-  if (cycle%(col->getFieldOutputCycle())!=0) return;
-
-
-  char name[128];
-  sprintf(name, "data/part_%d.txt",cycle);
-  FILE* fdpart = fopen(name, "w");
-  
-  for (int i=0; i < ns; i++) {
-    int n = part[i].getNOP();
-    for (int j=0; j<n; j++) {
-      double u = part[i].getU(j);
-      double v = part[i].getV(j);
-      double w = part[i].getW(j);
-      double m = sqrt(u*u+v*v+w*w);
-      fprintf(fdpart,"%13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e\n"
-                ,part[i].getX(j), part[i].getY(j), part[i].getZ(j), u,v,w);
-    }
-    fprintf(fdpart,"\n\n\n");
-  }
-  fclose(fdpart);
-
-  sprintf(name, "data/rho_%d.txt",cycle);
-  FILE* fdrho = fopen(name, "w");
-  for (int i=1; i<grid->getNXC()-1; i++)
-    for (int j=1; j<grid->getNYC()-1; j++)
-      for (int k=1; k<grid->getNZC()-1; k++)
-        fprintf(fdrho,"%13.6e %13.6e %13.6e  %13.6e\n"
-                     ,grid->getDX()*(i+0.5), grid->getDY()*(j+0.5), grid->getDZ()*(k+0.5)
-                     ,EMf->getRHOc(i,j,k));
-  fclose(fdrho);
-
-  sprintf(name,"data/fieldE_%d.txt",cycle);
-  FILE* fdE = fopen(name,"w");
-  sprintf(name,"data/fieldB_%d.txt",cycle);
-  FILE* fdB = fopen(name,"w");
-
-  int nxn = grid->getNXN();
-  int nyn = grid->getNYN();
-  int nzn = grid->getNZN();
-  double dx = grid->getDX();
-  double dy = grid->getDY();
-  double dz = grid->getDZ();
-  for (int k=1; k<nzn-1; k++) {
-    for (int j=1; j<nyn-1; j++) {
-      for (int i=1; i<nxn-1; i++) {
-        double x = grid->getXstart() + i*dx; 
-        double y = grid->getYstart() + j*dy; 
-        double z = grid->getZstart() + k*dz; 
-        double Ex = EMf->getEx(i,j,k);
-        double Ey = EMf->getEy(i,j,k);
-        double Ez = EMf->getEz(i,j,k);
-        double Bx = EMf->getBx(i,j,k);
-        double By = EMf->getBy(i,j,k);
-        double Bz = EMf->getBz(i,j,k);
-        fprintf(fdE,"%13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e\n"
-                    ,x,y,z,Ex,Ey,Ez);
-        fprintf(fdB,"%13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e\n"
-                    ,x,y,z,Bx,By,Bz);
-      }
-    }
-    fprintf(fdE,"\n\n\n");
-    fprintf(fdB,"\n\n\n");
-  }
-
-  fclose(fdE);
-  fclose(fdB);
-
-}
 
 void c_Solver::Finalize() {
 

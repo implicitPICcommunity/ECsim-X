@@ -51,7 +51,13 @@ class EMfields3D                // :public Field
     void initDoublePeriodicHarrisWithGaussianHumpPerturbation(VirtualTopology3D * vct, Grid * grid, Collective *col);
     void initWB8(VirtualTopology3D *vct, Grid *grid, Collective *col);
     void initDipole(VirtualTopology3D *vct, Grid *grid, Collective *col);
-    /*! init beam */
+    void initBessel1D(VirtualTopology3D * vct, Grid * grid, Collective *col);
+    void initBessel2D(VirtualTopology3D * vct, Grid * grid, Collective *col);
+
+    /* Fix boundary conditions in cylindrical coordinate */
+    void fixGhostB();
+    void fixBC_Cyl_Image(double ***ImX, double ***ImY, double ***ImZ, double ***nEx, double ***nEy, double ***nEz, double ***cBx, double ***cBy, double ***cBz);
+    void fixBC_Cyl_Source(double ***SoX, double ***SoY, double ***SoZ);
 
     /*! Calculate Electric field using the implicit Maxwell solver */
     void calculateE(Grid * grid, VirtualTopology3D * vct, Collective *col);
@@ -61,11 +67,13 @@ class EMfields3D                // :public Field
     void endEcalc(double* xkrylov, VirtualTopology3D * vct, Collective *col, Grid* grid);
     /*! Image of Poisson Solver (for SOLVER) */
     void MaxwellImage(double *im, double *vector, Grid * grid, VirtualTopology3D * vct, Collective *col);
+    void RhoImage(double *im, double *vector, Grid * grid, VirtualTopology3D * vct, Collective *col);
     /*! Maxwell source term (for SOLVER) */
     void MaxwellSource(double *bkrylov, Grid * grid, VirtualTopology3D * vct, Collective *col);
     /*! Calculate Magnetic and Electric field */
     void calculateEB(Grid*, VirtualTopology3D*, Collective*);
     void productMassE(double*, double*, double*, double***, double***, double***, int, int, int);
+    double productMassEV(double ***vX, int i, int j, int k, Grid* grid);
     void smoothEth(double value, VirtualTopology3D * vct, Collective *col);
     
     void smoothBth(double value, double ***Bxth, double ***Byth, double ***Bzth, VirtualTopology3D * vct, Collective *col);
@@ -80,6 +88,7 @@ class EMfields3D                // :public Field
     void communicateGhostP2G_spec(VirtualTopology3D * vct);
     /*! set to 0 all the densities fields */
     void setZeroDensities();
+    void setZeroMass();
     /*! Sum rhon over species */
     void sumOverSpecies(VirtualTopology3D * vct);
 
@@ -90,6 +99,7 @@ class EMfields3D                // :public Field
     /*! add an amount of current density - direction X to current density field at node X,Y,Z */
 
     void addMass(double val[3][3], int, int, int, int);
+    void addMassXX(double val, int, int, int, int);
     void addJxh(double weight[][2][2], int X, int Y, int Z);
     void addJyh(double weight[][2][2], int X, int Y, int Z);
     void addJzh(double weight[][2][2], int X, int Y, int Z);
@@ -182,6 +192,7 @@ class EMfields3D                // :public Field
     /*! SPECIES: get density array on cells without the ghost cells */
     double ***getRHOcs(int is);
     double ***& getRHOcs(int is, int dummy);
+    double ***getRhotilde(int is);
 
     /** get Magnetic Field component X defined on node(indexX,indexY,indexZ) */
     double &getBx_ext(int indexX, int indexY, int indexZ) const;
@@ -249,6 +260,10 @@ class EMfields3D                // :public Field
     // OpenBC
     void updateInfoFields(Grid *grid,VirtualTopology3D *vct,Collective *col);
 
+    void testCurl(Grid* grid);
+    void computeRhotilde(VirtualTopology3D * vct, Collective *col, Grid* grid, int is);
+    void testJdotE(Grid* grid);
+
     /* ********************************* // VARIABLES ********************************* */
   private:
     /*! light speed */
@@ -290,7 +305,8 @@ class EMfields3D                // :public Field
     /*! local grid boundaries coordinate */
     double xStart, xEnd, yStart, yEnd, zStart, zEnd;
     /*! grid spacing */
-    double dx, dy, dz, invVOL;
+    double dx, dy, dz;
+    double ***invVOLn, ***invVOLc;
     /*! simulation box length - X direction */
     double Lx;
     /*! simulation box length - Y direction */
@@ -378,6 +394,8 @@ class EMfields3D                // :public Field
     double ****rhons;
     /*! SPECIES: charge density for each species, defined on central points of the cell */
     double ****rhocs;
+    /* Rhotilde: density to compute the charge of each particles to achieve rho when interpolate from particles to nodes */
+    double ****rhotilde;
     /*! Implicit current density X-component, defined on nodes */
     double ***Jxh;
     /*! Implicit current density Y-component, defined on nodes */
@@ -456,6 +474,8 @@ class EMfields3D                // :public Field
 
     /*! GMRES tolerance criterium for stopping iterations */
     double GMREStol;
+
+    int Cylindrical;
 
 };
 

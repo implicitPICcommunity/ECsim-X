@@ -65,6 +65,8 @@ class Collective
     double getcoilD();
     /** getgeometry coild - Coil Spacing */
     double getcoilSpacing();
+    /** Get cylindrical coordinates */
+    int getCylindrical();
 
     /*! Get the number of cells - direction X */
     int getNxc();
@@ -442,6 +444,8 @@ class Collective
     int RestartOutputCycle;
     /*! Output for diagnostics */
     int DiagnosticsOutputCycle;
+
+    int Cylindrical;
 };
 
 #endif

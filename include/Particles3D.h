@@ -64,7 +64,8 @@ class Particles3D:public Particles3Dcomm {
     void RotatePlaneXY(double theta);
 
     /** mover for the ECIMM algorith */
-    int mover_ECIMM(Grid * grid, VirtualTopology3D * vct, Field * EMf);
+    int updateVelocity(Grid * grid, VirtualTopology3D * vct, Field * EMf);
+    int updatePosition(Grid * grid, VirtualTopology3D * vct, Field * EMf);
 
     void get_Bl(const double weights[2][2][2], int ix, int iy, int iz, double& Bxl, double& Byl, double& Bzl, double*** Bx, double*** By, double*** Bz, double*** Bx_ext, double*** By_ext, double*** Bz_ext, double Fext);
     void get_El(const double weights[2][2][2], int ix, int iy, int iz, double& Exl, double& Eyl, double& Ezl, double*** Ex, double*** Ey, double*** Ez);
@@ -78,6 +79,8 @@ class Particles3D:public Particles3Dcomm {
     /** Delete the particles outside the cube with dimension L */
     double deleteParticlesOutsideBox(double L);
     double deleteParticlesOuterFrame(double multx, double multy, double multz);
+    void fixZcylindrical();
+    void fixCharge(Grid* grid,Field* EMf,VirtualTopology3D* vct, Collective *col);
 
 };
 

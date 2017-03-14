@@ -40,7 +40,6 @@ namespace ECsim {
     void CalculateField();
     bool ParticlesMover();
     void WriteOutput(int cycle);
-    void WriteOutputASCII(int cycle);
     void WriteConserved(int cycle);
     void WriteRestart(int cycle);
     void UpdateCycleInfo(int cycle);
