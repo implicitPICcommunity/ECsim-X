@@ -303,6 +303,7 @@ protected:
   /** Seed for random numbers generator */
   long long seed;
   int Cylindrical;
+  int ndim;
 };
 
 #endif

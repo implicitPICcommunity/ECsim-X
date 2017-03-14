@@ -243,6 +243,8 @@ class Collective
     /*! get initfile */
     string getinitfile();
 
+    int getNdim() { return ndim;}
+
   private:
     /*! inputfile */
     string inputfile;
@@ -446,6 +448,7 @@ class Collective
     int DiagnosticsOutputCycle;
 
     int Cylindrical;
+    int ndim;
 };
 
 #endif

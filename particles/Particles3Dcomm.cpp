@@ -140,6 +140,7 @@ void Particles3Dcomm::allocate(int species, long long initnpmax, Collective * co
   // info from VirtualTopology3D
   cVERBOSE = vct->getcVERBOSE();
   Cylindrical = col->getCylindrical();
+  ndim = col->getNdim();
 
   // boundary condition for particles
   bcPfaceXright = col->getBcPfaceXright();
@@ -379,7 +380,7 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
                 double qww = q[ip]*beta*weight[i][j][k]*weight[i2][j2][k2];
                 double val[3][3];
                 for (int ind1=0; ind1<3; ind1++)
-                   for (int ind2=0; ind2<3; ind2++) val[ind1][ind2] = alpha[ind1][ind2]*qww;
+                   for (int ind2=0; ind2<3; ind2++) val[ind1][ind2] = alpha[ind2][ind1]*qww;
 
                 EMf->addMass(val, ni, nj, nk, c);
               }

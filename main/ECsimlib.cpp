@@ -126,6 +126,7 @@ int c_Solver::Init(int argc, char **argv) {
     //part[i].fixCharge(grid, EMf, vct, col);
 
     if (col->getCylindrical() == 1) part[i].fixZcylindrical();
+    part[i].fixPosition();
   }
 
 
@@ -228,8 +229,10 @@ bool c_Solver::ParticlesMover() {
   getchar();
   #endif
 
-  for (int i = 0; i < ns; i++)  
+  for (int i = 0; i < ns; i++)  {
     mem_avail = part[i].updatePosition(grid, vct, EMf);
+    part[i].fixPosition();
+  }
 
   if (mem_avail < 0) {          // not enough memory space allocated for particles: stop the simulation
     if (myrank == 0) {

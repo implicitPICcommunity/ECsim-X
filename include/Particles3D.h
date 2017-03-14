@@ -80,6 +80,7 @@ class Particles3D:public Particles3Dcomm {
     double deleteParticlesOutsideBox(double L);
     double deleteParticlesOuterFrame(double multx, double multy, double multz);
     void fixZcylindrical();
+    void fixPosition();
     void fixCharge(Grid* grid,Field* EMf,VirtualTopology3D* vct, Collective *col);
 
 };

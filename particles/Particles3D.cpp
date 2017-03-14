@@ -1496,4 +1496,16 @@ void Particles3D::fixZcylindrical()
   }
 }
 
+void Particles3D::fixPosition()
+{
+  if (ndim == 1) {
+    for (int i=0; i<nop; i++) {
+      z[i] = 0;
+      y[i] = 0;
+    }
+  } else if (ndim == 2) {
+    for (int i=0; i<nop; i++) z[i] = 0;
+  }
+}
+
 

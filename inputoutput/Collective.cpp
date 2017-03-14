@@ -171,6 +171,25 @@ void Collective::ReadInput(string inputfile) {
     nxc = config.read < int >("nxc");
     nyc = config.read < int >("nyc");
     nzc = config.read < int >("nzc");
+
+    if (nzc == 1) {
+      if (nyc == 1) {
+        ndim = 1;
+      } else if (nxc > 1) {
+        ndim = 2;
+      } else {
+        fprintf(stderr,"ERROR: 1D case has to be done in the x direction\n\n");
+        MPI_Abort(MPI_COMM_WORLD, -1);
+      }
+    } else {
+      if ((nyc > 1) && (nxc > 1)) {
+        ndim = 3;
+      } else {
+        fprintf(stderr,"ERROR: 1D case has to be done in the x direction. For 2D ncz has to be 1\n\n");
+        MPI_Abort(MPI_COMM_WORLD, -1);
+      }
+      
+    }
 #endif
 
     x_center = config.read < double >("x_center");
