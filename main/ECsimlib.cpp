@@ -88,6 +88,7 @@ int c_Solver::Init(int argc, char **argv) {
     else if (col->getCase()=="Dipole")      EMf->initDipole(vct,grid,col);
     else if (col->getCase()=="Bessel1D")    EMf->initBessel1D(vct,grid,col);
     else if (col->getCase()=="Bessel2D")    EMf->initBessel2D(vct,grid,col);
+    else if (col->getCase()=="HalfPlanet")  EMf->initHalfPlanet(vct,grid,col);
     else {
       if (myrank==0) {
         cout << " =========================================================== " << endl;
@@ -114,6 +115,14 @@ int c_Solver::Init(int argc, char **argv) {
         part[i].monoenergetic_box(grid,EMf,vct,L_square,x_center,y_center,z_center, 1.0);  // generated maxwellian in a box
       else
         part[i].empty(grid, EMf, vct);
+    } else if (col->getCase()=="HalfPlanet") {
+      if (col->getRHOinject(i) > 0.0) {
+        part[i].empty(grid, EMf, vct);
+      } else {
+           part[i].maxwellian(grid, EMf, vct);
+           //Qremoved[i]  = part[i].deleteParticlesInsideSphere(col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+           //Qremoved[i] += part[i].deleteParticlesOuterFrame(2.0, 2.0, 2.0);
+      }
     } else {
       if (col->getPartInit() == "FromFieldFile") {
         part[i].MaxwellianFromFieldFile(grid, EMf, vct);
@@ -217,6 +226,11 @@ bool c_Solver::ParticlesMover() {
   /*  -------------- */
 
   // move each species
+//#define PC_MOVER
+#ifdef PC_MOVER
+  for (int i = 0; i < ns; i++)  
+  mem_avail = part[i].mover_PC_sub(grid, vct, EMf);
+#else
   for (int i = 0; i < ns; i++)  
     mem_avail = part[i].updateVelocity(grid, vct, EMf);
 
@@ -225,14 +239,13 @@ bool c_Solver::ParticlesMover() {
     part[i].computeCurrentBar(EMf, grid, vct); 
   EMf->communicateGhostP2G_spec(vct);
   EMf->testJdotE(grid);
-  printf("J dot E test\n");
-  getchar();
   #endif
 
   for (int i = 0; i < ns; i++)  {
     mem_avail = part[i].updatePosition(grid, vct, EMf);
     part[i].fixPosition();
   }
+#endif
 
   if (mem_avail < 0) {          // not enough memory space allocated for particles: stop the simulation
     if (myrank == 0) {
@@ -267,17 +280,19 @@ void c_Solver::InjectBoundaryParticles(){
 
   for (int i=0; i < ns; i++) {
     if (col->getRHOinject(i)>0.0){
-      mem_avail = part[i].particle_repopulator(grid,vct,EMf,i);
+      if (col->getCase()=="HalfPlanet") 
+         part[i].injector_rand_box_mono(grid,vct,EMf);
+      //mem_avail = part[i].particle_repopulator(grid,vct,EMf,i);
     }
     if (col->getCase()=="Coils") {
       //Remove particles from outside the simulation box
       //Qremoved[i] = part[i].deleteParticlesOutsideBox(col->getLx());
       Qremoved[i] = part[i].deleteParticlesOuterFrame(6.0,6.0,0.0);
-      if (col->getRHOinject(i) > 0.0)
-          if (col->getRHOinject(i)>0.0)
-            Qremoved[i] = part[i].deleteParticlesInsideSphere(col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
     } else if (col->getCase()=="Dipole") {
-      Qremoved[i] = part[i].deleteParticlesInsideSphere(col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+       Qremoved[i] = part[i].deleteParticlesInsideSphere(col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+    } else if (col->getCase()=="HalfPlanet") {
+       Qremoved[i]  = part[i].deleteParticlesInsideSphere(col->getL_square(), col->getLx(),col->gety_center(),col->getz_center());
+       Qremoved[i] = part[i].deleteParticlesOuterFrame(6.0, 6.0, 6.0);
     }
   }
 }

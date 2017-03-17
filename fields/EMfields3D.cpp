@@ -339,7 +339,11 @@ void EMfields3D::endEcalc(double* xkrylov, VirtualTopology3D * vct, Collective *
   // move from krylov space to physical space
   solver2phys(Exth, Eyth, Ezth, tempXC, tempYC, tempZC, xkrylov, nxn, nyn, nzn);
   smoothEth(Smooth, vct, col);
-  smoothBth(Smooth, tempXC, tempYC, tempZC, vct, col);
+  //smoothEth(Smooth, vct, col);
+  //smoothEth(Smooth, vct, col);
+  //smoothBth(Smooth, tempXC, tempYC, tempZC, vct, col);
+  //smoothBth(Smooth, tempXC, tempYC, tempZC, vct, col);
+  //smoothBth(Smooth, tempXC, tempYC, tempZC, vct, col);
 
   addscale(1 / th, -(1.0 - th) / th, Bxc, tempXC, nxc, nyc, nzc);
   addscale(1 / th, -(1.0 - th) / th, Byc, tempYC, nxc, nyc, nzc);
@@ -433,7 +437,7 @@ void EMfields3D::MaxwellSource(double *bkrylov, Grid * grid, VirtualTopology3D *
   scale(tempZC, Bzc, 1, nxc, nyc, nzc);
   #endif
 
-  //smoothJh(Smooth, vct, col);
+  smoothJh(Smooth, vct, col);
 
   for (int i=0; i<nxn-0; i++)
     for (int j=0; j<nyn-0; j++) 
@@ -534,9 +538,22 @@ void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTo
         double MEx, MEy, MEz;
         double invV = grid->getInvVOLn(i, j, k);
         productMassE(&MEx, &MEy, &MEz, tempX, tempY, tempZ, i, j, k);
-        imageBX[i][j][k] += invV*fac*MEx;
-        imageBY[i][j][k] += invV*fac*MEy;
-        imageBZ[i][j][k] += invV*fac*MEz;
+        //imageBX[i][j][k] += invV*fac*MEx;
+        //imageBY[i][j][k] += invV*fac*MEy;
+        //imageBZ[i][j][k] += invV*fac*MEz;
+        temp2X[i][j][k] = invV*fac*MEx;
+        temp2Y[i][j][k] = invV*fac*MEy;
+        temp2Z[i][j][k] = invV*fac*MEz;
+      }
+
+  //smooth(Smooth, temp2X, temp2Y, temp2Z, vct, col);
+
+  for (int i=1; i<nxn-1; i++) 
+    for (int j=1; j<nyn-1; j++) 
+      for (int k=1; k<nzn-1; k++) {
+        imageBX[i][j][k] += temp2X[i][j][k];
+        imageBY[i][j][k] += temp2Y[i][j][k];
+        imageBZ[i][j][k] += temp2Z[i][j][k];
       }
   #endif
 
@@ -602,6 +619,65 @@ void EMfields3D::smoothEth(double value, VirtualTopology3D * vct, Collective *co
         for (int j = 1; j < nyn - 1; j++)
           for (int k = 1; k < nzn - 1; k++)
             Ezth[i][j][k] = temp[i][j][k];
+
+
+      delArr3(temp, nxn, nyn);
+    }
+  }
+}
+
+
+void EMfields3D::smooth(double value, double ***Vx, double ***Vy, double ***Vz, VirtualTopology3D * vct, Collective *col) {
+
+  int nvolte = 6;
+  if (value != 1.0) {
+    for (int icount = 1; icount < nvolte + 1; icount++) {
+      double alpha;
+      communicateNodeBoxStencilBC(nxn, nyn, nzn, Vx, col->bcEx[0],col->bcEx[1],col->bcEx[2],col->bcEx[3],col->bcEx[4],col->bcEx[5], vct);
+      communicateNodeBoxStencilBC(nxn, nyn, nzn, Vy, col->bcEy[0],col->bcEy[1],col->bcEy[2],col->bcEy[3],col->bcEy[4],col->bcEy[5], vct);
+      communicateNodeBoxStencilBC(nxn, nyn, nzn, Vz, col->bcEz[0],col->bcEz[1],col->bcEz[2],col->bcEz[3],col->bcEz[4],col->bcEz[5], vct);
+
+      double ***temp = newArr3(double, nxn, nyn, nzn);
+      if (icount % 2 == 1) {
+        value = 0.;
+      }
+      else {
+        value = 0.5;
+      }
+      alpha = (1.0 - value) / 6;
+      // Vx
+      for (int i = 1; i < nxn - 1; i++)
+        for (int j = 1; j < nyn - 1; j++)
+          for (int k = 1; k < nzn - 1; k++)
+            temp[i][j][k] = value * Vx[i][j][k] + alpha * (Exth[i - 1][j][k] + Exth[i + 1][j][k] + 
+                                                             Vx[i][j - 1][k] + Exth[i][j + 1][k] + 
+                                                             Vx[i][j][k - 1] + Exth[i][j][k + 1]);
+      for (int i = 1; i < nxn - 1; i++)
+        for (int j = 1; j < nyn - 1; j++)
+          for (int k = 1; k < nzn - 1; k++)
+            Vx[i][j][k] = temp[i][j][k];
+      // Vy
+      for (int i = 1; i < nxn - 1; i++)
+        for (int j = 1; j < nyn - 1; j++)
+          for (int k = 1; k < nzn - 1; k++)
+            temp[i][j][k] = value * Vy[i][j][k] + alpha * (Eyth[i - 1][j][k] + Eyth[i + 1][j][k] + 
+                                                             Vy[i][j - 1][k] + Eyth[i][j + 1][k] + 
+                                                             Vy[i][j][k - 1] + Eyth[i][j][k + 1]);
+      for (int i = 1; i < nxn - 1; i++)
+        for (int j = 1; j < nyn - 1; j++)
+          for (int k = 1; k < nzn - 1; k++)
+            Vy[i][j][k] = temp[i][j][k];
+      // Vz
+      for (int i = 1; i < nxn - 1; i++)
+        for (int j = 1; j < nyn - 1; j++)
+          for (int k = 1; k < nzn - 1; k++)
+            temp[i][j][k] = value * Vz[i][j][k] + alpha * (Ezth[i - 1][j][k] + Ezth[i + 1][j][k] + 
+                                                             Vz[i][j - 1][k] + Ezth[i][j + 1][k] + 
+                                                             Vz[i][j][k - 1] + Ezth[i][j][k + 1]);
+      for (int i = 1; i < nxn - 1; i++)
+        for (int j = 1; j < nyn - 1; j++)
+          for (int k = 1; k < nzn - 1; k++)
+            Vz[i][j][k] = temp[i][j][k];
 
 
       delArr3(temp, nxn, nyn);
@@ -1750,7 +1826,7 @@ void EMfields3D::initDipole(VirtualTopology3D *vct, Grid *grid, Collective *col)
   double zc=z_center;
   
   bool twodim = false;
-  if ( nyn == 4) twodim = true;
+  if ( nzn == 4) twodim = true;
 
    for (int i=0; i < nxn; i++){
      for (int j=0; j < nyn; j++){
@@ -1758,17 +1834,19 @@ void EMfields3D::initDipole(VirtualTopology3D *vct, Grid *grid, Collective *col)
          for (int is=0; is < ns; is++){
            rhons[is][i][j][k] = rhoINIT[is] / FourPI;
          }
-         Ex[i][j][k] = ebc[0];
-         Ey[i][j][k] = ebc[1];
-         Ez[i][j][k] = ebc[2];
+         //Ex[i][j][k] = ebc[0];
+         //Ey[i][j][k] = ebc[1];
+         //Ez[i][j][k] = ebc[2];
          double blp[3];
          double x = grid->getXN(i,j,k);
          double y = grid->getYN(i,j,k);
          double z = grid->getZN(i,j,k);
-         //loopZ(blp, x, y, z, a, xc, yc, zc, -B1z);
-         //Bx_ext[i][j][k] += blp[0];
-         //By_ext[i][j][k] += blp[1];
-         //Bz_ext[i][j][k] += blp[2];
+/*
+         loopZ(blp, x, y, z, a, xc, yc, zc, -B1z);
+         Bx_ext[i][j][k] += blp[0];
+         By_ext[i][j][k] += blp[1];
+         Bz_ext[i][j][k] += blp[2];
+*/
          double a=0.75*L_square; // 0.75 x To avoid problems with de-centered dipoles
 
          double xc=x_center;
@@ -1822,6 +1900,70 @@ void EMfields3D::initDipole(VirtualTopology3D *vct, Grid *grid, Collective *col)
       }
     }
   }
+}
+
+void EMfields3D::initHalfPlanet(VirtualTopology3D *vct, Grid *grid, Collective *col){
+  if (vct->getCartesian_rank() == 0) {
+    cout << "------------------------------------------" << endl;
+    cout << "Initialize half planet" << endl;
+    cout << "------------------------------------------" << endl;
+    cout << "B1x                              = " << B1x << endl;
+    cout << "B1y                              = " << B1y << endl;
+    cout << "B1z                              = " << B1z << endl;
+  }
+  Fext = 1;
+  double distance;
+
+  double ebc[3];
+  cross_product(ue0,ve0,we0,B0x,B0y,B0z,ebc);
+  scale(ebc,-1.0,3);
+
+  eqValue(0.0, Bxn, nxn, nyn, nzn);
+  eqValue(0.0, Byn, nxn, nyn, nzn);
+  eqValue(0.0, Bzn, nxn, nyn, nzn);
+  eqValue(0.0, Bx_ext, nxn, nyn, nzn);
+  eqValue(0.0, By_ext, nxn, nyn, nzn);
+  eqValue(0.0, Bz_ext, nxn, nyn, nzn);
+  eqValue(0.0, Jx_ext, nxn, nyn, nzn);
+  eqValue(0.0, Jy_ext, nxn, nyn, nzn);
+  eqValue(0.0, Jz_ext, nxn, nyn, nzn);
+  eqValue(0.0, Bxc, nxc, nyc, nzc);
+  eqValue(0.0, Byc, nxc, nyc, nzc);
+  eqValue(0.0, Bzc, nxc, nyc, nzc);
+  eqValue(0.0, Bxc_ext, nxc, nyc, nzc);
+  eqValue(0.0, Byc_ext, nxc, nyc, nzc);
+  eqValue(0.0, Bzc_ext, nxc, nyc, nzc);
+
+  double a=0.75*L_square;
+  double xc=Lx;
+  double yc=y_center;
+  double zc=z_center;
+  
+   for (int i=0; i < nxn; i++){
+     for (int j=0; j < nyn; j++){
+       for (int k=0; k < nzn; k++){
+         for (int is=0; is < ns; is++){
+           rhons[is][i][j][k] = rhoINIT[is] / FourPI;
+         }
+         //Ex[i][j][k] = ebc[0];
+         //Ey[i][j][k] = ebc[1];
+         //Ez[i][j][k] = ebc[2];
+         double blp[3];
+         double x = grid->getXN(i,j,k);
+         double y = grid->getYN(i,j,k);
+         double z = grid->getZN(i,j,k);
+
+         loopY(blp, x, y, z, a, xc, yc, zc, -B1y);
+         Bx_ext[i][j][k] = blp[0];
+         By_ext[i][j][k] = blp[1];
+         Bz_ext[i][j][k] = blp[2];
+
+         Bxn[i][j][k] = B0x;
+         Byn[i][j][k] = B0y;
+         Bzn[i][j][k] = B0z;
+      }
+    }
+  }
 
   // communicate ghost
   communicateNodeBC(nxn, nyn, nzn, Bx_ext, col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5], vct);
@@ -1836,19 +1978,19 @@ void EMfields3D::initDipole(VirtualTopology3D *vct, Grid *grid, Collective *col)
         double x = grid->getXC(i,j,k);
         double y = grid->getYC(i,j,k);
         double z = grid->getZC(i,j,k);
-        //loopZ(blp, x, y, z, a, xc, yc, zc, -B0y);
-        //Bxc_ext[i][j][k] += blp[0];
-        //Byc_ext[i][j][k] += blp[1];
-        //Bzc_ext[i][j][k] += blp[2];
+        loopY(blp, x, y, z, a, xc, yc, zc, -B0y);
+        Bxc_ext[i][j][k] = blp[0];
+        Byc_ext[i][j][k] = blp[1];
+        Bzc_ext[i][j][k] = blp[2];
         Bxc[i][j][k] = B0x;
         Byc[i][j][k] = B0y;
         Bzc[i][j][k] = B0z;
       }
     }
   }
-  grid->interpN2C(Bxc_ext,Bx_ext);
-  grid->interpN2C(Byc_ext,By_ext);
-  grid->interpN2C(Bzc_ext,Bz_ext);
+  //grid->interpN2C(Bxc_ext,Bx_ext);
+  //grid->interpN2C(Byc_ext,By_ext);
+  //grid->interpN2C(Bzc_ext,Bz_ext);
 
   MPI_Barrier(MPI_COMM_WORLD);
   //fclose(Blog);
@@ -3025,10 +3167,11 @@ void EMfields3D::testJdotE(Grid* grid)
 {
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  char name[128];
-  sprintf(name, "testJdotE_%d.txt",rank);
-  FILE* fd = fopen(name,"w");
+  //char name[128];
+  //sprintf(name, "testJdotE_%d.txt",rank);
+  //FILE* fd = fopen(name,"w");
 
+  double maxErr = 0;
   for (int i=1; i<nxn-1; i++)
     for (int j=1; j<nyn-1; j++) 
       for (int k=1; k<nzn-1; k++) {
@@ -3054,8 +3197,12 @@ void EMfields3D::testJdotE(Grid* grid)
         //double Jzfield = mez;
         double JE_fields =  Jxfield*Exth[i][j][k] + Jyfield*Eyth[i][j][k] + Jzfield*Ezth[i][j][k];
         double err = fabs(JE_part - JE_fields);
-        fprintf(fd, "%2d %2d %2d %13.6e %13.6e %13.6e   %13.6e %13.6e %13.6e   %13.6e %13.6e %13.6e\n", i,j,k,Jxbar,Jybar,Jzbar, Jxfield, Jyfield, Jzfield, JE_part, JE_fields, err);
+        if (err > maxErr) maxErr = err;
+        //fprintf(fd, "%2d %2d %2d %13.6e %13.6e %13.6e   %13.6e %13.6e %13.6e   %13.6e %13.6e %13.6e\n", i,j,k,Jxbar,Jybar,Jzbar, Jxfield, Jyfield, Jzfield, JE_part, JE_fields, err);
         //fprintf(fd, "%2d %2d %2d %13.6e %13.6e %13.6e\n", i,j,k,JE_part, JE_fields, err);
       }
-  fclose(fd);
+  //fclose(fd);
+
+  fprintf(stderr,"TEST JdotE :rank [%d] Max. error %13.6e\n", rank, maxErr);
+
 }

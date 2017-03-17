@@ -126,6 +126,9 @@ void Particles3D::constantVelocity(double vel, int dim, Grid * grid, Field * EMf
 /** Maxellian random velocity and uniform spatial distribution */
 void Particles3D::maxwellian(Grid * grid, Field * EMf, VirtualTopology3D * vct) {
 
+  srand(vct->getCartesian_rank() + 2);
+
+  double harvest;
   double prob, theta, sign;
   long long counter = 0;
   for (int i = 1; i < grid->getNXC() - 1; i++)
@@ -134,25 +137,27 @@ void Particles3D::maxwellian(Grid * grid, Field * EMf, VirtualTopology3D * vct) 
         for (int ii = 0; ii < npcelx; ii++)
           for (int jj = 0; jj < npcely; jj++)
             for (int kk = 0; kk < npcelz; kk++) {
-              //x[counter] = (ii + Drand48(seed)) * (dx / npcelx) + grid->getXN(i, j, k);  
-              //y[counter] = (jj + Drand48(seed)) * (dy / npcely) + grid->getYN(i, j, k);
-              //z[counter] = (kk + Drand48(seed)) * (dz / npcelz) + grid->getZN(i, j, k);
-              x[counter] = (ii + 0.5) * (dx / npcelx) + grid->getXN(i, j, k);  
-              y[counter] = (jj + 0.5) * (dy / npcely) + grid->getYN(i, j, k);
-              z[counter] = (kk + 0.5) * (dz / npcelz) + grid->getZN(i, j, k);
+              //x[counter] = (ii + 0.5) * (dx / npcelx) + grid->getXN(i, j, k);  
+              //y[counter] = (jj + 0.5) * (dy / npcely) + grid->getYN(i, j, k);
+              //z[counter] = (kk + 0.5) * (dz / npcelz) + grid->getZN(i, j, k);
+              x[counter] = dx*(rand() / (double) RAND_MAX) + grid->getXN(i, j, k);  
+              y[counter] = dy*(rand() / (double) RAND_MAX) + grid->getYN(i, j, k);
+              z[counter] = dz*(rand() / (double) RAND_MAX) + grid->getZN(i, j, k);
               // q = charge
               q[counter] = (qom / fabs(qom)) * (fabs(EMf->getRHOcs(i, j, k, ns)) / npcel) * (1.0 / grid->getInvVOLc(i,j,k));
 
-              // u
-              prob = sqrt(-2.0 * log(1.0 - .999999 * Drand48(seed)));
-              theta = 2.0 * M_PI * Drand48(seed);
+              harvest = rand() / (double) RAND_MAX;
+              prob = sqrt(-2.0 * log(1.0 - .999999 * harvest));
+              harvest = rand() / (double) RAND_MAX;
+              theta = 2.0 * M_PI * harvest;
               u[counter] = u0 + uth * prob * cos(theta);
-              // v
               v[counter] = v0 + vth * prob * sin(theta);
-              // w
-              prob = sqrt(-2.0 * log(1.0 - .999999 * Drand48(seed)));
-              theta = 2.0 * M_PI * Drand48(seed);
+              harvest = rand() / (double) RAND_MAX;
+              prob = sqrt(-2.0 * log(1.0 - .999999 * harvest));
+              harvest = rand() / (double) RAND_MAX;
+              theta = 2.0 * M_PI * harvest;
               w[counter] = w0 + wth * prob * cos(theta);
+
 
               if (TrackParticleID)
                 ParticleID[counter] = counter * (unsigned long) pow(10.0, BirthRank[1]) + BirthRank[0];
@@ -305,6 +310,7 @@ void Particles3D::MaxwellianFromFieldFile(Grid* grid,Field* EMf,VirtualTopology3
 
 void Particles3D::empty(Grid* grid,Field* EMf,VirtualTopology3D* vct){
         nop = 0;
+printf("EMPTY\n");
 }
 
 /* Fix the charge of each particles by using the mass matrices */
@@ -670,6 +676,138 @@ int Particles3D::updatePosition(Grid * grid, VirtualTopology3D * vct, Field * EM
   // timeTasks.addto_communicate();
   
  
+  return (0);                   // exit succcesfully (hopefully) 
+}
+
+int Particles3D::mover_PC_sub(Grid * grid, VirtualTopology3D * vct, Field * EMf) {
+  if (vct->getCartesian_rank() == 0) {
+    cout << "*** MOVER P-C species " << ns << " ***" << NiterMover << " ITERATIONS   ****" << endl;
+  }
+  double start_mover_PC = MPI_Wtime();
+  double weights[2][2][2];
+  double ***Ex = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getEx());
+  double ***Ey = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getEy());
+  double ***Ez = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getEz());
+  double ***Bx = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBx());
+  double ***By = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBy());
+  double ***Bz = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBz());
+
+  double ***Bx_ext = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBx_ext());
+  double ***By_ext = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBy_ext());
+  double ***Bz_ext = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBz_ext());
+
+  double Fext = EMf->getFext();
+
+  // const double dto2 = .5 * dt, qomdt2 = qom * dto2 / c;
+  // don't bother trying to push any particles simultaneously;
+  // MIC already does vectorization automatically, and trying
+  // to do it by hand only hurts performance.
+//#pragma omp parallel for
+//#pragma simd                    // this just slows things down (why?)
+
+  for (long long rest = 0; rest < nop; rest++) {
+    // copy the particle
+    double xp = x[rest];
+    double yp = y[rest];
+    double zp = z[rest];
+    double up = u[rest];
+    double vp = v[rest];
+    double wp = w[rest];
+    const double xptilde = x[rest];
+    const double yptilde = y[rest];
+    const double zptilde = z[rest];
+    double uptilde;
+    double vptilde;
+    double wptilde;
+
+    double Exl = 0.0;
+    double Eyl = 0.0;
+    double Ezl = 0.0;
+    double Bxl = 0.0;
+    double Byl = 0.0;
+    double Bzl = 0.0;
+    int ix;
+    int iy;
+    int iz;
+
+    // BEGIN OF SUBCYCLING LOOP
+
+    get_weights(grid, xp, yp, zp, ix, iy, iz, weights);
+    get_Bl(weights, ix, iy, iz, Bxl, Byl, Bzl, Bx, By, Bz, Bx_ext, By_ext, Bz_ext, Fext);
+
+    const double B_mag      = sqrt(Bxl*Bxl+Byl*Byl+Bzl*Bzl);
+    double       dt_sub     = M_PI*c/(4*abs(qom)*B_mag);
+    const int    sub_cycles = int(dt/dt_sub) + 1;
+
+    dt_sub = dt/double(sub_cycles);
+    
+    const double dto2 = .5 * dt_sub, qomdt2 = qom * dto2 / c;
+    
+    // if (sub_cycles>1) cout << " >> sub_cycles = " << sub_cycles << endl;
+
+    for (int cyc_cnt = 0; cyc_cnt < sub_cycles; cyc_cnt++) {
+
+      // calculate the average velocity iteratively
+      int nit = NiterMover;
+      if (sub_cycles > 2*NiterMover) nit = 1;
+
+      for (int innter = 0; innter < nit; innter++) {
+        // interpolation G-->P
+
+        get_weights(grid, xp, yp, zp, ix, iy, iz, weights);
+        get_Bl(weights, ix, iy, iz, Bxl, Byl, Bzl, Bx, By, Bz, Bx_ext, By_ext, Bz_ext, Fext);
+        get_El(weights, ix, iy, iz, Exl, Eyl, Ezl, Ex, Ey, Ez);
+
+        // end interpolation
+        const double omdtsq = qomdt2 * qomdt2 * (Bxl * Bxl + Byl * Byl + Bzl * Bzl);
+        const double denom = 1.0 / (1.0 + omdtsq);
+        // solve the position equation
+        const double ut = up + qomdt2 * Exl;
+        const double vt = vp + qomdt2 * Eyl;
+        const double wt = wp + qomdt2 * Ezl;
+        const double udotb = ut * Bxl + vt * Byl + wt * Bzl;
+        // solve the velocity equation 
+        uptilde = (ut + qomdt2 * (vt * Bzl - wt * Byl + qomdt2 * udotb * Bxl)) * denom;
+        vptilde = (vt + qomdt2 * (wt * Bxl - ut * Bzl + qomdt2 * udotb * Byl)) * denom;
+        wptilde = (wt + qomdt2 * (ut * Byl - vt * Bxl + qomdt2 * udotb * Bzl)) * denom;
+        // update position
+        xp = xptilde + uptilde * dto2;
+        yp = yptilde + vptilde * dto2;
+        zp = zptilde + wptilde * dto2;
+      }                           // end of iteration
+      // update the final position and velocity
+      up = 2.0 * uptilde - u[rest];
+      vp = 2.0 * vptilde - v[rest];
+      wp = 2.0 * wptilde - w[rest];
+      xp = xptilde + uptilde * dt_sub;
+      yp = yptilde + vptilde * dt_sub;
+      zp = zptilde + wptilde * dt_sub;
+      x[rest] = xp;
+      y[rest] = yp;
+      z[rest] = zp;
+      u[rest] = up;
+      v[rest] = vp;
+      w[rest] = wp;
+    } // END  OF SUBCYCLING LOOP
+  }                             // END OF ALL THE PARTICLES
+
+  // ********************//
+  // COMMUNICATION 
+  // *******************//
+  // timeTasks.start_communicate();
+  const int avail = communicate(vct);
+  if (avail < 0)
+    return (-1);
+  MPI_Barrier(MPI_COMM_WORLD);
+  // communicate again if particles are not in the correct domain
+  while (isMessagingDone(vct) > 0) {
+    // COMMUNICATION
+    const int avail = communicate(vct);
+    if (avail < 0)
+      return (-1);
+    MPI_Barrier(MPI_COMM_WORLD);
+  }
+  // timeTasks.addto_communicate();
   return (0);                   // exit succcesfully (hopefully) 
 }
 
@@ -1251,8 +1389,8 @@ double Particles3D::deleteParticlesOuterFrame(double multx, double multy, double
         } else {
 	  while (np_current < nplast+1) {
             if (x[np_current] < multx*dx || x[np_current] > (Lx-multx*dx) ||
-                y[np_current] < multy*dy || y[np_current] > (Ly-multy*dx) ||
-                z[np_current] < multz*dz || z[np_current] > (Lz-multz*dx)) {
+                y[np_current] < multy*dy || y[np_current] > (Ly-multy*dy) ) {
+                //z[np_current] < multz*dz || z[np_current] > (Lz-multz*dz)) {
                 Q_removed += q[np_current];
                 del_pack(np_current,&nplast);
             } else {
@@ -1415,75 +1553,45 @@ int Particles3D::injector_rand_box_mono(Grid* grid,VirtualTopology3D* vct, Field
 		npinject = (int)floor(Iinj);
 
 	if (vct->getCartesian_rank() == 0){
-			cout << "*** Injector Rand Box species " << ns << " ***" << NiterMover <<" ITERATIONS : INJECTING " << npinject << " particles, each with a charge of " << (qom/fabs(qom))*(EMf->getRHOcs(1,1,1,ns)/npcel)*(1.0/grid->getInvVOLc(1,1,1)) << " C  ****" << endl;
+			cout << "*** Injector Rand Box species " << ns << " ***" << NiterMover <<" INJECTING " << npinject << " particles per cell, each with a charge of " << (qom/fabs(qom))*(EMf->getRHOcs(1,1,1,ns)/npcel)*(1.0/grid->getInvVOLc(1,1,1)) << " C  ****" << endl;
+        }
 
 
-		for (long long inject = 0; inject < npinject; inject++)
-		{
-			harvest =   rand()/(double)RAND_MAX ;
-			x[nop] = x_center+(harvest-0.5)*L_square;
-			harvest =   rand()/(double)RAND_MAX ;
-			y[nop] = y_center+(harvest-0.5)*L_square;
-			harvest =   rand()/(double)RAND_MAX ;
-			z[nop] = z_center; //z_center+(harvest-0.5)*L_square;
-			//cout << "x=" <<x[nop] << "y=" << y[nop]<< "z=" << z[nop] <<endl;
-			//this assigns charge the same as does maxwell_box
-			q[nop] =  (qom/fabs(qom))*(EMf->getRHOcs(1,1,1,ns)/npcel)*pow(L_square,3);
-
-			// random numbers for Maxwellian
-			harvest =   rand()/(double)RAND_MAX;
-			fi  = M_PI*harvest;
-			harvest =   rand()/(double)RAND_MAX;
-			theta = 2.0*M_PI*harvest;
-
-			//u
-			u[nop] = u0 + uth*cos(fi)*cos(theta);
-
-			// v
-			v[nop] = v0 + vth*cos(fi)*sin(theta);
-
-			// w
-			w[nop] = w0 + wth*sin(fi);
-
-			if (TrackParticleID)
-				ParticleID[nop]= nop*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
-
-			//printf("*** DEBUG: Added a particle at (x,y,z) = (%f,%f,%f) with (vx,vy,vz) = (%f,%f,%f)\n", x[nop], y[nop], z[nop], u[nop], v[nop], w[nop]);
-
-			nop++;
-		}
-
-
-		// move particles inside the sim box
-		for (long long i=store_nop; i < nop; i++){
-			x[i] += u[i]*dt;
-			y[i] += v[i]*dt;
-			z[i] += w[i]*dt;
-		}
-	}
-
-		// ******************** //
-		// COMMUNICATION
-		// ******************* //
-	    avail = communicate(vct);
-	    if (avail < 0){
-		cout <<"Cannot communicate! Failing!!!!\n";
-		return(-1);
-	    }
-	    MPI_Barrier(MPI_COMM_WORLD);
-//	    cout << "Past barrier...\n";
-	    // communicate again if particles are not in the correct domain
-	    while(isMessagingDone(vct) >0){
-			// COMMUNICATION
-			avail = communicate(vct);
-
-			if (avail < 0)
-		        return(-1);
-			MPI_Barrier(MPI_COMM_WORLD);
-		}
-
-
-//	cout << "Communicated!!\n";
+                  for (int i = 1; i < grid->getNXC() - 1; i++)
+                    for (int j = 1; j < grid->getNYC() - 1; j++)
+                      for (int k = 1; k < grid->getNZC() - 1; k++) {
+			//if (nop > 10000) continue;
+		        for (long long inject = 0; inject < npinject; inject++)
+		        {
+		           double xp = grid->getXN(i, j, k) + dx*Drand48(seed);	
+		           double yp = grid->getYN(i, j, k) + dy*Drand48(seed);	
+		           double zp = grid->getZN(i, j, k) + dz*Drand48(seed);	
+			   if (xp< 10*dx) {
+			   //if (fabs(xp - x_center) < L_square && fabs(yp - y_center) < L_square && fabs(zp - z_center) < L_square) {
+                              x[nop] = xp;
+                              y[nop] = yp;
+                              z[nop] = zp;
+                              // q = charge
+                              q[nop] = (qom / fabs(qom)) * (fabs(EMf->getRHOcs(i, j, k, ns)) / npcel) * (1.0 / grid->getInvVOLc(i,j,k));
+                 
+                              //nop
+                              prob = sqrt(-2.0 * log(1.0 - .999999 * Drand48(seed)));
+                              theta = 2.0 * M_PI * Drand48(seed);
+                              u[nop] = u0 + uth * prob * cos(theta);
+                              // v
+                              v[nop] = v0 + vth * prob * sin(theta);
+                              // w
+                              prob = sqrt(-2.0 * log(1.0 - .999999 * Drand48(seed)));
+                              theta = 2.0 * M_PI * Drand48(seed);
+                              w[nop] = w0 + wth * prob * cos(theta);
+                 
+                              if (TrackParticleID)
+                                ParticleID[nop] = nop * (unsigned long) pow(10.0, BirthRank[1]) + BirthRank[0];
+                 
+			     nop++;
+                           }
+                         }
+		      }
 
 	return(0); // exit succcesfully (hopefully)
 

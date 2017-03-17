@@ -53,6 +53,7 @@ class EMfields3D                // :public Field
     void initDipole(VirtualTopology3D *vct, Grid *grid, Collective *col);
     void initBessel1D(VirtualTopology3D * vct, Grid * grid, Collective *col);
     void initBessel2D(VirtualTopology3D * vct, Grid * grid, Collective *col);
+    void initHalfPlanet(VirtualTopology3D *vct, Grid *grid, Collective *col);
 
     /* Fix boundary conditions in cylindrical coordinate */
     void fixGhostB();
@@ -75,6 +76,7 @@ class EMfields3D                // :public Field
     void productMassE(double*, double*, double*, double***, double***, double***, int, int, int);
     double productMassEV(double ***vX, int i, int j, int k, Grid* grid);
     void smoothEth(double value, VirtualTopology3D * vct, Collective *col);
+    void smooth(double value, double ***Vx,double ***Vy,double ***Vz,VirtualTopology3D * vct, Collective *col);
     
     void smoothBth(double value, double ***Bxth, double ***Byth, double ***Bzth, VirtualTopology3D * vct, Collective *col);
     void smoothJh(double value, VirtualTopology3D * vct, Collective *col);

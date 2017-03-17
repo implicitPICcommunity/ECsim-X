@@ -26,6 +26,11 @@ if(PROFILING)
   add_definitions( -D__PROFILING__ )
 endif()
 
+option(TEST_JDOTE "Check if the current from the particles and fields are the
+same" OFF)
+if(TEST_JDOTE)
+  add_definitions( -D__JDOTE_TEST__)
+endif()
 
 option(IPIC_TESTS "Set up the code tests" OFF)
 
