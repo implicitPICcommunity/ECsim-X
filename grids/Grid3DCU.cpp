@@ -86,7 +86,7 @@ Grid3DCU::Grid3DCU(Collective * col, VirtualTopology3D * vct) {
           double r0 = center_xcoord[i-1];
           double r1 = center_xcoord[i];
           if (r0 < 0) { 
-            invVOLn[i][j][k] = 1.0/(dy*r1*r1);
+            invVOLn[i][j][k] = 2.0/(dy*r1*r1);
           } else {
             invVOLn[i][j][k] = 2.0/(dy*(r1*r1 - r0*r0));
           }

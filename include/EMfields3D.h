@@ -109,6 +109,19 @@ class EMfields3D                // :public Field
     void addJy(double weight[][2][2], int X, int Y, int Z, int ns);
     void addJz(double weight[][2][2], int X, int Y, int Z, int ns);
 
+    
+    /*! add an amount of pressure density - direction XX to current density field at node X,Y,Z */
+    void addPxx(double weight[][2][2], int X, int Y, int Z, int is);
+    /*! add an amount of pressure density - direction XY to current density field at node X,Y,Z */
+    void addPxy(double weight[][2][2], int X, int Y, int Z, int is);
+    /*! add an amount of pressure density - direction XZ to current density field at node X,Y,Z */
+    void addPxz(double weight[][2][2], int X, int Y, int Z, int is);
+    /*! add an amount of pressure density - direction YY to current density field at node X,Y,Z */
+    void addPyy(double weight[][2][2], int X, int Y, int Z, int is);
+    /*! add an amount of pressure density - direction YZ to current density field at node X,Y,Z */
+    void addPyz(double weight[][2][2], int X, int Y, int Z, int is);
+    /*! add an amount of pressure density - direction ZZ to current density field at node X,Y,Z */
+    void addPzz(double weight[][2][2], int X, int Y, int Z, int is);
 
     /*! Perfect conductor boundary conditions LEFT wall */
     void perfectConductorLeft(double ***imageX, double ***imageY, double ***imageZ, double ***vectorX, double ***vectorY, double ***vectorZ, int dir, Grid * grid);
@@ -216,6 +229,20 @@ class EMfields3D                // :public Field
 
     void UpdateFext(int cycle);
     double getFext();
+
+
+    /*! get pressure tensor XX for species */
+    double ****getpXXsn();
+    /*! get pressure tensor XY for species */
+    double ****getpXYsn();
+    /*! get pressure tensor XZ for species */
+    double ****getpXZsn();
+    /*! get pressure tensor YY for species */
+    double ****getpYYsn();
+    /*! get pressure tensor YZ for species */
+    double ****getpYZsn();
+    /*! get pressure tensor ZZ for species */
+    double ****getpZZsn();
 
     /*! get Jxh(X,Y,Z) */
     double &getJxh(int indexX, int indexY, int indexZ) const;
@@ -473,6 +500,19 @@ class EMfields3D                // :public Field
     string Case;
    
     double Fext;
+
+    /*! SPECIES: pressure tensor component-XX, defined on nodes */
+    double ****pXXsn;
+    /*! SPECIES: pressure tensor component-XY, defined on nodes */
+    double ****pXYsn;
+    /*! SPECIES: pressure tensor component-XZ, defined on nodes */
+    double ****pXZsn;
+    /*! SPECIES: pressure tensor component-XZ, defined on nodes */
+    double ****pYYsn;
+    /*! SPECIES: pressure tensor component-YZ, defined on nodes */
+    double ****pYZsn;
+    /*! SPECIES: pressure tensor component-ZZ, defined on nodes */
+    double ****pZZsn;
 
     /*! GMRES tolerance criterium for stopping iterations */
     double GMREStol;

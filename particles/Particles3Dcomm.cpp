@@ -306,6 +306,16 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       double qau = q[ip]*(alpha[0][0]*u[ip] + alpha[0][1]*v[ip] + alpha[0][2]*w[ip]);
       double qav = q[ip]*(alpha[1][0]*u[ip] + alpha[1][1]*v[ip] + alpha[1][2]*w[ip]);
       double qaw = q[ip]*(alpha[2][0]*u[ip] + alpha[2][1]*v[ip] + alpha[2][2]*w[ip]);
+
+      //double vbEx = u[ip];
+      //double vbEy = v[ip];
+      //double vbEz = w[ip];
+      //double edotb = vbEx * omcx + vbEy * omcy + vbEz * omcz;
+      //qau = q[ip]*(vbEx + (vbEy * omcz - vbEz * omcy + edotb * omcx)) * denom;
+      //qav = q[ip]*(vbEy + (vbEz * omcx - vbEx * omcz + edotb * omcy)) * denom;
+      //qaw = q[ip]*(vbEz + (vbEx * omcy - vbEy * omcx + edotb * omcz)) * denom;
+
+
       #ifdef __PROFILING__
       clocks->stop(6);
       #endif
@@ -491,6 +501,43 @@ void Particles3Dcomm::computeCurrent(Field * EMf, Grid * grid, VirtualTopology3D
           for (int kk = 0; kk < 2; kk++)
             temp[ii][jj][kk] = q[ip]*w[ip]*weight[ii][jj][kk];
       EMf->addJz(temp, ix, iy, iz, ns);
+
+      // Pxx - add pressure tensor
+      for (int ii = 0; ii < 2; ii++)
+        for (int jj = 0; jj < 2; jj++)
+          for (int kk = 0; kk < 2; kk++)
+            temp[ii][jj][kk] = u[ip] * u[ip] * weight[ii][jj][kk];
+      EMf->addPxx(temp, ix, iy, iz, ns);
+      // Pxy - add pressure tensor
+      for (int ii = 0; ii < 2; ii++)
+        for (int jj = 0; jj < 2; jj++)
+          for (int kk = 0; kk < 2; kk++)
+            temp[ii][jj][kk] = u[ip] * v[ip] * weight[ii][jj][kk];
+      EMf->addPxy(temp, ix, iy, iz, ns);
+      // Pxz - add pressure tensor
+      for (int ii = 0; ii < 2; ii++)
+        for (int jj = 0; jj < 2; jj++)
+          for (int kk = 0; kk < 2; kk++)
+            temp[ii][jj][kk] = u[ip] * w[ip] * weight[ii][jj][kk];
+      EMf->addPxz(temp, ix, iy, iz, ns);
+      // Pyy - add pressure tensor
+      for (int ii = 0; ii < 2; ii++)
+        for (int jj = 0; jj < 2; jj++)
+          for (int kk = 0; kk < 2; kk++)
+            temp[ii][jj][kk] = v[ip] * v[ip] * weight[ii][jj][kk];
+      EMf->addPyy(temp, ix, iy, iz, ns);
+      // Pyz - add pressure tensor
+      for (int ii = 0; ii < 2; ii++)
+        for (int jj = 0; jj < 2; jj++)
+          for (int kk = 0; kk < 2; kk++)
+            temp[ii][jj][kk] = v[ip] * w[ip] * weight[ii][jj][kk];
+      EMf->addPyz(temp, ix, iy, iz, ns);
+      // Pzz - add pressure tensor
+      for (int ii = 0; ii < 2; ii++)
+        for (int jj = 0; jj < 2; jj++)
+          for (int kk = 0; kk < 2; kk++)
+            temp[ii][jj][kk] = w[ip] * w[ip] * weight[ii][jj][kk];
+      EMf->addPzz(temp, ix, iy, iz, ns);
 
     }
   }

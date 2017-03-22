@@ -154,6 +154,14 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
   Mzy = newArr4(double, NE_MASS, nxn, nyn, nzn);
   Mzz = newArr4(double, NE_MASS, nxn, nyn, nzn);
 
+  pXXsn = newArr4(double, ns, nxn, nyn, nzn);
+  pXYsn = newArr4(double, ns, nxn, nyn, nzn);
+  pXZsn = newArr4(double, ns, nxn, nyn, nzn);
+  pYYsn = newArr4(double, ns, nxn, nyn, nzn);
+  pYZsn = newArr4(double, ns, nxn, nyn, nzn);
+  pZZsn = newArr4(double, ns, nxn, nyn, nzn);
+
+
   // External imposed fields
   Bx_ext = newArr3(double,nxn,nyn,nzn);
   By_ext = newArr3(double,nxn,nyn,nzn);
@@ -217,24 +225,48 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
  *  Ez(0) = 0     -> Ez[1] = 0
  */
 void EMfields3D::fixBC_Cyl_Image(double ***ImX, double ***ImY, double ***ImZ, double ***nEx, double ***nEy, double ***nEz, double ***cBx, double ***cBy, double ***cBz) {
+
   if (xStart == 0) {
-    double r1 = dx/2.0;
-    double vol = dy*r1*r1/2.0;
-    for (int j=0; j<nyn; j++) 
-      for (int k=0; k<nzn; k++) {
-        ImX[1][j][k] = nEx[1][j][k];
-        //ImY[1][j][k] = nEy[1][j][k] - nEy[2][j][k];
-        //ImY[1][j][k] = th*dt*r1/(2*dy*vol)*(cBz[0][j][k] + cBz[1][j][k]) -  nEy[1][j][k];
-        ImZ[1][j][k] = nEz[1][j][k];
-      }
+    if (bcEMfaceXleft == 0) {
+      for (int j=0; j<nyn; j++) 
+        for (int k=0; k<nzn; k++) {
+          ImX[1][j][k] = nEx[1][j][k];
+          ImY[1][j][k] = nEy[1][j][k];
+          ImZ[1][j][k] = nEz[1][j][k];
+        }
+    } else if (bcEMfaceXleft == 1) {
+      for (int j=0; j<nyn; j++) 
+        for (int k=0; k<nzn; k++) {
+          ImX[1][j][k] = nEx[1][j][k];
+          ImY[1][j][k] = nEy[1][j][k] - nEy[2][j][k];
+          ImZ[1][j][k] = nEz[1][j][k];
+        }
+    } else if (bcEMfaceXleft == 2) {
+      for (int j=0; j<nyn; j++) 
+        for (int k=0; k<nzn; k++) {
+          ImX[1][j][k] = nEx[1][j][k];
+          ImY[1][j][k] = nEy[1][j][k] - nEy[2][j][k];
+          ImZ[1][j][k] = nEz[1][j][k];
+        }
+    }
   }
+
   if (xEnd == Lx) {
-    for (int j=0; j<nyn; j++) 
-      for (int k=0; k<nzn; k++) {
-        ImX[nxn-2][j][k] = nEx[nxn-2][j][k];
-        ImY[nxn-2][j][k] = nEy[nxn-2][j][k];
-        ImZ[nxn-2][j][k] = nEz[nxn-2][j][k];
-      }
+    if (bcEMfaceXright == 0) {
+      for (int j=0; j<nyn; j++) 
+        for (int k=0; k<nzn; k++) {
+          ImX[nxn-2][j][k] = nEx[nxn-2][j][k];
+          ImY[nxn-2][j][k] = nEy[nxn-2][j][k];
+          ImZ[nxn-2][j][k] = nEz[nxn-2][j][k];
+        }
+    } else if (bcEMfaceXright == 1) {
+      for (int j=0; j<nyn; j++) 
+        for (int k=0; k<nzn; k++) {
+          ImX[nxn-2][j][k] = nEx[nxn-2][j][k];
+          ImY[nxn-2][j][k] = nEy[nxn-2][j][k] - nEy[nxn-3][j][k];
+          ImZ[nxn-2][j][k] = nEz[nxn-2][j][k];
+        }
+    }
   }
 }
 
@@ -251,13 +283,22 @@ void EMfields3D::fixBC_Cyl_Image(double ***ImX, double ***ImY, double ***ImZ, do
  */
 void EMfields3D::fixBC_Cyl_Source(double ***SoX, double ***SoY, double ***SoZ) {
   if (xStart == 0) {
-    for (int j=0; j<nyn; j++) 
-      for (int k=0; k<nzn; k++) {
-        SoX[1][j][k] = 0;
-        //SoY[1][j][k] = 0;
-        //SoY[1][j][k] = th*dt*4*M_PI*Jzh[1][j][k] + Ex[1][j][k];
-        SoZ[1][j][k] = 0;
-      }
+    if (bcEMfaceXleft == 0) {
+      for (int j=0; j<nyn; j++) 
+        for (int k=0; k<nzn; k++) {
+          SoX[1][j][k] = 0;
+          SoY[1][j][k] = 0;
+          SoZ[1][j][k] = 0;
+        }
+    } else if (bcEMfaceXleft == 1) {
+      for (int j=0; j<nyn; j++) 
+        for (int k=0; k<nzn; k++) {
+          SoX[1][j][k] = 0;
+          SoY[1][j][k] = 0;
+          SoZ[1][j][k] = 0;
+        }
+    }
+
     for (int j=0; j<nyn; j++) 
       for (int k=0; k<nzn; k++) 
         for (int c=0; c<NE_MASS; c++) {
@@ -272,13 +313,24 @@ void EMfields3D::fixBC_Cyl_Source(double ***SoX, double ***SoY, double ***SoZ) {
           Mzz[c][1][j][k] = 0;
         }
   }
+
   if (xEnd == Lx) {
-    for (int j=0; j<nyn; j++) 
-      for (int k=0; k<nzn; k++) {
-        SoX[nxn-2][j][k] = 0;
-        SoY[nxn-2][j][k] = 0;
-        SoZ[nxn-2][j][k] = 0;
-      }
+    if (bcEMfaceXright == 0) {
+      for (int j=0; j<nyn; j++) 
+        for (int k=0; k<nzn; k++) {
+          SoX[nxn-2][j][k] = 0;
+          SoY[nxn-2][j][k] = 0;
+          SoZ[nxn-2][j][k] = 0;
+        }
+    } else if (bcEMfaceXright == 1) {
+      for (int j=0; j<nyn; j++) 
+        for (int k=0; k<nzn; k++) {
+          SoX[nxn-2][j][k] = 0;
+          SoY[nxn-2][j][k] = 0;
+          SoZ[nxn-2][j][k] = 0;
+        }
+    }
+
     for (int j=0; j<nyn; j++) 
       for (int k=0; k<nzn; k++) 
         for (int c=0; c<NE_MASS; c++) {
@@ -437,7 +489,7 @@ void EMfields3D::MaxwellSource(double *bkrylov, Grid * grid, VirtualTopology3D *
   scale(tempZC, Bzc, 1, nxc, nyc, nzc);
   #endif
 
-  smoothJh(Smooth, vct, col);
+  //smoothJh(Smooth, vct, col);
 
   for (int i=0; i<nxn-0; i++)
     for (int j=0; j<nyn-0; j++) 
@@ -1035,6 +1087,50 @@ void EMfields3D::addMassXX(double val, int X, int Y, int Z, int ind) {
   Mxx[ind][X][Y][Z] += val;
 }
 
+/*! add an amount of pressure density - direction XX to current density field on the node */
+void EMfields3D::addPxx(double weight[][2][2], int X, int Y, int Z, int is) {
+  for (int i = 0; i < 2; i++)
+    for (int j = 0; j < 2; j++)
+      for (int k = 0; k < 2; k++)
+        pXXsn[is][X - i][Y - j][Z - k] += weight[i][j][k] * invVOLn[X - i][Y - j][Z - k];
+}
+/*! add an amount of pressure density - direction XY to current density field on the node */
+void EMfields3D::addPxy(double weight[][2][2], int X, int Y, int Z, int is) {
+  for (int i = 0; i < 2; i++)
+    for (int j = 0; j < 2; j++)
+      for (int k = 0; k < 2; k++)
+        pXYsn[is][X - i][Y - j][Z - k] += weight[i][j][k] * invVOLn[X - i][Y - j][Z - k];
+}
+/*! add an amount of pressure density - direction XZ to current density field on the node */
+void EMfields3D::addPxz(double weight[][2][2], int X, int Y, int Z, int is) {
+  for (int i = 0; i < 2; i++)
+    for (int j = 0; j < 2; j++)
+      for (int k = 0; k < 2; k++)
+        pXZsn[is][X - i][Y - j][Z - k] += weight[i][j][k] * invVOLn[X - i][Y - j][Z - k];
+}
+/*! add an amount of pressure density - direction YY to current density field on the node */
+void EMfields3D::addPyy(double weight[][2][2], int X, int Y, int Z, int is) {
+  for (int i = 0; i < 2; i++)
+    for (int j = 0; j < 2; j++)
+      for (int k = 0; k < 2; k++)
+        pYYsn[is][X - i][Y - j][Z - k] += weight[i][j][k] * invVOLn[X - i][Y - j][Z - k];
+}
+/*! add an amount of pressure density - direction YZ to current density field on the node */
+void EMfields3D::addPyz(double weight[][2][2], int X, int Y, int Z, int is) {
+  for (int i = 0; i < 2; i++)
+    for (int j = 0; j < 2; j++)
+      for (int k = 0; k < 2; k++)
+        pYZsn[is][X - i][Y - j][Z - k] += weight[i][j][k] * invVOLn[X - i][Y - j][Z - k];
+}
+/*! add an amount of pressure density - direction ZZ to current density field on the node */
+void EMfields3D::addPzz(double weight[][2][2], int X, int Y, int Z, int is) {
+  for (int i = 0; i < 2; i++)
+    for (int j = 0; j < 2; j++)
+      for (int k = 0; k < 2; k++)
+        pZZsn[is][X - i][Y - j][Z - k] += weight[i][j][k] * invVOLn[X - i][Y - j][Z - k];
+}
+
+
 /*! set to 0 all the densities fields */
 void EMfields3D::setZeroDensities() {
   for (register int i = 0; i < nxn; i++)
@@ -1061,6 +1157,12 @@ void EMfields3D::setZeroDensities() {
           Jxs[kk][i][j][k] = 0.0;
           Jys[kk][i][j][k] = 0.0;
           Jzs[kk][i][j][k] = 0.0;
+          pXXsn[kk][i][j][k] = 0.0;
+          pXYsn[kk][i][j][k] = 0.0;
+          pXZsn[kk][i][j][k] = 0.0;
+          pYYsn[kk][i][j][k] = 0.0;
+          pYZsn[kk][i][j][k] = 0.0;
+          pZZsn[kk][i][j][k] = 0.0;
         }
 }
 
@@ -2029,6 +2131,7 @@ void EMfields3D::initBessel1D(VirtualTopology3D * vct, Grid * grid, Collective *
           // electric field
           double x = grid->getXN(i,j,k);
           double y = grid->getYN(i,j,k);
+#ifdef MODE_A
           Ex[i][j][k] = 0;
           Ey[i][j][k] = 0;
           Ez[i][j][k] = besselJ(1, x*ZERO_J1/Lx); //besselJ(1, x*ZERO_J1/Lx);
@@ -2036,11 +2139,23 @@ void EMfields3D::initBessel1D(VirtualTopology3D * vct, Grid * grid, Collective *
           Bxn[i][j][k] = 0;
           Byn[i][j][k] = 0;
           Bzn[i][j][k] = 0;
+#else
+
+          Ex[i][j][k] = 0;
+          Ey[i][j][k] = besselJ(0, x*ZERO_J1/Lx);
+          Ez[i][j][k] = 0;
+          // Magnetic field
+          Bxn[i][j][k] = 0;
+          Byn[i][j][k] = 0;
+          Bzn[i][j][k] = 0;
+#endif
         }
     // initialize B on centers
     for (int i = 0; i < nxc; i++)
       for (int j = 0; j < nyc; j++)
         for (int k = 0; k < nzc; k++) {
+          double x = grid->getXN(i,j,k);
+          double y = grid->getYN(i,j,k);
           // Magnetic field
           Bxc[i][j][k] = 0;
           Byc[i][j][k] = 0;
@@ -2728,6 +2843,31 @@ double ***&EMfields3D::getBzTot(){
   return arr;
 }
 
+/*! SPECIES: get pressure tensor component XX defined on nodes */
+double ****EMfields3D::getpXXsn() {
+  return (pXXsn);
+}
+/*! SPECIES: get pressure tensor component XY defined on nodes */
+double ****EMfields3D::getpXYsn() {
+  return (pXYsn);
+}
+/*! SPECIES: get pressure tensor component XZ defined on nodes */
+double ****EMfields3D::getpXZsn() {
+  return (pXZsn);
+}
+/*! SPECIES: get pressure tensor component YY defined on nodes */
+double ****EMfields3D::getpYYsn() {
+  return (pYYsn);
+}
+/*! SPECIES: get pressure tensor component YZ defined on nodes */
+double ****EMfields3D::getpYZsn() {
+  return (pYZsn);
+}
+/*! SPECIES: get pressure tensor component ZZ defined on nodes */
+double ****EMfields3D::getpZZsn() {
+  return (pZZsn);
+}
+
 /*! get current -Direction X */
 double &EMfields3D::getJxh(int indexX, int indexY, int indexZ) const {
   return (Jxh[indexX][indexY][indexZ]);
@@ -3167,9 +3307,9 @@ void EMfields3D::testJdotE(Grid* grid)
 {
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  //char name[128];
-  //sprintf(name, "testJdotE_%d.txt",rank);
-  //FILE* fd = fopen(name,"w");
+  char name[128];
+  sprintf(name, "testJdotE_%d.txt",rank);
+  FILE* fd = fopen(name,"w");
 
   double maxErr = 0;
   for (int i=1; i<nxn-1; i++)
@@ -3198,11 +3338,11 @@ void EMfields3D::testJdotE(Grid* grid)
         double JE_fields =  Jxfield*Exth[i][j][k] + Jyfield*Eyth[i][j][k] + Jzfield*Ezth[i][j][k];
         double err = fabs(JE_part - JE_fields);
         if (err > maxErr) maxErr = err;
-        //fprintf(fd, "%2d %2d %2d %13.6e %13.6e %13.6e   %13.6e %13.6e %13.6e   %13.6e %13.6e %13.6e\n", i,j,k,Jxbar,Jybar,Jzbar, Jxfield, Jyfield, Jzfield, JE_part, JE_fields, err);
-        //fprintf(fd, "%2d %2d %2d %13.6e %13.6e %13.6e\n", i,j,k,JE_part, JE_fields, err);
+        fprintf(fd, "%2d %2d %2d %13.6e %13.6e %13.6e\n", i,j,k,JE_part, JE_fields, err);
       }
-  //fclose(fd);
+  fclose(fd);
 
   fprintf(stderr,"TEST JdotE :rank [%d] Max. error %13.6e\n", rank, maxErr);
 
+  getchar();
 }

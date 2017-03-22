@@ -350,6 +350,7 @@ void c_Solver::WriteOutput(int cycle) {
   EMf->communicateGhostP2G_spec(vct);
 
   if (col->getWriteMethod() == "ascii") {
+    if (cycle%(col->getFieldOutputCycle())!=0) return;
     char place[128];
     const char* dirtxt = SaveDirName.c_str();
     sprintf(place,"%s/filedsProc%02d_%06d.txt",dirtxt, myrank, cycle);
@@ -384,6 +385,7 @@ void c_Solver::WriteOutput(int cycle) {
     /* Parallel HDF5 output using the H5hut library */
     /* -------------------------------------------- */
     if (cycle%(col->getFieldOutputCycle())==0)        WriteFieldsH5hut(ns, grid, EMf,  col, vct, cycle);
+    //if (cycle%(col->getParticlesOutputCycle())==0)    WritePartclH5hut(ns, grid, part, col, vct, cycle);
     if (cycle%(col->getParticlesOutputCycle())==0 &&
         cycle!=col->getLast_cycle() && cycle!=0)      WritePartclH5hut(ns, grid, part, col, vct, cycle);
 

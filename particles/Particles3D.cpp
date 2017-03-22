@@ -126,7 +126,7 @@ void Particles3D::constantVelocity(double vel, int dim, Grid * grid, Field * EMf
 /** Maxellian random velocity and uniform spatial distribution */
 void Particles3D::maxwellian(Grid * grid, Field * EMf, VirtualTopology3D * vct) {
 
-  srand(vct->getCartesian_rank() + 2);
+  srand((vct->getCartesian_rank()+1)*20 + ns);
 
   double harvest;
   double prob, theta, sign;
@@ -137,12 +137,12 @@ void Particles3D::maxwellian(Grid * grid, Field * EMf, VirtualTopology3D * vct) 
         for (int ii = 0; ii < npcelx; ii++)
           for (int jj = 0; jj < npcely; jj++)
             for (int kk = 0; kk < npcelz; kk++) {
-              //x[counter] = (ii + 0.5) * (dx / npcelx) + grid->getXN(i, j, k);  
-              //y[counter] = (jj + 0.5) * (dy / npcely) + grid->getYN(i, j, k);
-              //z[counter] = (kk + 0.5) * (dz / npcelz) + grid->getZN(i, j, k);
-              x[counter] = dx*(rand() / (double) RAND_MAX) + grid->getXN(i, j, k);  
-              y[counter] = dy*(rand() / (double) RAND_MAX) + grid->getYN(i, j, k);
-              z[counter] = dz*(rand() / (double) RAND_MAX) + grid->getZN(i, j, k);
+              x[counter] = (ii + 0.5) * (dx / npcelx) + grid->getXN(i, j, k);  
+              y[counter] = (jj + 0.5) * (dy / npcely) + grid->getYN(i, j, k);
+              z[counter] = (kk + 0.5) * (dz / npcelz) + grid->getZN(i, j, k);
+              //x[counter] = dx*(rand() / (double) RAND_MAX) + grid->getXN(i, j, k);  
+              //y[counter] = dy*(rand() / (double) RAND_MAX) + grid->getYN(i, j, k);
+              //z[counter] = dz*(rand() / (double) RAND_MAX) + grid->getZN(i, j, k);
               // q = charge
               q[counter] = (qom / fabs(qom)) * (fabs(EMf->getRHOcs(i, j, k, ns)) / npcel) * (1.0 / grid->getInvVOLc(i,j,k));
 
@@ -157,7 +157,6 @@ void Particles3D::maxwellian(Grid * grid, Field * EMf, VirtualTopology3D * vct) 
               harvest = rand() / (double) RAND_MAX;
               theta = 2.0 * M_PI * harvest;
               w[counter] = w0 + wth * prob * cos(theta);
-
 
               if (TrackParticleID)
                 ParticleID[counter] = counter * (unsigned long) pow(10.0, BirthRank[1]) + BirthRank[0];
@@ -215,7 +214,7 @@ void Particles3D::MaxwellianDoubleGEM(Grid * grid, Field * EMf, VirtualTopology3
 int Particles3D::monoenergetic_box(Grid* grid,Field* EMf,VirtualTopology3D* vct, double L_square, double x_center, double y_center, double z_center, double multiple){
 
   /* initialize random generator with different seed on different processor */
-  srand(vct->getCartesian_rank()+2);
+  srand(vct->getCartesian_rank()*20 + ns);
 
   double harvest;
   double prob, theta, sign;
