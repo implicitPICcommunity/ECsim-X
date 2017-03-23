@@ -1596,6 +1596,7 @@ int Particles3D::injector_rand_box_mono(Grid* grid,VirtualTopology3D* vct, Field
 
 }
 
+/*! Set the z coordintaes equal zero for cylindrical coordinates */
 void Particles3D::fixZcylindrical()
 {
   for (int i=0; i<nop; i++) {
@@ -1603,6 +1604,7 @@ void Particles3D::fixZcylindrical()
   }
 }
 
+/*! Set to zero the corresponding components of the position of the particles for 1D and 2D cases */
 void Particles3D::fixPosition()
 {
   if (ndim == 1) {
@@ -1615,4 +1617,83 @@ void Particles3D::fixPosition()
   }
 }
 
+
+void Particles3D::setLagrangianFrame(bool mode) {
+#pragma omp parallel for
+  if (mode) { 
+    for (long long rest = 0; rest < nop; rest++) {
+      // Update the positions with the new velocity
+      u[rest] -= u_bulk;
+      v[rest] -= v_bulk;
+      w[rest] -= w_bulk;
+    }                            
+  } else {
+    for (long long rest = 0; rest < nop; rest++) {
+      // Update the positions with the new velocity
+      u[rest] += u_bulk;
+      v[rest] += v_bulk;
+      w[rest] += w_bulk;
+    }                            
+  }
+
+}
+int Particles3D::updateLagrangianFrame(VirtualTopology3D * vct) {
+
+#pragma omp parallel for
+#pragma simd                    // this just slows things down (why?)
+  for (long long rest = 0; rest < nop; rest++) {
+    double xp = x[rest];
+    double yp = y[rest];
+    double zp = z[rest];
+    double up = u[rest];
+    double vp = v[rest];
+    double wp = w[rest];
+    // Update the positions with the new velocity
+    xp = x[rest] + u_bulk * dt;
+    yp = y[rest] + v_bulk * dt;
+    zp = z[rest] + w_bulk * dt;
+
+    if (Cylindrical == 1) {
+       double gamma = atan2(zp,xp);
+       xp=xp*cos(gamma)+zp*sin(gamma);
+       zp=0.0;
+       double uprot=up*cos(gamma)+wp*sin(gamma);
+       wp=-up*sin(gamma)+wp*cos(gamma);
+       up=uprot;
+ 
+       if (xp > Lx) {
+          xp = 2*Lx - xp;
+          up = -up;
+        }
+     }
+
+     x[rest] = xp;
+     y[rest] = yp;
+     z[rest] = zp;
+     u[rest] = up;
+     v[rest] = vp;
+     w[rest] = wp;
+  }                             // END OF ALL THE PARTICLES
+
+  // ********************//
+  // COMMUNICATION 
+  // *******************//
+  // timeTasks.start_communicate();
+  const int avail = communicate(vct);
+  if (avail < 0)
+    return (-1);
+  MPI_Barrier(MPI_COMM_WORLD);
+  // communicate again if particles are not in the correct domain
+  while (isMessagingDone(vct) > 0) {
+    // COMMUNICATION
+    const int avail = communicate(vct);
+    if (avail < 0)
+      return (-1);
+    MPI_Barrier(MPI_COMM_WORLD);
+  }
+  // timeTasks.addto_communicate();
+  
+ 
+  return (0);                   // exit succcesfully (hopefully) 
+}
 

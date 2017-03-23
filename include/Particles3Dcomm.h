@@ -302,8 +302,12 @@ protected:
 
   /** Seed for random numbers generator */
   long long seed;
+  /** Cylindrical coordinates */
   int Cylindrical;
+  /** Number of dimension of the problem */
   int ndim;
+  /** Bulk velocity (for the Lagrangian reference frame */
+  double u_bulk, v_bulk, w_bulk;
 };
 
 #endif

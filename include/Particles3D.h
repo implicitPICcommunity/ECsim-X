@@ -83,6 +83,8 @@ class Particles3D:public Particles3Dcomm {
     void fixZcylindrical();
     void fixPosition();
     void fixCharge(Grid* grid,Field* EMf,VirtualTopology3D* vct, Collective *col);
+    int  updateLagrangianFrame(VirtualTopology3D * vct);
+    void setLagrangianFrame(bool mode); 
 
 };
 

@@ -142,6 +142,10 @@ void Particles3Dcomm::allocate(int species, long long initnpmax, Collective * co
   Cylindrical = col->getCylindrical();
   ndim = col->getNdim();
 
+  u_bulk = col->getUbulk();
+  v_bulk = col->getVbulk();
+  w_bulk = col->getWbulk();
+
   // boundary condition for particles
   bcPfaceXright = col->getBcPfaceXright();
   bcPfaceXleft = col->getBcPfaceXleft();

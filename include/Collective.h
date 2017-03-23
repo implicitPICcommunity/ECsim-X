@@ -67,6 +67,12 @@ class Collective
     double getcoilSpacing();
     /** Get cylindrical coordinates */
     int getCylindrical();
+    /** Get lagrangian reference frame */
+    int getLagrangian();
+    /** Get the bulk velocity */
+    double getUbulk();
+    double getVbulk();
+    double getWbulk();
 
     /*! Get the number of cells - direction X */
     int getNxc();
@@ -447,8 +453,14 @@ class Collective
     /*! Output for diagnostics */
     int DiagnosticsOutputCycle;
 
+    /** Cylindrical coordinates */
     int Cylindrical;
+    /** Lagrangian frame of reference */
+    int Lagrangian;
+    /** Number of dimension of the problem */
     int ndim;
+    /** Bulk velocity (for the Lagrangian reference frame */
+    double u_bulk, v_bulk, w_bulk;
 };
 
 #endif

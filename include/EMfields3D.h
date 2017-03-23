@@ -293,6 +293,8 @@ class EMfields3D                // :public Field
     void computeRhotilde(VirtualTopology3D * vct, Collective *col, Grid* grid, int is);
     void testJdotE(Grid* grid);
 
+    void updateLagrangianFrame(VirtualTopology3D * vct, Collective *col);
+
     /* ********************************* // VARIABLES ********************************* */
   private:
     /*! light speed */
@@ -517,7 +519,10 @@ class EMfields3D                // :public Field
     /*! GMRES tolerance criterium for stopping iterations */
     double GMREStol;
 
+    /** Cylindrical coordinates */
     int Cylindrical;
+    /** Bulk velocity (for the Lagrangian reference frame */
+    double u_bulk, v_bulk, w_bulk;
 
 };
 

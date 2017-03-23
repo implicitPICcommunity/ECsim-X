@@ -13,6 +13,7 @@ WriteMethod       = h5hut                            # Output method [ default |
 PoissonCorrection = no                               # Poisson correction [ yes | no ]
 SimulationName    = test                             # Simulation name for the output
 Cylindrical = 0                                      # Cylindrical coordinates (true = 1, false = 0)
+Lagrangian  = 0                                      # Lagrangian frame of reference
 
 
 #  %%%%%%%%%%%%%%%%%%% Magnetic Reconnection %%%%%%%%%%%%%%%%%%

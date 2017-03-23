@@ -116,6 +116,10 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
 
   Fext = 0;
 
+  u_bulk = col->getUbulk();
+  v_bulk = col->getVbulk();
+  w_bulk = col->getWbulk();
+
   // arrays allocation: nodes
   Ex = newArr3(double, nxn, nyn, nzn);
   Ey = newArr3(double, nxn, nyn, nzn);
@@ -3345,4 +3349,178 @@ void EMfields3D::testJdotE(Grid* grid)
   fprintf(stderr,"TEST JdotE :rank [%d] Max. error %13.6e\n", rank, maxErr);
 
   getchar();
+}
+
+void EMfields3D::updateLagrangianFrame(VirtualTopology3D * vct, Collective *col)
+{
+  int i0, i1, j0, j1, k0, k1;
+
+  double xn = u_bulk*dt;
+  double yn = v_bulk*dt;
+  double zn = w_bulk*dt;
+ 
+  if (u_bulk >= 0) {
+    i0 = 0;
+    i1 = 1;
+  } else {
+    i0 = -1;
+    i1 = 0;
+    xn += dx;
+  }
+
+  if (v_bulk >= 0) {
+    j0 = 0;
+    j1 = 1;
+  } else {
+    j0 = -1;
+    j1 = 0;
+    yn += dy;
+  }
+
+  if (w_bulk >= 0) {
+    k0 = 0;
+    k1 = 1;
+  } else {
+    k0 = -1;
+    k1 = 0;
+    zn += dy;
+  }
+
+  xn /= dx;
+  yn /= dy;
+  zn /= dz;
+
+  double weight[2][2][2];
+  double xi[2], eta[2], zeta[2];
+  xi[0]   = xn;
+  eta[0]  = yn;
+  zeta[0] = zn;
+  xi[1]   = 1 - xn;
+  eta[1]  = 1 - yn;
+  zeta[1] = 1 - zn;
+
+/*
+  for (int k=0; k<nzn; k++) 
+    for (int j=0; j<nyn; j++) 
+      for (int i=0; i<nxn; i++) {
+        double x = i*dx;
+        double y = j*dy;
+        double z = k*dz;
+        Ex[i][j][k] = cos(0.5*x) + 1.0/(y +1);
+        Ey[i][j][k] = 1.0/(y +1);
+        Ez[i][j][k] = 1.0/(z +1);
+  }
+  printf("weights: %g %g    -    %g %g    -     %g %g \n",xi[0], xi[1], eta[0], eta[1], zeta[0], zeta[1]);
+*/
+
+  for (int i=1; i<nxn-1; i++) 
+    for (int j=1; j<nyn-1; j++) 
+      for (int k=1; k<nzn-1; k++) {
+        tempX[i][j][k] = xi[0]*eta[0]*zeta[0]*Ex[i+i1][j+j1][k+k1] 
+                       + xi[1]*eta[0]*zeta[0]*Ex[i+i0][j+j1][k+k1]
+                       + xi[0]*eta[1]*zeta[0]*Ex[i+i1][j+j0][k+k1] 
+                       + xi[1]*eta[1]*zeta[0]*Ex[i+i0][j+j0][k+k1]
+                       + xi[0]*eta[0]*zeta[1]*Ex[i+i1][j+j1][k+k0] 
+                       + xi[1]*eta[0]*zeta[1]*Ex[i+i0][j+j1][k+k0]
+                       + xi[0]*eta[1]*zeta[1]*Ex[i+i1][j+j0][k+k0] 
+                       + xi[1]*eta[1]*zeta[1]*Ex[i+i0][j+j0][k+k0];
+
+        tempY[i][j][k] = xi[0]*eta[0]*zeta[0]*Ey[i+i1][j+j1][k+k1] 
+                       + xi[1]*eta[0]*zeta[0]*Ey[i+i0][j+j1][k+k1]
+                       + xi[0]*eta[1]*zeta[0]*Ey[i+i1][j+j0][k+k1] 
+                       + xi[1]*eta[1]*zeta[0]*Ey[i+i0][j+j0][k+k1]
+                       + xi[0]*eta[0]*zeta[1]*Ey[i+i1][j+j1][k+k0] 
+                       + xi[1]*eta[0]*zeta[1]*Ey[i+i0][j+j1][k+k0]
+                       + xi[0]*eta[1]*zeta[1]*Ey[i+i1][j+j0][k+k0] 
+                       + xi[1]*eta[1]*zeta[1]*Ey[i+i0][j+j0][k+k0];
+
+        tempZ[i][j][k] = xi[0]*eta[0]*zeta[0]*Ez[i+i1][j+j1][k+k1] 
+                       + xi[1]*eta[0]*zeta[0]*Ez[i+i0][j+j1][k+k1]
+                       + xi[0]*eta[1]*zeta[0]*Ez[i+i1][j+j0][k+k1] 
+                       + xi[1]*eta[1]*zeta[0]*Ez[i+i0][j+j0][k+k1]
+                       + xi[0]*eta[0]*zeta[1]*Ez[i+i1][j+j1][k+k0] 
+                       + xi[1]*eta[0]*zeta[1]*Ez[i+i0][j+j1][k+k0]
+                       + xi[0]*eta[1]*zeta[1]*Ez[i+i1][j+j0][k+k0] 
+                       + xi[1]*eta[1]*zeta[1]*Ez[i+i0][j+j0][k+k0];
+
+        temp2X[i][j][k] = xi[0]*eta[0]*zeta[0]*Bxn[i+i1][j+j1][k+k1] 
+                        + xi[1]*eta[0]*zeta[0]*Bxn[i+i0][j+j1][k+k1]
+                        + xi[0]*eta[1]*zeta[0]*Bxn[i+i1][j+j0][k+k1] 
+                        + xi[1]*eta[1]*zeta[0]*Bxn[i+i0][j+j0][k+k1]
+                        + xi[0]*eta[0]*zeta[1]*Bxn[i+i1][j+j1][k+k0] 
+                        + xi[1]*eta[0]*zeta[1]*Bxn[i+i0][j+j1][k+k0]
+                        + xi[0]*eta[1]*zeta[1]*Bxn[i+i1][j+j0][k+k0] 
+                        + xi[1]*eta[1]*zeta[1]*Bxn[i+i0][j+j0][k+k0];
+
+        temp2Y[i][j][k] = xi[0]*eta[0]*zeta[0]*Byn[i+i1][j+j1][k+k1] 
+                        + xi[1]*eta[0]*zeta[0]*Byn[i+i0][j+j1][k+k1]
+                        + xi[0]*eta[1]*zeta[0]*Byn[i+i1][j+j0][k+k1] 
+                        + xi[1]*eta[1]*zeta[0]*Byn[i+i0][j+j0][k+k1]
+                        + xi[0]*eta[0]*zeta[1]*Byn[i+i1][j+j1][k+k0] 
+                        + xi[1]*eta[0]*zeta[1]*Byn[i+i0][j+j1][k+k0]
+                        + xi[0]*eta[1]*zeta[1]*Byn[i+i1][j+j0][k+k0] 
+                        + xi[1]*eta[1]*zeta[1]*Byn[i+i0][j+j0][k+k0];
+
+        temp2Z[i][j][k] = xi[0]*eta[0]*zeta[0]*Bzn[i+i1][j+j1][k+k1] 
+                        + xi[1]*eta[0]*zeta[0]*Bzn[i+i0][j+j1][k+k1]
+                        + xi[0]*eta[1]*zeta[0]*Bzn[i+i1][j+j0][k+k1] 
+                        + xi[1]*eta[1]*zeta[0]*Bzn[i+i0][j+j0][k+k1]
+                        + xi[0]*eta[0]*zeta[1]*Bzn[i+i1][j+j1][k+k0] 
+                        + xi[1]*eta[0]*zeta[1]*Bzn[i+i0][j+j1][k+k0]
+                        + xi[0]*eta[1]*zeta[1]*Bzn[i+i1][j+j0][k+k0] 
+                        + xi[1]*eta[1]*zeta[1]*Bzn[i+i0][j+j0][k+k0];
+
+  
+      }
+
+  communicateNodeBC(nxn, nyn, nzn, tempX, col->bcEx[0],col->bcEx[1],col->bcEx[2],col->bcEx[3],col->bcEx[4],col->bcEx[5], vct);
+  communicateNodeBC(nxn, nyn, nzn, tempY, col->bcEy[0],col->bcEy[1],col->bcEy[2],col->bcEy[3],col->bcEy[4],col->bcEy[5], vct);
+  communicateNodeBC(nxn, nyn, nzn, tempZ, col->bcEz[0],col->bcEz[1],col->bcEz[2],col->bcEz[3],col->bcEz[4],col->bcEz[5], vct);
+  communicateNodeBC(nxn, nyn, nzn, temp2X, col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5], vct);
+  communicateNodeBC(nxn, nyn, nzn, temp2Y, col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5], vct);
+  communicateNodeBC(nxn, nyn, nzn, temp2Z, col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct);
+
+  for (int k=0; k<nzn; k++) 
+    for (int j=0; j<nyn; j++) 
+      for (int i=0; i<nxn; i++) {
+        Ex[i][j][k] = tempX[i][j][k];
+        Ey[i][j][k] = tempY[i][j][k];
+        Ez[i][j][k] = tempZ[i][j][k];
+        Bxn[i][j][k] = temp2X[i][j][k];
+        Byn[i][j][k] = temp2Y[i][j][k];
+        Bzn[i][j][k] = temp2Z[i][j][k];
+      }
+
+#ifdef DEBUG_LAGRANGIAN
+  FILE* fd1 = fopen("original.txt","w");
+  for (int k=1; k<nzn-1; k++) {
+    for (int j=1; j<nyn-1; j++) {
+      for (int i=1; i<nxn-1; i++) {
+        double x = i*dx;
+        double y = j*dy;
+        double z = k*dz;
+        fprintf(fd1,"%.3f %.3f %.3f %13.6e %13.6e %13.6e\n",x,y,z,Ex[i][j][k], Ey[i][j][k], Ez[i][j][k]);
+      }
+    }
+    fprintf(fd1,"\n\n\n");
+  }
+  fclose(fd1);
+
+
+  FILE* fd2 = fopen("shifted.txt","w");
+  for (int k=1; k<nzn-1; k++) {
+    for (int j=1; j<nyn-1; j++) {
+      for (int i=1; i<nxn-1; i++) {
+        double x = i*dx + u_bulk*dt;
+        double y = j*dy + v_bulk*dt;
+        double z = k*dz + w_bulk*dt;
+        fprintf(fd2,"%.3f %.3f %.3f %13.6e %13.6e %13.6e\n",x,y,z,tempX[i][j][k], tempY[i][j][k], tempZ[i][j][k]);
+      }
+    }
+    fprintf(fd2,"\n\n\n");
+  }
+  fclose(fd2);
+  getchar();
+#endif
+
 }

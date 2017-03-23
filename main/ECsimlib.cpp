@@ -136,7 +136,10 @@ int c_Solver::Init(int argc, char **argv) {
 
     if (col->getCylindrical() == 1) part[i].fixZcylindrical();
     part[i].fixPosition();
+
+    if (col->getLagrangian() == 1) part[i].setLagrangianFrame(true);
   }
+
 
 
   if (col->getWriteMethod() == "default") {
@@ -176,6 +179,10 @@ int c_Solver::Init(int argc, char **argv) {
   momentum = new double[ns];
   cq = SaveDirName + "/ConservedQuantities.txt";
   
+
+
+
+
   clocks->stop(0);
   return 0;
 }
@@ -272,6 +279,15 @@ bool c_Solver::ParticlesMover() {
 
   // Update the values of the magnetic field in the nodes: n+1
   EMf->centers2nodesB(vct, grid, col);
+
+
+  /*-----------------------------------*/
+  /*  Update the lagrangian frame      */
+  /*-----------------------------------*/
+  if (col->getLagrangian() == 1) {
+    EMf->updateLagrangianFrame(vct, col);
+    for (int i=0; i<ns; i++) part[i].updateLagrangianFrame(vct);
+  }
 
   return (false);
 }

@@ -48,7 +48,8 @@ void Collective::ReadInput(string inputfile) {
     wmethod           = config.read<string>("WriteMethod");
     SimName           = config.read<string>("SimulationName");
     PoissonCorrection = config.read<string>("PoissonCorrection");
-    Cylindrical = config.read < int >("Cylindrical");
+    Cylindrical       = config.read < int >("Cylindrical");
+    Lagrangian        = config.read < int >("Lagrangian");
 
     rhoINIT = new double[ns];
     array_double rhoINIT0 = config.read < array_double > ("rhoINIT");
@@ -224,6 +225,7 @@ void Collective::ReadInput(string inputfile) {
     array_double v00 = config.read < array_double > ("v0");
     array_double w00 = config.read < array_double > ("w0");
 
+
     npcelx[0] = npcelx0.a;
     npcely[0] = npcely0.a;
     npcelz[0] = npcelz0.a;
@@ -295,6 +297,10 @@ void Collective::ReadInput(string inputfile) {
       v0[5] = v00.f;
       w0[1] = w00.f;
     }
+
+    u_bulk = u0[0];
+    v_bulk = v0[0];
+    w_bulk = w0[0];
 
     verbose = config.read < bool > ("verbose");
 
@@ -1134,7 +1140,15 @@ int Collective::getRestartOutputCycle() {
 int Collective::getDiagnosticsOutputCycle() {
   return (DiagnosticsOutputCycle);
 }
-
+/*! Cylindrical coordinates */
 int Collective::getCylindrical() {
   return Cylindrical;
 }
+/*! Lagrangian reference frame */
+int Collective::getLagrangian() {
+  return Lagrangian;
+}
+/*! Return the bulk velocity */
+double Collective::getUbulk() { return u_bulk; }
+double Collective::getVbulk() { return v_bulk; }
+double Collective::getWbulk() { return w_bulk; }
