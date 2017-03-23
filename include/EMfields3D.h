@@ -44,6 +44,9 @@ class EMfields3D                // :public Field
     /*! destructor */
     ~EMfields3D();
 
+    /* Set all the arrays to zero */
+    void setAllzero();
+
     /*! initialize the electromagnetic fields with constant values */
     void init(VirtualTopology3D * vct, Grid * grid, Collective *col);
     void initGEM(VirtualTopology3D * vct, Grid * grid, Collective *col);
@@ -209,19 +212,25 @@ class EMfields3D                // :public Field
     double ***& getRHOcs(int is, int dummy);
     double ***getRhotilde(int is);
 
-    /** get Magnetic Field component X defined on node(indexX,indexY,indexZ) */
+    /** get external magnetic Field component X defined on node(indexX,indexY,indexZ) */
     double &getBx_ext(int indexX, int indexY, int indexZ) const;
-    /** get Magnetic Field component Y defined on node(indexX,indexY,indexZ) */
+    /** get external magnetic Field component Y defined on node(indexX,indexY,indexZ) */
     double &getBy_ext(int indexX, int indexY, int indexZ) const;
-    /** get Magnetic Field component Z defined on node(indexX,indexY,indexZ) */
+    /** get external magnetic Field component Z defined on node(indexX,indexY,indexZ) */
     double &getBz_ext(int indexX, int indexY, int indexZ) const;
 
-    /** get Magnetic Field component X */
+    /** get external magnetic Field component X */
     double ***getBx_ext();
-    /** get Magnetic Field component Y */
+    /** get external magnetic Field component Y */
     double ***getBy_ext();
-    /** get Magnetic Field component Z */
+    /** get external magnetic Field component Z */
     double ***getBz_ext();
+    /** get external electric Field component X */
+    double ***getEx_ext();
+    /** get external electric Field component Y */
+    double ***getEy_ext();
+    /** get external electric Field component Z */
+    double ***getEz_ext();
 
     double ***&getBxTot();
     double ***&getByTot();
@@ -294,6 +303,7 @@ class EMfields3D                // :public Field
     void testJdotE(Grid* grid);
 
     void updateLagrangianFrame(VirtualTopology3D * vct, Collective *col);
+    void setLagrangianFrame(VirtualTopology3D* vct, Collective* col, bool mode);
 
     /* ********************************* // VARIABLES ********************************* */
   private:
@@ -447,15 +457,12 @@ class EMfields3D                // :public Field
     double***  By_ext;
     /*! External magnetic field component-Z, defined on nodes */
     double***  Bz_ext;
-    /*! External current field component-X, defined on nodes */
-    double***  Jx_ext;
-    /*! External current field component-Y, defined on nodes */
-    double***  Jy_ext;
-    /*! External current field component-Z, defined on nodes */
-    double***  Jz_ext;
-    double*** Bxc_ext;
-    double*** Byc_ext;
-    double*** Bzc_ext;
+    /*! External electric field component-X, defined on nodes */
+    double***  Ex_ext;
+    /*! External electric field component-Y, defined on nodes */
+    double***  Ey_ext;
+    /*! External electric field component-Z, defined on nodes */
+    double***  Ez_ext;
 
     /*! Mass matrix */
     double ****Mxx;

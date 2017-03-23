@@ -144,9 +144,6 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
   Jys = newArr4(double, ns, nxn, nyn, nzn);
   Jzs = newArr4(double, ns, nxn, nyn, nzn);
 
-  Jx_ext = newArr3(double, nxn, nyn, nzn);
-  Jy_ext = newArr3(double, nxn, nyn, nzn);
-  Jz_ext = newArr3(double, nxn, nyn, nzn);
 
   Mxx = newArr4(double, NE_MASS, nxn, nyn, nzn);
   Mxy = newArr4(double, NE_MASS, nxn, nyn, nzn);
@@ -170,9 +167,9 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
   Bx_ext = newArr3(double,nxn,nyn,nzn);
   By_ext = newArr3(double,nxn,nyn,nzn);
   Bz_ext = newArr3(double,nxn,nyn,nzn);
-  Bxc_ext = newArr3(double,nxc,nyc,nzc);
-  Byc_ext = newArr3(double,nxc,nyc,nzc);
-  Bzc_ext = newArr3(double,nxc,nyc,nzc);
+  Ex_ext = newArr3(double,nxn,nyn,nzn);
+  Ey_ext = newArr3(double,nxn,nyn,nzn);
+  Ez_ext = newArr3(double,nxn,nyn,nzn);
   // involving species
   rhons = newArr4(double, ns, nxn, nyn, nzn);
   rhocs = newArr4(double, ns, nxc, nyc, nzc);
@@ -209,12 +206,92 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
   arr = newArr3(double,nxn,nyn,nzn);
 
 
+  // Set to zero all the memory allocated
+  setAllzero();
 
   #ifdef _TEST_CURL_
     testCurl(grid);
     exit(0);
   #endif
 
+}
+
+void EMfields3D::setAllzero()
+{
+   Fext = 0;
+   eqValue(0.0, Ex, nxn, nyn, nzn);
+   eqValue(0.0, Ey, nxn, nyn, nzn);
+   eqValue(0.0, Ez, nxn, nyn, nzn);
+   eqValue(0.0, Exth, nxn, nyn, nzn);
+   eqValue(0.0, Eyth, nxn, nyn, nzn);
+   eqValue(0.0, Ezth, nxn, nyn, nzn);
+   eqValue(0.0, Bxn, nxn, nyn, nzn);
+   eqValue(0.0, Byn, nxn, nyn, nzn);
+   eqValue(0.0, Bzn, nxn, nyn, nzn);
+   eqValue(0.0, rhon, nxn, nyn, nzn);
+   eqValue(0.0, Jxh, nxn, nyn, nzn);
+   eqValue(0.0, Jyh, nxn, nyn, nzn);
+   eqValue(0.0, Jzh, nxn, nyn, nzn);
+
+   eqValue(0.0, rhotilde, ns, nxn, nyn, nzn);
+   eqValue(0.0, Jxs, ns, nxn, nyn, nzn);
+   eqValue(0.0, Jys, ns, nxn, nyn, nzn);
+   eqValue(0.0, Jzs, ns, nxn, nyn, nzn);
+   eqValue(0.0, Mxx, NE_MASS, nxn, nyn, nzn);
+   eqValue(0.0, Mxy, NE_MASS, nxn, nyn, nzn);
+   eqValue(0.0, Mxz, NE_MASS, nxn, nyn, nzn);
+   eqValue(0.0, Myx, NE_MASS, nxn, nyn, nzn);
+   eqValue(0.0, Myy, NE_MASS, nxn, nyn, nzn);
+   eqValue(0.0, Myz, NE_MASS, nxn, nyn, nzn);
+   eqValue(0.0, Mzx, NE_MASS, nxn, nyn, nzn);
+   eqValue(0.0, Mzy, NE_MASS, nxn, nyn, nzn);
+   eqValue(0.0, Mzz, NE_MASS, nxn, nyn, nzn);
+
+   eqValue(0.0, pXXsn, ns, nxn, nyn, nzn);
+   eqValue(0.0, pXYsn, ns, nxn, nyn, nzn);
+   eqValue(0.0, pXZsn, ns, nxn, nyn, nzn);
+   eqValue(0.0, pYYsn, ns, nxn, nyn, nzn);
+   eqValue(0.0, pYZsn, ns, nxn, nyn, nzn);
+   eqValue(0.0, pZZsn, ns, nxn, nyn, nzn);
+
+   eqValue(0.0, Bx_ext, nxn, nyn, nzn);
+   eqValue(0.0, By_ext, nxn, nyn, nzn);
+   eqValue(0.0, Bz_ext, nxn, nyn, nzn);
+   eqValue(0.0, Ex_ext, nxn, nyn, nzn);
+   eqValue(0.0, Ey_ext, nxn, nyn, nzn);
+   eqValue(0.0, Ez_ext, nxn, nyn, nzn);
+
+   eqValue(0.0,rhons, ns, nxn, nyn, nzn);
+   eqValue(0.0,rhocs, ns, nxc, nyc, nzc);
+
+   eqValue(0.0, Bxc, nxc, nyc, nzc);
+   eqValue(0.0, Byc, nxc, nyc, nzc);
+   eqValue(0.0, Bzc, nxc, nyc, nzc);
+   eqValue(0.0, rhoc, nxc, nyc, nzc);
+
+   eqValue(0.0, tempXC, nxc, nyc, nzc);
+   eqValue(0.0, tempYC, nxc, nyc, nzc);
+   eqValue(0.0, tempZC, nxc, nyc, nzc);
+   eqValue(0.0, tempXN, nxn, nyn, nzn);
+   eqValue(0.0, tempYN, nxn, nyn, nzn);
+   eqValue(0.0, tempZN, nxn, nyn, nzn);
+   eqValue(0.0, tempC, nxc, nyc, nzc);
+   eqValue(0.0, tempX, nxn, nyn, nzn);
+   eqValue(0.0, tempY, nxn, nyn, nzn);
+   eqValue(0.0, tempZ, nxn, nyn, nzn);
+   eqValue(0.0, temp2X, nxn, nyn, nzn);
+   eqValue(0.0, temp2Y, nxn, nyn, nzn);
+   eqValue(0.0, temp2Z, nxn, nyn, nzn);
+   eqValue(0.0, imageEX, nxc, nyc, nzc);
+   eqValue(0.0, imageEY, nxc, nyc, nzc);
+   eqValue(0.0, imageEZ, nxc, nyc, nzc);
+   eqValue(0.0, imageBX, nxn, nyn, nzn);
+   eqValue(0.0, imageBY, nxn, nyn, nzn);
+   eqValue(0.0, imageBZ, nxn, nyn, nzn);
+   eqValue(0.0, vectX, nxn, nyn, nzn);
+   eqValue(0.0, vectY, nxn, nyn, nzn);
+   eqValue(0.0, vectZ, nxn, nyn, nzn);
+   eqValue(0.0, arr, nxn, nyn, nzn);
 }
 
 /*! Fix the boundary conditions for r=0. BC are only needed for the electric field.
@@ -1204,22 +1281,6 @@ void EMfields3D::sumOverSpecies(VirtualTopology3D * vct) {
 void EMfields3D::init(VirtualTopology3D * vct, Grid * grid, Collective *col) {
 
   if (restart1 == 0) {
-
-    eqValue(0.0, Exth, nxn, nyn, nzn);
-    eqValue(0.0, Eyth, nxn, nyn, nzn);
-    eqValue(0.0, Ezth, nxn, nyn, nzn);
-    eqValue(0.0, Ex, nxn, nyn, nzn);
-    eqValue(0.0, Ey, nxn, nyn, nzn);
-    eqValue(0.0, Ez, nxn, nyn, nzn);
-    eqValue(0.0, Bx_ext, nxn, nyn, nzn);
-    eqValue(0.0, By_ext, nxn, nyn, nzn);
-    eqValue(0.0, Bz_ext, nxn, nyn, nzn);
-    eqValue(0.0, tempXC, nxc, nyc, nzc);
-    eqValue(0.0, tempYC, nxc, nyc, nzc);
-    eqValue(0.0, tempZC, nxc, nyc, nzc);
-    eqValue(0.0, Bxc, nxc, nyc, nzc);
-    eqValue(0.0, Byc, nxc, nyc, nzc);
-    eqValue(0.0, Bzc, nxc, nyc, nzc);
     for (int i = 0; i < nxn; i++) {
       for (int j = 0; j < nyn; j++) {
         for (int k = 0; k < nzn; k++) {
@@ -1737,22 +1798,6 @@ void EMfields3D::initWB8(VirtualTopology3D *vct, Grid *grid, Collective *col){
   Fext = 1;
   double distance;
 
-  eqValue(0.0, Bxn, nxn, nyn, nzn);
-  eqValue(0.0, Byn, nxn, nyn, nzn);
-  eqValue(0.0, Bzn, nxn, nyn, nzn);
-  eqValue(0.0, Bx_ext, nxn, nyn, nzn);
-  eqValue(0.0, By_ext, nxn, nyn, nzn);
-  eqValue(0.0, Bz_ext, nxn, nyn, nzn);
-  eqValue(0.0, Jx_ext, nxn, nyn, nzn);
-  eqValue(0.0, Jy_ext, nxn, nyn, nzn);
-  eqValue(0.0, Jz_ext, nxn, nyn, nzn);
-  eqValue(0.0, Bxc, nxc, nyc, nzc);
-  eqValue(0.0, Byc, nxc, nyc, nzc);
-  eqValue(0.0, Bzc, nxc, nyc, nzc);
-  eqValue(0.0, Bxc_ext, nxc, nyc, nzc);
-  eqValue(0.0, Byc_ext, nxc, nyc, nzc);
-  eqValue(0.0, Bzc_ext, nxc, nyc, nzc);
-
   //char BlogName[256];
   //sprintf(BlogName, "/home/aws/VacuumB.%d.csv", vct->getCartesian_rank());
   //FILE *Blog = fopen(BlogName, "w");
@@ -1822,66 +1867,8 @@ void EMfields3D::initWB8(VirtualTopology3D *vct, Grid *grid, Collective *col){
   communicateNodeBC(nxn, nyn, nzn, By_ext, col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5], vct);
   communicateNodeBC(nxn, nyn, nzn, Bz_ext, col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct);
 
-  // initialize B on centers
-  for (int i=0; i < nxc; i++){
-    for (int j=0; j < nyc; j++){
-      for (int k=0; k < nzc; k++){
-        double blp[3];
-        double a=coilD/2.0;
-        double xc=Lx/2.0;
-        double yc=Ly/2.0;
-        double zc=Lz/2.0;
-        double deltax=coilSpacing/2.0;
-        double deltay=coilSpacing/2.0;
-        double deltaz=coilSpacing/2.0;
-        double x = grid->getXC(i,j,k);
-        double y = grid->getYC(i,j,k);
-        double z = grid->getZC(i,j,k);
-        /*
-        loopZ(blp, x, y, z, a, xc, yc, zc+deltaz, -B0z);
-        //cout << blp[0] << "   " << x << "   " << xc << "   " << m << endl;
-        Bxc[i][j][k] = blp[0];
-        Byc[i][j][k] = blp[1];
-        Bzc[i][j][k] = blp[2];
-        loopZ(blp, x, y, z, a, xc, yc, zc-deltaz, B0z);
-        Bxc[i][j][k] += blp[0];
-        Byc[i][j][k] += blp[1];
-        Bzc[i][j][k] += blp[2];
-        loopX(blp, x, y, z, a, xc+deltax, yc, zc, -B0x);
-        Bxc[i][j][k] += blp[0];
-        Byc[i][j][k] += blp[1];
-        Bzc[i][j][k] += blp[2];
-        loopX(blp, x, y, z, a, xc-deltax, yc, zc, B0x);
-        Bxc[i][j][k] += blp[0];
-        Byc[i][j][k] += blp[1];
-        Bzc[i][j][k] += blp[2];
-        */
-        loopY(blp, x, y, z, a, xc, yc+deltay, zc, -B0y);
-        Bxc_ext[i][j][k] += blp[0];
-        Byc_ext[i][j][k] += blp[1];
-        Bzc_ext[i][j][k] += blp[2];
-        loopY(blp, x, y, z, a, xc, yc-deltay, zc, B0y);
-        Bxc_ext[i][j][k] += blp[0];
-        Byc_ext[i][j][k] += blp[1];
-        Bzc_ext[i][j][k] += blp[2];
-       
-        //fprintf(Blog, "%f,%f,%f,%E,%E,%E\n", x, y, z, Bxc[i][j][k], Byc[i][j][k], Bzc[i][j][k]);
-      }
-    }
-  }
-  printf("Field in centers initialised\n");
   MPI_Barrier(MPI_COMM_WORLD);
   //fclose(Blog);
-
-  communicateCenterBC_P(nxc,nyc,nzc,Bxc_ext,2,2,2,2,2,2,vct);
-  communicateCenterBC_P(nxc,nyc,nzc,Byc_ext,2,2,2,2,2,2,vct);
-  communicateCenterBC_P(nxc,nyc,nzc,Bzc_ext,2,2,2,2,2,2,vct);
-
-  // initialize J on nodes
-  //grid->curlC2N(tempXN,tempYN,tempZN,Bxc,Byc,Bzc);
-  //scale(Jx_ext,tempXN,c/FourPI,nxn,nyn,nzn);
-  //scale(Jy_ext,tempYN,c/FourPI,nxn,nyn,nzn);
-  //scale(Jz_ext,tempZN,c/FourPI,nxn,nyn,nzn);
 
   for (int is=0 ; is<ns; is++)
     grid->interpN2C(rhocs,is,rhons);
@@ -1895,6 +1882,7 @@ void EMfields3D::initWB8(VirtualTopology3D *vct, Grid *grid, Collective *col){
 
 //Initializes Dipole
 void EMfields3D::initDipole(VirtualTopology3D *vct, Grid *grid, Collective *col){
+
   if (vct->getCartesian_rank() == 0) {
     cout << "------------------------------------------" << endl;
     cout << "Initialize dipole" << endl;
@@ -1909,23 +1897,7 @@ void EMfields3D::initDipole(VirtualTopology3D *vct, Grid *grid, Collective *col)
   double ebc[3];
   cross_product(ue0,ve0,we0,B0x,B0y,B0z,ebc);
   scale(ebc,-1.0,3);
-
-  eqValue(0.0, Bxn, nxn, nyn, nzn);
-  eqValue(0.0, Byn, nxn, nyn, nzn);
-  eqValue(0.0, Bzn, nxn, nyn, nzn);
-  eqValue(0.0, Bx_ext, nxn, nyn, nzn);
-  eqValue(0.0, By_ext, nxn, nyn, nzn);
-  eqValue(0.0, Bz_ext, nxn, nyn, nzn);
-  eqValue(0.0, Jx_ext, nxn, nyn, nzn);
-  eqValue(0.0, Jy_ext, nxn, nyn, nzn);
-  eqValue(0.0, Jz_ext, nxn, nyn, nzn);
-  eqValue(0.0, Bxc, nxc, nyc, nzc);
-  eqValue(0.0, Byc, nxc, nyc, nzc);
-  eqValue(0.0, Bzc, nxc, nyc, nzc);
-  eqValue(0.0, Bxc_ext, nxc, nyc, nzc);
-  eqValue(0.0, Byc_ext, nxc, nyc, nzc);
-  eqValue(0.0, Bzc_ext, nxc, nyc, nzc);
-
+  
   double a=0.5*L_square;
   double xc=x_center;
   double yc=y_center;
@@ -1940,19 +1912,18 @@ void EMfields3D::initDipole(VirtualTopology3D *vct, Grid *grid, Collective *col)
          for (int is=0; is < ns; is++){
            rhons[is][i][j][k] = rhoINIT[is] / FourPI;
          }
-         //Ex[i][j][k] = ebc[0];
-         //Ey[i][j][k] = ebc[1];
-         //Ez[i][j][k] = ebc[2];
+         Ex[i][j][k] = ebc[0];
+         Ey[i][j][k] = ebc[1];
+         Ez[i][j][k] = ebc[2];
          double blp[3];
          double x = grid->getXN(i,j,k);
          double y = grid->getYN(i,j,k);
          double z = grid->getZN(i,j,k);
-/*
-         loopZ(blp, x, y, z, a, xc, yc, zc, -B1z);
+         loopY(blp, x, y, z, a, xc, yc, zc, B1y);
          Bx_ext[i][j][k] += blp[0];
          By_ext[i][j][k] += blp[1];
          Bz_ext[i][j][k] += blp[2];
-*/
+/*
          double a=0.75*L_square; // 0.75 x To avoid problems with de-centered dipoles
 
          double xc=x_center;
@@ -1998,14 +1969,24 @@ void EMfields3D::initDipole(VirtualTopology3D *vct, Grid *grid, Collective *col)
            By_ext[i][j][k] = one_r3 * ( 3 * (Mx*rhx+My*rhy+Mz*rhz) * rhy - My );
            Bz_ext[i][j][k] = one_r3 * ( 3 * (Mx*rhx+My*rhy+Mz*rhz) * rhz - Mz );
          }
-
-
+*/
          Bxn[i][j][k] = B0x;
          Byn[i][j][k] = B0y;
          Bzn[i][j][k] = B0z;
       }
     }
   }
+
+  for (int is=0 ; is<ns; is++)
+    grid->interpN2C(rhocs,is,rhons);
+
+  grid->interpN2C(Bxc,Bxn);
+  grid->interpN2C(Byc,Byn);
+  grid->interpN2C(Bzc,Bzn);
+  // communicate ghost
+  communicateCenterBC(nxc, nyc, nzc, Bxc, col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5], vct);
+  communicateCenterBC(nxc, nyc, nzc, Byc, col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5], vct);
+  communicateCenterBC(nxc, nyc, nzc, Bzc, col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct);
 }
 
 void EMfields3D::initHalfPlanet(VirtualTopology3D *vct, Grid *grid, Collective *col){
@@ -2023,22 +2004,6 @@ void EMfields3D::initHalfPlanet(VirtualTopology3D *vct, Grid *grid, Collective *
   double ebc[3];
   cross_product(ue0,ve0,we0,B0x,B0y,B0z,ebc);
   scale(ebc,-1.0,3);
-
-  eqValue(0.0, Bxn, nxn, nyn, nzn);
-  eqValue(0.0, Byn, nxn, nyn, nzn);
-  eqValue(0.0, Bzn, nxn, nyn, nzn);
-  eqValue(0.0, Bx_ext, nxn, nyn, nzn);
-  eqValue(0.0, By_ext, nxn, nyn, nzn);
-  eqValue(0.0, Bz_ext, nxn, nyn, nzn);
-  eqValue(0.0, Jx_ext, nxn, nyn, nzn);
-  eqValue(0.0, Jy_ext, nxn, nyn, nzn);
-  eqValue(0.0, Jz_ext, nxn, nyn, nzn);
-  eqValue(0.0, Bxc, nxc, nyc, nzc);
-  eqValue(0.0, Byc, nxc, nyc, nzc);
-  eqValue(0.0, Bzc, nxc, nyc, nzc);
-  eqValue(0.0, Bxc_ext, nxc, nyc, nzc);
-  eqValue(0.0, Byc_ext, nxc, nyc, nzc);
-  eqValue(0.0, Bzc_ext, nxc, nyc, nzc);
 
   double a=0.75*L_square;
   double xc=Lx;
@@ -2080,30 +2045,15 @@ void EMfields3D::initHalfPlanet(VirtualTopology3D *vct, Grid *grid, Collective *
   for (int i=0; i < nxc; i++){
     for (int j=0; j < nyc; j++){
       for (int k=0; k < nzc; k++){
-        double blp[3];
-        double x = grid->getXC(i,j,k);
-        double y = grid->getYC(i,j,k);
-        double z = grid->getZC(i,j,k);
-        loopY(blp, x, y, z, a, xc, yc, zc, -B0y);
-        Bxc_ext[i][j][k] = blp[0];
-        Byc_ext[i][j][k] = blp[1];
-        Bzc_ext[i][j][k] = blp[2];
         Bxc[i][j][k] = B0x;
         Byc[i][j][k] = B0y;
         Bzc[i][j][k] = B0z;
       }
     }
   }
-  //grid->interpN2C(Bxc_ext,Bx_ext);
-  //grid->interpN2C(Byc_ext,By_ext);
-  //grid->interpN2C(Bzc_ext,Bz_ext);
 
   MPI_Barrier(MPI_COMM_WORLD);
   //fclose(Blog);
-
-  communicateCenterBC_P(nxc,nyc,nzc,Bxc_ext,2,2,2,2,2,2,vct);
-  communicateCenterBC_P(nxc,nyc,nzc,Byc_ext,2,2,2,2,2,2,vct);
-  communicateCenterBC_P(nxc,nyc,nzc,Bzc_ext,2,2,2,2,2,2,vct);
 
   for (int is=0 ; is<ns; is++)
     grid->interpN2C(rhocs,is,rhons);
@@ -2822,6 +2772,19 @@ double ***EMfields3D::getBz_ext() {
   return(Bz_ext);
 }
 
+/*! get Ex_ext  */
+double ***EMfields3D::getEx_ext() {
+  return(Ex_ext);
+}
+/*!  get Ey_ext */
+double ***EMfields3D::getEy_ext() {
+  return(Ey_ext);
+}
+/*!  get Ez_ext */
+double ***EMfields3D::getEz_ext() {
+  return(Ez_ext);
+}
+
 double ***&EMfields3D::getBxTot(){
   for (int i = 0; i < nxn; i++)
     for (int j = 0; j < nyn; j++)
@@ -3004,9 +2967,6 @@ double EMfields3D::getBenergy(void) {
         Bxt = Bxc[i][j][k];
         Byt = Byc[i][j][k];
         Bzt = Bzc[i][j][k];
-        Bxt = Bxc[i][j][k]+Fext*Bxc_ext[i][j][k];
-        Byt = Byc[i][j][k]+Fext*Byc_ext[i][j][k];
-        Bzt = Bzc[i][j][k]+Fext*Bzc_ext[i][j][k];
         localBenergy += .5*(Bxt*Bxt + Byt*Byt + Bzt*Bzt)/(FourPI*invVOLc[i][j][k]);
       }
 
@@ -3104,9 +3064,6 @@ EMfields3D::~EMfields3D() {
   delArr3(Jxh, nxn, nyn);
   delArr3(Jyh, nxn, nyn);
   delArr3(Jzh, nxn, nyn);
-  delArr3(Jx_ext, nxn, nyn);
-  delArr3(Jy_ext, nxn, nyn);
-  delArr3(Jz_ext, nxn, nyn);
   delArr4(Jxs, nxn, nyn, nzn);
   delArr4(Jys, nxn, nyn, nzn);
   delArr4(Jzs, nxn, nyn, nzn);
@@ -3150,6 +3107,12 @@ EMfields3D::~EMfields3D() {
   delArr3(vectX, nxn, nyn);
   delArr3(vectY, nxn, nyn);
   delArr3(vectZ, nxn, nyn);
+  delArr3(Bx_ext, nxn, nyn);
+  delArr3(By_ext, nxn, nyn);
+  delArr3(Bz_ext, nxn, nyn);
+  delArr3(Ex_ext, nxn, nyn);
+  delArr3(Ey_ext, nxn, nyn);
+  delArr3(Ez_ext, nxn, nyn);
 }
 
 
@@ -3522,5 +3485,62 @@ void EMfields3D::updateLagrangianFrame(VirtualTopology3D * vct, Collective *col)
   fclose(fd2);
   getchar();
 #endif
+}
+
+/*! Compute the external electric and magnetic field in the lagrangian frame */
+void EMfields3D::setLagrangianFrame(VirtualTopology3D * vct, Collective *col, bool mode)
+{
+  double tmpEx, tmpEy, tmpEz, tmpBx, tmpBy, tmpBz;
+  double vx, vy, vz; 
+  double c = col->getC();
+  double c2 = c*c;
+
+  if (mode) {
+    vx = u_bulk;
+    vy = v_bulk;
+    vz = w_bulk;
+  } else {
+    vx = -u_bulk;
+    vy = -v_bulk;
+    vz = -w_bulk;
+  }
+
+  for (int k=0; k<nzn; k++) 
+    for (int j=0; j<nyn; j++) 
+      for (int i=0; i<nxn; i++) {
+        // External fields -> v_bulk
+        tmpEx = Ex_ext[i][j][k];
+        tmpEy = Ey_ext[i][j][k];
+        tmpEz = Ez_ext[i][j][k];
+        tmpBx = Bx_ext[i][j][k];
+        tmpBy = By_ext[i][j][k];
+        tmpBz = Bz_ext[i][j][k];
+
+        Ex_ext[i][j][k] = tmpEx + (vy*tmpBz - vz*tmpBy);
+        Ey_ext[i][j][k] = tmpEy + (vz*tmpBx - vx*tmpBz);
+        Ez_ext[i][j][k] = tmpEz + (vx*tmpBy - vy*tmpBx);
+
+        Bx_ext[i][j][k] = tmpBx - (vy*tmpEz - vz*tmpEy)/c2;
+        By_ext[i][j][k] = tmpBy - (vz*tmpEx - vx*tmpEz)/c2;
+        Bz_ext[i][j][k] = tmpBz - (vx*tmpEy - vy*tmpEx)/c2;
+
+        // Local fields -> -v_bulk
+        tmpEx = Ex[i][j][k];
+        tmpEy = Ey[i][j][k];
+        tmpEz = Ez[i][j][k];
+        tmpBx = Bxn[i][j][k];
+        tmpBy = Byn[i][j][k];
+        tmpBz = Bzn[i][j][k];
+
+        Ex[i][j][k] = tmpEx - (vy*tmpBz - vz*tmpBy);
+        Ey[i][j][k] = tmpEy - (vz*tmpBx - vx*tmpBz);
+        Ez[i][j][k] = tmpEz - (vx*tmpBy - vy*tmpBx);
+
+        Bxn[i][j][k] = tmpBx + (vy*tmpEz - vz*tmpEy)/c2;
+        Byn[i][j][k] = tmpBy + (vz*tmpEx - vx*tmpEz)/c2;
+        Bzn[i][j][k] = tmpBz + (vx*tmpEy - vy*tmpEx)/c2;
+
+      }
+
 
 }

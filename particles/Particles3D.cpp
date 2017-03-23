@@ -444,6 +444,9 @@ int Particles3D::updateVelocity(Grid * grid, VirtualTopology3D * vct, Field * EM
   double ***Exth= asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getExth());
   double ***Eyth= asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getEyth());
   double ***Ezth= asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getEzth());
+  double ***Ex_ext = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getEx_ext());
+  double ***Ey_ext = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getEy_ext());
+  double ***Ez_ext = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getEz_ext());
   double ***Bx = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBx());
   double ***By = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBy());
   double ***Bz = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBz());
@@ -554,32 +557,32 @@ int Particles3D::updateVelocity(Grid * grid, VirtualTopology3D * vct, Field * EM
     Bzl += weight110 * (Bz[ix - 1][iy - 1][iz]     + Fext*Bz_ext[ix-1][iy-1][iz]);
     Bzl += weight111 * (Bz[ix - 1][iy - 1][iz - 1] + Fext*Bz_ext[ix-1][iy-1][iz-1]);
     // 
-    Exl += weight000 * Exth[ix][iy][iz];
-    Exl += weight001 * Exth[ix][iy][iz - 1];
-    Exl += weight010 * Exth[ix][iy - 1][iz];
-    Exl += weight011 * Exth[ix][iy - 1][iz - 1];
-    Exl += weight100 * Exth[ix - 1][iy][iz];
-    Exl += weight101 * Exth[ix - 1][iy][iz - 1];
-    Exl += weight110 * Exth[ix - 1][iy - 1][iz];
-    Exl += weight111 * Exth[ix - 1][iy - 1][iz - 1];
-    // 
-    Eyl += weight000 * Eyth[ix][iy][iz];
-    Eyl += weight001 * Eyth[ix][iy][iz - 1];
-    Eyl += weight010 * Eyth[ix][iy - 1][iz];
-    Eyl += weight011 * Eyth[ix][iy - 1][iz - 1];
-    Eyl += weight100 * Eyth[ix - 1][iy][iz];
-    Eyl += weight101 * Eyth[ix - 1][iy][iz - 1];
-    Eyl += weight110 * Eyth[ix - 1][iy - 1][iz];
-    Eyl += weight111 * Eyth[ix - 1][iy - 1][iz - 1];
-    // 
-    Ezl += weight000 * Ezth[ix][iy][iz];
-    Ezl += weight001 * Ezth[ix][iy][iz - 1];
-    Ezl += weight010 * Ezth[ix][iy - 1][iz];
-    Ezl += weight011 * Ezth[ix][iy - 1][iz - 1];
-    Ezl += weight100 * Ezth[ix - 1][iy][iz];
-    Ezl += weight101 * Ezth[ix - 1][iy][iz - 1];
-    Ezl += weight110 * Ezth[ix - 1][iy - 1][iz];
-    Ezl += weight111 * Ezth[ix - 1][iy - 1][iz - 1];
+    Exl += weight000 * Exth[ix][iy][iz];            + Fext*Ex_ext[ix][iy][iz];
+    Exl += weight001 * Exth[ix][iy][iz - 1];        + Fext*Ex_ext[ix][iy][iz - 1];
+    Exl += weight010 * Exth[ix][iy - 1][iz];        + Fext*Ex_ext[ix][iy - 1][iz];
+    Exl += weight011 * Exth[ix][iy - 1][iz - 1];    + Fext*Ex_ext[ix][iy - 1][iz - 1];
+    Exl += weight100 * Exth[ix - 1][iy][iz];        + Fext*Ex_ext[ix - 1][iy][iz];
+    Exl += weight101 * Exth[ix - 1][iy][iz - 1];    + Fext*Ex_ext[ix - 1][iy][iz - 1];
+    Exl += weight110 * Exth[ix - 1][iy - 1][iz];    + Fext*Ex_ext[ix - 1][iy - 1][iz];
+    Exl += weight111 * Exth[ix - 1][iy - 1][iz - 1] + Fext*Ex_ext[ix - 1][iy - 1][iz - 1];
+    //                                                                                   
+    Eyl += weight000 * Eyth[ix][iy][iz];            + Fext*Ey_ext[ix][iy][iz];
+    Eyl += weight001 * Eyth[ix][iy][iz - 1];        + Fext*Ey_ext[ix][iy][iz - 1];
+    Eyl += weight010 * Eyth[ix][iy - 1][iz];        + Fext*Ey_ext[ix][iy - 1][iz];
+    Eyl += weight011 * Eyth[ix][iy - 1][iz - 1];    + Fext*Ey_ext[ix][iy - 1][iz - 1];
+    Eyl += weight100 * Eyth[ix - 1][iy][iz];        + Fext*Ey_ext[ix - 1][iy][iz];
+    Eyl += weight101 * Eyth[ix - 1][iy][iz - 1];    + Fext*Ey_ext[ix - 1][iy][iz - 1];
+    Eyl += weight110 * Eyth[ix - 1][iy - 1][iz];    + Fext*Ey_ext[ix - 1][iy - 1][iz];
+    Eyl += weight111 * Eyth[ix - 1][iy - 1][iz - 1] + Fext*Ey_ext[ix - 1][iy - 1][iz - 1];
+    //                                                                                   
+    Ezl += weight000 * Ezth[ix][iy][iz];            + Fext*Ez_ext[ix][iy][iz];
+    Ezl += weight001 * Ezth[ix][iy][iz - 1];        + Fext*Ez_ext[ix][iy][iz - 1];
+    Ezl += weight010 * Ezth[ix][iy - 1][iz];        + Fext*Ez_ext[ix][iy - 1][iz];
+    Ezl += weight011 * Ezth[ix][iy - 1][iz - 1];    + Fext*Ez_ext[ix][iy - 1][iz - 1];
+    Ezl += weight100 * Ezth[ix - 1][iy][iz];        + Fext*Ez_ext[ix - 1][iy][iz];
+    Ezl += weight101 * Ezth[ix - 1][iy][iz - 1];    + Fext*Ez_ext[ix - 1][iy][iz - 1];
+    Ezl += weight110 * Ezth[ix - 1][iy - 1][iz];    + Fext*Ez_ext[ix - 1][iy - 1][iz];
+    Ezl += weight111 * Ezth[ix - 1][iy - 1][iz - 1] + Fext*Ez_ext[ix - 1][iy - 1][iz - 1];
 
     // 
     // End of interpolation

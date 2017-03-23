@@ -139,6 +139,7 @@ int c_Solver::Init(int argc, char **argv) {
 
     if (col->getLagrangian() == 1) part[i].setLagrangianFrame(true);
   }
+  if (col->getLagrangian() == 1) EMf->setLagrangianFrame(vct, col, true);
 
 
 
@@ -307,7 +308,7 @@ void c_Solver::InjectBoundaryParticles(){
     } else if (col->getCase()=="Dipole") {
        Qremoved[i] = part[i].deleteParticlesInsideSphere(col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
     } else if (col->getCase()=="HalfPlanet") {
-       Qremoved[i]  = part[i].deleteParticlesInsideSphere(col->getL_square(), col->getLx(),col->gety_center(),col->getz_center());
+       Qremoved[i] = part[i].deleteParticlesInsideSphere(col->getL_square(),col->getLx(),col->gety_center(),col->getz_center());
        Qremoved[i] = part[i].deleteParticlesOuterFrame(6.0, 6.0, 6.0);
     }
   }
@@ -357,6 +358,12 @@ void c_Solver::WriteConserved(int cycle) {
 
 
 void c_Solver::WriteOutput(int cycle) {
+
+  // Go to the Eulerian frame 
+  if (col->getLagrangian() == 1) {
+    EMf->setLagrangianFrame(vct, col, false);
+    for (int i = 0; i < ns; i++) part[i].setLagrangianFrame(false);
+  }
 
   // Compute the charge density and the current of each specie 
   EMf->setZeroDensities();                  // set to zero the densities
@@ -421,6 +428,11 @@ void c_Solver::WriteOutput(int cycle) {
     }
   }
 
+  // Go back to the Lagrangian frame 
+  if (col->getLagrangian() == 1) {
+    EMf->setLagrangianFrame(vct, col, true);
+    for (int i = 0; i < ns; i++) part[i].setLagrangianFrame(true);
+  }
 }
 
 

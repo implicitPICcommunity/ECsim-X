@@ -409,6 +409,15 @@ inline void eqValue(double value, double ***vect, int nx, int ny, int nz) {
         vect[i][j][k] = value;
 
 }
+inline void eqValue(double value, double ****vect, int ns, int nx, int ny, int nz) {
+
+  for (register int s = 0; s < ns; s++)
+    for (register int i = 0; i < nx; i++)
+      for (register int j = 0; j < ny; j++)
+        for (register int k = 0; k < nz; k++)
+          vect[s][i][j][k] = value;
+
+}
 inline void eqValue(double value, double vect[][2][2], int nx, int ny, int nz) {
   for (int i = 0; i < nx; i++)
     for (int j = 0; j < ny; j++)
