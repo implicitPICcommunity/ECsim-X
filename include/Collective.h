@@ -251,6 +251,8 @@ class Collective
 
     int getNdim() { return ndim;}
 
+    int getZeroCurrent();
+
   private:
     /*! inputfile */
     string inputfile;
@@ -461,6 +463,9 @@ class Collective
     int ndim;
     /** Bulk velocity (for the Lagrangian reference frame */
     double u_bulk, v_bulk, w_bulk;
+
+    /** Initial current equal zero */
+    int zeroCurrent;
 };
 
 #endif

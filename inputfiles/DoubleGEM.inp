@@ -15,6 +15,7 @@ PoissonCorrection = no                              # Poisson correction [ yes |
 SimulationName    = DoubleGEM                       # Simulation name for the output
 Cylindrical       = 0                               # Cylindrical coordinates (true = 1, false = 0)
 Lagrangian        = 0                               # Lagrangian frame of reference
+ZeroCurrent       = 0                               # 1 -> assure that the inital current is zero
 
 #  %%%%%%%%%%%%%%%%%%% Magnetic Reconnection %%%%%%%%%%%%%%%%%%
 B0x = 0.0097

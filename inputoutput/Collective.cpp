@@ -50,6 +50,7 @@ void Collective::ReadInput(string inputfile) {
     PoissonCorrection = config.read<string>("PoissonCorrection");
     Cylindrical       = config.read < int >("Cylindrical");
     Lagrangian        = config.read < int >("Lagrangian");
+    zeroCurrent       = config.read < int >("ZeroCurrent");
 
     rhoINIT = new double[ns];
     array_double rhoINIT0 = config.read < array_double > ("rhoINIT");
@@ -1152,3 +1153,5 @@ int Collective::getLagrangian() {
 double Collective::getUbulk() { return u_bulk; }
 double Collective::getVbulk() { return v_bulk; }
 double Collective::getWbulk() { return w_bulk; }
+/*! Get if the total current has to be zero */
+int Collective::getZeroCurrent() {return zeroCurrent;}

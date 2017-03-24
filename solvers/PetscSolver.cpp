@@ -12,6 +12,7 @@
 /*                                                                            */
 /******************************************************************************/
 #ifdef __WITH_PETSC__
+extern PetscErrorCode InitialGuess(KSP ksp ,Vec b ,void* ctx) ;
 PetscSolver::PetscSolver(EMfields3D *EMf, Grid* grid, VirtualTopology3D *vct, Collective *col)
 {
   PetscInitialize(NULL, NULL, NULL, NULL);
@@ -42,18 +43,23 @@ PetscSolver::PetscSolver(EMfields3D *EMf, Grid* grid, VirtualTopology3D *vct, Co
   // Create the Krylov subspace solver
   KSPCreate(PETSC_COMM_WORLD, &ksp);
   KSPSetType(ksp, KSPPGMRES);  // Pipelined GMRES
-  //KSPSetType(ksp, KSPLGMRES);  
-  //KSPSetType(ksp, KSPGMRES);
+  //KSPSetType(ksp, KSPCG);  // Pipelined GMRES
+
+  KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);
   KSPSetOperators(ksp, A, A);
+  KSPSetComputeInitialGuess(ksp, InitialGuess ,&globX);
   
   // Preconditioner
   //KSPGetPC(ksp, &pc);
-  //PCSetType(pc, PCNONE);
+  //PCSetType(pc, PCGASM);
+  //PCSetType(pc, PCGASM);
+  
   
   // Tolerance and number of iterations
   KSPSetTolerances(ksp,1e-20,tol,10000,10000);
 
   KSPSetFromOptions(ksp);
+  KSPSetUp(ksp);
 
   //finish the assemble of A and globX
   MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);
@@ -120,5 +126,12 @@ PetscErrorCode MyMatMult(Mat A,Vec x,Vec y)
   VecRestoreArray(y, &d_y);
 
   return 0;
+}
+PetscErrorCode InitialGuess(KSP ksp ,Vec b ,void* ctx) {
+
+  Vec* c = (Vec*) ctx;
+  VecCopy(*c, b);
+  
+
 }
 #endif

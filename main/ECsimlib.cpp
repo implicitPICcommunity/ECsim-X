@@ -181,6 +181,16 @@ int c_Solver::Init(int argc, char **argv) {
   cq = SaveDirName + "/ConservedQuantities.txt";
   
 
+  /* Compute the external current to have the total current equal to zero */
+  if (col->getZeroCurrent() == 1) {
+    EMf->setZeroDensities();                  // set to zero the densities
+    for (int i = 0; i < ns; i++)
+      part[i].computeCurrent(EMf, grid, vct);      // interpolate Particles to Grid(Nodes)
+    EMf->sumOverSpecies (vct);
+    EMf->communicateGhostP2G_spec(vct);
+
+    EMf->setZeroCurrent();
+  }
 
 
 
@@ -384,6 +394,12 @@ void c_Solver::WriteOutput(int cycle) {
     double ***Bx = EMf->getBx();
     double ***By = EMf->getBy();
     double ***Bz = EMf->getBz();
+    double ***Jxh= EMf->getJxh();
+    double ***Jyh= EMf->getJyh();
+    double ***Jzh= EMf->getJzh();
+    double ***Jx_ext= EMf->getJx_ext();
+    double ***Jy_ext= EMf->getJy_ext();
+    double ***Jz_ext= EMf->getJz_ext();
     double ***rhon = EMf->getRHOn();
     int nxn = grid->getNXN();
     int nyn = grid->getNYN();
@@ -394,10 +410,12 @@ void c_Solver::WriteOutput(int cycle) {
           double x = grid->getXN(i,j,k);
           double y = grid->getYN(i,j,k);
           double z = grid->getZN(i,j,k);
-          fprintf(fd,"%8.4f %8.4f %8.4f   %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e %13.6e \n"
+          fprintf(fd,"%8.4f %8.4f %8.4f   %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e   %13.6e \n"
                     ,x,y,z
-                    ,Ex[i][j][k], Ey[i][j][k], Ez[i][j][k]
-                    ,Bx[i][j][k], By[i][j][k], Bz[i][j][k]
+                    ,Ex[i][j][k],  Ey[i][j][k],  Ez[i][j][k]
+                    ,Bx[i][j][k],  By[i][j][k],  Bz[i][j][k]
+                    ,Jxh[i][j][k], Jyh[i][j][k], Jzh[i][j][k]
+                    ,Jxh[i][j][k]+Jx_ext[i][j][k], Jyh[i][j][k]+Jy_ext[i][j][k], Jzh[i][j][k]+Jz_ext[i][j][k]
                     ,rhon[i][j][k]
                   );
         }

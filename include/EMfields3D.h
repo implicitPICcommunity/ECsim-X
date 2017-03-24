@@ -271,16 +271,19 @@ class EMfields3D                // :public Field
     /*! get current -Direction X */
     double ****getJxs();
     double ***getJxs(int is);
+    double ***getJx_ext();
     /*! get Jy(X,Y,Z) */
     double &getJys(int indexX, int indexY, int indexZ, int is) const;
     /*! get current -Direction Y */
     double ****getJys();
     double ***getJys(int is);
+    double ***getJy_ext();
     /*! get Jz(X,Y,Z) */
     double &getJzs(int indexX, int indexY, int indexZ, int is) const;
     /*! get current -Direction Z */
     double ****getJzs();
     double ***getJzs(int is);
+    double ***getJz_ext();
    
     double getJxcs (int i,int j,int k, int is);
     double getJycs (int i,int j,int k, int is);
@@ -304,6 +307,7 @@ class EMfields3D                // :public Field
 
     void updateLagrangianFrame(VirtualTopology3D * vct, Collective *col);
     void setLagrangianFrame(VirtualTopology3D* vct, Collective* col, bool mode);
+    void setZeroCurrent();
 
     /* ********************************* // VARIABLES ********************************* */
   private:
@@ -463,6 +467,13 @@ class EMfields3D                // :public Field
     double***  Ey_ext;
     /*! External electric field component-Z, defined on nodes */
     double***  Ez_ext;
+
+    /*! Initial zero current */
+    int zeroCurrent;
+    /*! External current: used to asure that Jt = 0 in the initialization */
+    double ***Jx_ext;
+    double ***Jy_ext;
+    double ***Jz_ext;
 
     /*! Mass matrix */
     double ****Mxx;

@@ -205,6 +205,10 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
   vectZ = newArr3(double, nxn, nyn, nzn);
   arr = newArr3(double,nxn,nyn,nzn);
 
+  zeroCurrent = (col->getZeroCurrent() == 1 ? 1 : 0);
+  Jx_ext = newArr3(double, nxn, nyn, nzn);
+  Jy_ext = newArr3(double, nxn, nyn, nzn);
+  Jz_ext = newArr3(double, nxn, nyn, nzn);
 
   // Set to zero all the memory allocated
   setAllzero();
@@ -292,6 +296,10 @@ void EMfields3D::setAllzero()
    eqValue(0.0, vectY, nxn, nyn, nzn);
    eqValue(0.0, vectZ, nxn, nyn, nzn);
    eqValue(0.0, arr, nxn, nyn, nzn);
+
+   eqValue(0.0, Jx_ext, nxn, nyn, nzn);
+   eqValue(0.0, Jy_ext, nxn, nyn, nzn);
+   eqValue(0.0, Jz_ext, nxn, nyn, nzn);
 }
 
 /*! Fix the boundary conditions for r=0. BC are only needed for the electric field.
@@ -575,9 +583,12 @@ void EMfields3D::MaxwellSource(double *bkrylov, Grid * grid, VirtualTopology3D *
   for (int i=0; i<nxn-0; i++)
     for (int j=0; j<nyn-0; j++) 
       for (int k=0; k<nzn-0; k++) {
-         tempX[i][j][k] = -4*M_PI*th*dt*Jxh[i][j][k]*grid->getInvVOLn(i,j,k);
-         tempY[i][j][k] = -4*M_PI*th*dt*Jyh[i][j][k]*grid->getInvVOLn(i,j,k);
-         tempZ[i][j][k] = -4*M_PI*th*dt*Jzh[i][j][k]*grid->getInvVOLn(i,j,k);
+	 double Jx_tot = Jxh[i][j][k] + zeroCurrent*Jx_ext[i][j][k];
+	 double Jy_tot = Jyh[i][j][k] + zeroCurrent*Jy_ext[i][j][k];
+	 double Jz_tot = Jzh[i][j][k] + zeroCurrent*Jz_ext[i][j][k];
+         tempX[i][j][k] = -4*M_PI*th*dt*Jx_tot*grid->getInvVOLn(i,j,k);
+         tempY[i][j][k] = -4*M_PI*th*dt*Jy_tot*grid->getInvVOLn(i,j,k);
+         tempZ[i][j][k] = -4*M_PI*th*dt*Jz_tot*grid->getInvVOLn(i,j,k);
       }
 
   addscale(1, tempX, Ex, nxn, nyn, nzn);
@@ -1055,6 +1066,9 @@ void EMfields3D::communicateGhostP2G_spec(VirtualTopology3D * vct) {
 
   // interpolate adding common nodes among processors
   communicateInterp(nxn, nyn, nzn, rhon, 0, 0, 0, 0, 0, 0, vct);
+  communicateInterp(nxn, nyn, nzn, Jxh, 0, 0, 0, 0, 0, 0, vct);
+  communicateInterp(nxn, nyn, nzn, Jyh, 0, 0, 0, 0, 0, 0, vct);
+  communicateInterp(nxn, nyn, nzn, Jzh, 0, 0, 0, 0, 0, 0, vct);
   for (int i=0; i<ns; i++) { 
     communicateInterp(nxn, nyn, nzn, i, rhons, 0, 0, 0, 0, 0, 0, vct);
     communicateInterp(nxn, nyn, nzn, i, Jxs, 0, 0, 0, 0, 0, 0, vct);
@@ -1064,6 +1078,9 @@ void EMfields3D::communicateGhostP2G_spec(VirtualTopology3D * vct) {
 
   // put the correct values on ghost cells
   communicateNode_P(nxn, nyn, nzn, rhon, vct);
+  communicateNode_P(nxn, nyn, nzn, Jxh, vct);
+  communicateNode_P(nxn, nyn, nzn, Jyh, vct);
+  communicateNode_P(nxn, nyn, nzn, Jzh, vct);
   for (int i=0; i<ns; i++) { 
     communicateNode_P(nxn, nyn, nzn, rhons, i, vct);
     communicateNode_P(nxn, nyn, nzn, Jxs, i, vct);
@@ -1919,11 +1936,12 @@ void EMfields3D::initDipole(VirtualTopology3D *vct, Grid *grid, Collective *col)
          double x = grid->getXN(i,j,k);
          double y = grid->getYN(i,j,k);
          double z = grid->getZN(i,j,k);
+/*
          loopY(blp, x, y, z, a, xc, yc, zc, B1y);
          Bx_ext[i][j][k] += blp[0];
          By_ext[i][j][k] += blp[1];
          Bz_ext[i][j][k] += blp[2];
-/*
+*/
          double a=0.75*L_square; // 0.75 x To avoid problems with de-centered dipoles
 
          double xc=x_center;
@@ -1933,7 +1951,7 @@ void EMfields3D::initDipole(VirtualTopology3D *vct, Grid *grid, Collective *col)
          double rx = x-xc;
          double ry = y-yc;
          double rz = z-zc;
-         if (twodim) ry = 0.0;
+         if (twodim) rz = 0.0;
   
          double r      = sqrt(rx*rx + ry*ry + rz*rz);
   
@@ -1942,7 +1960,7 @@ void EMfields3D::initDipole(VirtualTopology3D *vct, Grid *grid, Collective *col)
          double Mz = B1z;
   
          if (r < 1.0*a) {
-           rz = sqrt(a*a - (rx*rx + ry*ry));
+           ry = sqrt(a*a - (rx*rx + rz*rz));
            double one_r3 = 1.0/(a*a*a);
            double rhx = rx/a;
            double rhy = ry/a;
@@ -1954,8 +1972,8 @@ void EMfields3D::initDipole(VirtualTopology3D *vct, Grid *grid, Collective *col)
            double Bme = sqrt(Bxe*Bxe + Bye*Bye + Bze*Bze);
   
            Bx_ext[i][j][k] = 0.0;
-           By_ext[i][j][k] = 0.0;
-           Bz_ext[i][j][k] = (B1z == 0 ? 0.0 : (B1z/fabs(B1z)) * Bme);
+           By_ext[i][j][k] = (B1y == 0 ? 0.0 : (B1y/fabs(B1y)) * Bme);
+           Bz_ext[i][j][k] = 0.0;
          }
          else {
   
@@ -1969,7 +1987,6 @@ void EMfields3D::initDipole(VirtualTopology3D *vct, Grid *grid, Collective *col)
            By_ext[i][j][k] = one_r3 * ( 3 * (Mx*rhx+My*rhy+Mz*rhz) * rhy - My );
            Bz_ext[i][j][k] = one_r3 * ( 3 * (Mx*rhx+My*rhy+Mz*rhz) * rhz - Mz );
          }
-*/
          Bxn[i][j][k] = B0x;
          Byn[i][j][k] = B0y;
          Bzn[i][j][k] = B0z;
@@ -2843,6 +2860,9 @@ double &EMfields3D::getJxh(int indexX, int indexY, int indexZ) const {
 double ***EMfields3D::getJxh() {
   return (Jxh);
 }
+double ***EMfields3D::getJx_ext() {
+  return (Jx_ext);
+}
 /*! get current -Direction Y */
 double &EMfields3D::getJyh(int indexX, int indexY, int indexZ) const {
   return (Jyh[indexX][indexY][indexZ]);
@@ -2851,6 +2871,9 @@ double &EMfields3D::getJyh(int indexX, int indexY, int indexZ) const {
 double ***EMfields3D::getJyh() {
   return (Jyh);
 }
+double ***EMfields3D::getJy_ext() {
+  return (Jy_ext);
+}
 /*! get current -Direction Z */
 double &EMfields3D::getJzh(int indexX, int indexY, int indexZ) const {
   return (Jzh[indexX][indexY][indexZ]);
@@ -2858,6 +2881,9 @@ double &EMfields3D::getJzh(int indexX, int indexY, int indexZ) const {
 /*! get current array Z component * */
 double ***EMfields3D::getJzh() {
   return (Jzh);
+}
+double ***EMfields3D::getJz_ext() {
+  return (Jz_ext);
 }
 
 /*! get current -Direction X */
@@ -3541,6 +3567,15 @@ void EMfields3D::setLagrangianFrame(VirtualTopology3D * vct, Collective *col, bo
         Bzn[i][j][k] = tmpBz + (vx*tmpEy - vy*tmpEx)/c2;
 
       }
+}
 
-
+void EMfields3D::setZeroCurrent()
+{
+  for (int k=1; k<nzn-1; k++) 
+    for (int j=1; j<nyn-1; j++) 
+      for (int i=1; i<nxn-1; i++) {
+        Jx_ext[i][j][k] = -Jxh[i][j][k];
+        Jy_ext[i][j][k] = -Jyh[i][j][k];
+        Jz_ext[i][j][k] = -Jzh[i][j][k];
+      }
 }
