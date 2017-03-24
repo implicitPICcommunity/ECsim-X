@@ -142,6 +142,7 @@ void Particles3Dcomm::allocate(int species, long long initnpmax, Collective * co
   Cylindrical = col->getCylindrical();
   ndim = col->getNdim();
 
+  Lagrangian = col->getLagrangian();
   u_bulk = col->getUbulk();
   v_bulk = col->getVbulk();
   w_bulk = col->getWbulk();

@@ -137,12 +137,12 @@ void Particles3D::maxwellian(Grid * grid, Field * EMf, VirtualTopology3D * vct) 
         for (int ii = 0; ii < npcelx; ii++)
           for (int jj = 0; jj < npcely; jj++)
             for (int kk = 0; kk < npcelz; kk++) {
-              x[counter] = (ii + 0.5) * (dx / npcelx) + grid->getXN(i, j, k);  
-              y[counter] = (jj + 0.5) * (dy / npcely) + grid->getYN(i, j, k);
-              z[counter] = (kk + 0.5) * (dz / npcelz) + grid->getZN(i, j, k);
-              //x[counter] = dx*(rand() / (double) RAND_MAX) + grid->getXN(i, j, k);  
-              //y[counter] = dy*(rand() / (double) RAND_MAX) + grid->getYN(i, j, k);
-              //z[counter] = dz*(rand() / (double) RAND_MAX) + grid->getZN(i, j, k);
+              //x[counter] = (ii + 0.5) * (dx / npcelx) + grid->getXN(i, j, k);  
+              //y[counter] = (jj + 0.5) * (dy / npcely) + grid->getYN(i, j, k);
+              //z[counter] = (kk + 0.5) * (dz / npcelz) + grid->getZN(i, j, k);
+              x[counter] = dx*(rand() / (double) RAND_MAX) + grid->getXN(i, j, k);  
+              y[counter] = dy*(rand() / (double) RAND_MAX) + grid->getYN(i, j, k);
+              z[counter] = dz*(rand() / (double) RAND_MAX) + grid->getZN(i, j, k);
               // q = charge
               q[counter] = (qom / fabs(qom)) * (fabs(EMf->getRHOcs(i, j, k, ns)) / npcel) * (1.0 / grid->getInvVOLc(i,j,k));
 
@@ -438,7 +438,7 @@ void Particles3D::get_Bl(const double weights[2][2][2], int ix, int iy, int iz, 
 // Particles mover for the ECIMM algorithm
 int Particles3D::updateVelocity(Grid * grid, VirtualTopology3D * vct, Field * EMf) {
   if (vct->getCartesian_rank() == 0) {
-    cout << "*** ECIMM MOVER species " << ns << " ***"<< endl;
+    cout << "*** ECSIM MOVER species " << ns << "( " << nop << " part ) ***"<< endl;
   }
   double start_mover_PC = MPI_Wtime();
   double ***Exth= asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getExth());
@@ -827,6 +827,8 @@ int Particles3D::particle_repopulator(Grid* grid,VirtualTopology3D* vct, Field* 
   int avail;
   long long store_nop=nop;
 
+  int ncr = 4;
+
   ////////////////////////
   // INJECTION FROM XLEFT
   ////////////////////////
@@ -835,7 +837,7 @@ int Particles3D::particle_repopulator(Grid* grid,VirtualTopology3D* vct, Field* 
     long long nplast = nop-1;
 
     while (particles_index < nplast+1) {
-      if (x[particles_index] < 3.0*dx ) {
+      if (x[particles_index] < ncr*dx ) {
         del_pack(particles_index,&nplast);
       } else {
         particles_index++;
@@ -846,7 +848,7 @@ int Particles3D::particle_repopulator(Grid* grid,VirtualTopology3D* vct, Field* 
     particles_index = nop;
     double prob, theta, sign;
     //particles_index;
-    for (int i=1; i< 4;i++)
+    for (int i=1; i<=ncr ;i++)
       for (int j=1; j< grid->getNYC()-1;j++)
         for (int k=1; k< grid->getNZC()-1;k++)
           for (int ii=0; ii < npcelx; ii++)
@@ -855,6 +857,9 @@ int Particles3D::particle_repopulator(Grid* grid,VirtualTopology3D* vct, Field* 
                 x[particles_index] = (ii + Drand48(seed))*(dx/npcelx) + grid->getXN(i,j,k);
                 y[particles_index] = (jj + Drand48(seed))*(dy/npcely) + grid->getYN(i,j,k);
                 z[particles_index] = (kk + Drand48(seed))*(dz/npcelz) + grid->getZN(i,j,k);
+                //x[particles_index] = (ii + 0.5)*(dx/npcelx) + grid->getXN(i,j,k);
+                //y[particles_index] = (jj + 0.5)*(dy/npcely) + grid->getYN(i,j,k);
+                //z[particles_index] = (kk + 0.5)*(dz/npcelz) + grid->getZN(i,j,k);
                 // q = charge
                 /* ATTENTION: OVther methods can be use, i.e. using the values close to the boundary: */
                    double rho = 1.0/FourPI;
@@ -873,6 +878,11 @@ int Particles3D::particle_repopulator(Grid* grid,VirtualTopology3D* vct, Field* 
                 theta = 2.0*M_PI*Drand48(seed);
                 w[particles_index] = w0 + wth*prob*cos(theta);
 
+                if (Lagrangian == 1) {
+                  u[particles_index] -= u_bulk;
+                  v[particles_index] -= v_bulk;
+                  w[particles_index] -= w_bulk;
+                }
                 if (TrackParticleID)
                   ParticleID[particles_index]= particles_index*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
 
@@ -931,6 +941,12 @@ int Particles3D::particle_repopulator(Grid* grid,VirtualTopology3D* vct, Field* 
                 if (TrackParticleID)
                   ParticleID[particles_index]= particles_index*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
 
+                if (Lagrangian == 1) {
+                  u[particles_index] -= u_bulk;
+                  v[particles_index] -= v_bulk;
+                  w[particles_index] -= w_bulk;
+                }
+
                 particles_index++ ;
               }
     nop = particles_index;
@@ -983,6 +999,11 @@ int Particles3D::particle_repopulator(Grid* grid,VirtualTopology3D* vct, Field* 
                 if (TrackParticleID)
                   ParticleID[particles_index]= particles_index*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
 
+                if (Lagrangian == 1) {
+                  u[particles_index] -= u_bulk;
+                  v[particles_index] -= v_bulk;
+                  w[particles_index] -= w_bulk;
+                }
                 particles_index++ ;
               }
     nop = particles_index;
@@ -1034,6 +1055,11 @@ int Particles3D::particle_repopulator(Grid* grid,VirtualTopology3D* vct, Field* 
                 if (TrackParticleID)
                   ParticleID[particles_index]= particles_index*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
 
+                if (Lagrangian == 1) {
+                  u[particles_index] -= u_bulk;
+                  v[particles_index] -= v_bulk;
+                  w[particles_index] -= w_bulk;
+                }
                 particles_index++ ;
               }
     nop = particles_index;
@@ -1086,6 +1112,11 @@ int Particles3D::particle_repopulator(Grid* grid,VirtualTopology3D* vct, Field* 
                 if (TrackParticleID)
                   ParticleID[particles_index]= particles_index*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
 
+                if (Lagrangian == 1) {
+                  u[particles_index] -= u_bulk;
+                  v[particles_index] -= v_bulk;
+                  w[particles_index] -= w_bulk;
+                }
                 particles_index++ ;
               }
     nop = particles_index;
@@ -1138,6 +1169,11 @@ int Particles3D::particle_repopulator(Grid* grid,VirtualTopology3D* vct, Field* 
                 if (TrackParticleID)
                   ParticleID[particles_index]= particles_index*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
 
+                if (Lagrangian == 1) {
+                  u[particles_index] -= u_bulk;
+                  v[particles_index] -= v_bulk;
+                  w[particles_index] -= w_bulk;
+                }
                 particles_index++ ;
               }
     nop = particles_index;

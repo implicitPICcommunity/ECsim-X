@@ -109,20 +109,25 @@ int c_Solver::Init(int argc, char **argv) {
   part = new Particles3D[ns];
   for (int i = 0; i < ns; i++) {
     part[i].allocate(i, 0, col, vct, grid);
-    if (col->getCase()=="DoubleGEM") part[i].MaxwellianDoubleGEM(grid, EMf, vct);
-    else if (col->getCase()=="Coils"){
-      if (col->getRHOinject(i) == 0.0)
-        part[i].monoenergetic_box(grid,EMf,vct,L_square,x_center,y_center,z_center, 1.0);  // generated maxwellian in a box
-      else
-        part[i].empty(grid, EMf, vct);
+    if (col->getCase()=="DoubleGEM") {
+      part[i].MaxwellianDoubleGEM(grid, EMf, vct);
+
+    } else if (col->getCase()=="Coils"){
+      if (col->getRHOinject(i) == 0.0) part[i].monoenergetic_box(grid,EMf,vct,L_square,x_center,y_center,z_center, 1.0);  // generated maxwellian in a box
+      else part[i].empty(grid, EMf, vct);
+
     } else if (col->getCase()=="HalfPlanet") {
-      if (col->getRHOinject(i) > 0.0) {
-        part[i].empty(grid, EMf, vct);
-      } else {
-           part[i].maxwellian(grid, EMf, vct);
-           //Qremoved[i]  = part[i].deleteParticlesInsideSphere(col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
-           //Qremoved[i] += part[i].deleteParticlesOuterFrame(2.0, 2.0, 2.0);
+      if (col->getRHOinject(i) > 0.0)  part[i].empty(grid, EMf, vct);
+      else {
+        part[i].maxwellian(grid, EMf, vct);
+        Qremoved[i]  = part[i].deleteParticlesInsideSphere(col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+        Qremoved[i] += part[i].deleteParticlesOuterFrame(2.0, 2.0, 0.0);
       }
+    } else if (col->getCase()=="Dipole") {
+      //if (col->getRHOinject(i) > 0.0)  part[i].empty(grid, EMf, vct);
+      //else 
+        part[i].maxwellian(grid, EMf, vct);
+
     } else {
       if (col->getPartInit() == "FromFieldFile") {
         part[i].MaxwellianFromFieldFile(grid, EMf, vct);
@@ -191,7 +196,6 @@ int c_Solver::Init(int argc, char **argv) {
 
     EMf->setZeroCurrent();
   }
-
 
 
   clocks->stop(0);
@@ -274,6 +278,17 @@ bool c_Solver::ParticlesMover() {
     return (true);              // exit from the time loop
   }
 
+  // Update the values of the magnetic field in the nodes: n+1
+  EMf->centers2nodesB(vct, grid, col);
+
+  /*-----------------------------------*/
+  /*  Update the lagrangian frame      */
+  /*-----------------------------------*/
+  if (col->getLagrangian() == 1) {
+    EMf->updateLagrangianFrame(vct, col);
+    for (int i=0; i<ns; i++) part[i].updateLagrangianFrame(vct);
+  }
+
   /* -------------------------------------- */
   /* Repopulate the buffer zone at the edge */
   /* -------------------------------------- */
@@ -288,18 +303,6 @@ bool c_Solver::ParticlesMover() {
     return (true);              // exit from the time loop
   }
 
-  // Update the values of the magnetic field in the nodes: n+1
-  EMf->centers2nodesB(vct, grid, col);
-
-
-  /*-----------------------------------*/
-  /*  Update the lagrangian frame      */
-  /*-----------------------------------*/
-  if (col->getLagrangian() == 1) {
-    EMf->updateLagrangianFrame(vct, col);
-    for (int i=0; i<ns; i++) part[i].updateLagrangianFrame(vct);
-  }
-
   return (false);
 }
 
@@ -309,7 +312,9 @@ void c_Solver::InjectBoundaryParticles(){
     if (col->getRHOinject(i)>0.0){
       if (col->getCase()=="HalfPlanet") 
          part[i].injector_rand_box_mono(grid,vct,EMf);
-      //mem_avail = part[i].particle_repopulator(grid,vct,EMf,i);
+      else if (col->getCase()=="Dipole") {
+         mem_avail = part[i].particle_repopulator(grid,vct,EMf,i);
+      }
     }
     if (col->getCase()=="Coils") {
       //Remove particles from outside the simulation box
@@ -317,6 +322,7 @@ void c_Solver::InjectBoundaryParticles(){
       Qremoved[i] = part[i].deleteParticlesOuterFrame(6.0,6.0,0.0);
     } else if (col->getCase()=="Dipole") {
        Qremoved[i] = part[i].deleteParticlesInsideSphere(col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+       //Qremoved[i] = part[i].deleteParticlesOuterFrame(2.0, 2.0, 0.0);
     } else if (col->getCase()=="HalfPlanet") {
        Qremoved[i] = part[i].deleteParticlesInsideSphere(col->getL_square(),col->getLx(),col->gety_center(),col->getz_center());
        Qremoved[i] = part[i].deleteParticlesOuterFrame(6.0, 6.0, 6.0);

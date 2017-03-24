@@ -306,6 +306,8 @@ protected:
   int Cylindrical;
   /** Number of dimension of the problem */
   int ndim;
+  /** Lagrangian reference frame */
+  int Lagrangian;
   /** Bulk velocity (for the Lagrangian reference frame */
   double u_bulk, v_bulk, w_bulk;
 };
