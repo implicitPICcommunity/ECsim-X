@@ -395,6 +395,7 @@ void EMfields3D::fixBC_Cyl_Source(double ***SoX, double ***SoY, double ***SoZ) {
         }
     }
 
+    /*
     for (int j=0; j<nyn; j++) 
       for (int k=0; k<nzn; k++) 
         for (int c=0; c<NE_MASS; c++) {
@@ -408,6 +409,7 @@ void EMfields3D::fixBC_Cyl_Source(double ***SoX, double ***SoY, double ***SoZ) {
           Mzy[c][1][j][k] = 0;
           Mzz[c][1][j][k] = 0;
         }
+      */
   }
 
   if (xEnd == Lx) {
@@ -427,6 +429,7 @@ void EMfields3D::fixBC_Cyl_Source(double ***SoX, double ***SoY, double ***SoZ) {
         }
     }
 
+    /*
     for (int j=0; j<nyn; j++) 
       for (int k=0; k<nzn; k++) 
         for (int c=0; c<NE_MASS; c++) {
@@ -440,6 +443,7 @@ void EMfields3D::fixBC_Cyl_Source(double ***SoX, double ***SoY, double ***SoZ) {
           Mzy[c][nxn-2][j][k] = 0;
           Mzz[c][nxn-2][j][k] = 0;
         }
+    */
   }
 }
 
