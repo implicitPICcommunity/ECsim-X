@@ -3560,7 +3560,7 @@ void EMfields3D::setLagrangianFrame(VirtualTopology3D * vct, Collective *col, bo
       }
 }
 
-void EMfields3D::setZeroCurrent()
+void EMfields3D::setZeroCurrent(VirtualTopology3D * vct)
 {
   for (int k=1; k<nzn-1; k++) 
     for (int j=1; j<nyn-1; j++) 
@@ -3568,10 +3568,23 @@ void EMfields3D::setZeroCurrent()
         Jx_ext[i][j][k] = 0;
         Jy_ext[i][j][k] = 0;
         Jz_ext[i][j][k] = 0;
-        for (int s=1; s<ns; s++) {
+        for (int s=0; s<ns; s++) {
           Jx_ext[i][j][k] -= Jxs[s][i][j][k];
           Jy_ext[i][j][k] -= Jys[s][i][j][k];
           Jz_ext[i][j][k] -= Jzs[s][i][j][k];
         }
       }
+  communicateInterp(nxn, nyn, nzn, Jx_ext, 0, 0, 0, 0, 0, 0, vct);
+  communicateInterp(nxn, nyn, nzn, Jy_ext, 0, 0, 0, 0, 0, 0, vct);
+  communicateInterp(nxn, nyn, nzn, Jz_ext, 0, 0, 0, 0, 0, 0, vct);
+  communicateNode_P(nxn, nyn, nzn, Jx_ext, vct);
+  communicateNode_P(nxn, nyn, nzn, Jy_ext, vct);
+  communicateNode_P(nxn, nyn, nzn, Jz_ext, vct);
+
+  for (int k=1; k<nzn-1; k++) 
+    for (int j=1; j<nyn-1; j++) 
+      for (int i=1; i<nxn-1; i++) 
+        printf("%g %g %g \n", Jx_ext[i][j][k], Jy_ext[i][j][k], Jz_ext[i][j][k]);
+
+  getchar();
 }

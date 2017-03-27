@@ -307,7 +307,7 @@ class EMfields3D                // :public Field
 
     void updateLagrangianFrame(VirtualTopology3D * vct, Collective *col);
     void setLagrangianFrame(VirtualTopology3D* vct, Collective* col, bool mode);
-    void setZeroCurrent();
+    void setZeroCurrent(VirtualTopology3D * vct);
 
     /* ********************************* // VARIABLES ********************************* */
   private:

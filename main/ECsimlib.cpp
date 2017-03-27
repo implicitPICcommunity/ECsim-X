@@ -191,10 +191,8 @@ int c_Solver::Init(int argc, char **argv) {
     EMf->setZeroDensities();                  // set to zero the densities
     for (int i = 0; i < ns; i++)
       part[i].computeCurrent(EMf, grid, vct);      // interpolate Particles to Grid(Nodes)
-    EMf->sumOverSpecies (vct);
-    EMf->communicateGhostP2G_spec(vct);
 
-    EMf->setZeroCurrent();
+    EMf->setZeroCurrent(vct);
   }
 
 
