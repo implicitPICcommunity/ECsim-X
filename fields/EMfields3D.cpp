@@ -1066,9 +1066,6 @@ void EMfields3D::communicateGhostP2G_spec(VirtualTopology3D * vct) {
 
   // interpolate adding common nodes among processors
   communicateInterp(nxn, nyn, nzn, rhon, 0, 0, 0, 0, 0, 0, vct);
-  communicateInterp(nxn, nyn, nzn, Jxh, 0, 0, 0, 0, 0, 0, vct);
-  communicateInterp(nxn, nyn, nzn, Jyh, 0, 0, 0, 0, 0, 0, vct);
-  communicateInterp(nxn, nyn, nzn, Jzh, 0, 0, 0, 0, 0, 0, vct);
   for (int i=0; i<ns; i++) { 
     communicateInterp(nxn, nyn, nzn, i, rhons, 0, 0, 0, 0, 0, 0, vct);
     communicateInterp(nxn, nyn, nzn, i, Jxs, 0, 0, 0, 0, 0, 0, vct);
@@ -1078,9 +1075,6 @@ void EMfields3D::communicateGhostP2G_spec(VirtualTopology3D * vct) {
 
   // put the correct values on ghost cells
   communicateNode_P(nxn, nyn, nzn, rhon, vct);
-  communicateNode_P(nxn, nyn, nzn, Jxh, vct);
-  communicateNode_P(nxn, nyn, nzn, Jyh, vct);
-  communicateNode_P(nxn, nyn, nzn, Jzh, vct);
   for (int i=0; i<ns; i++) { 
     communicateNode_P(nxn, nyn, nzn, rhons, i, vct);
     communicateNode_P(nxn, nyn, nzn, Jxs, i, vct);
@@ -1287,9 +1281,6 @@ void EMfields3D::sumOverSpecies(VirtualTopology3D * vct) {
       for (register int j = 0; j < nyn; j++)
         for (register int k = 0; k < nzn; k++) {
           rhon[i][j][k] += rhons[is][i][j][k];
-          Jxh[i][j][k]  +=Jxs[is][i][j][k];
-          Jyh[i][j][k]  +=Jys[is][i][j][k];
-          Jzh[i][j][k]  +=Jzs[is][i][j][k];
         }
 }
 
@@ -3574,8 +3565,13 @@ void EMfields3D::setZeroCurrent()
   for (int k=1; k<nzn-1; k++) 
     for (int j=1; j<nyn-1; j++) 
       for (int i=1; i<nxn-1; i++) {
-        Jx_ext[i][j][k] = -Jxh[i][j][k];
-        Jy_ext[i][j][k] = -Jyh[i][j][k];
-        Jz_ext[i][j][k] = -Jzh[i][j][k];
+        Jx_ext[i][j][k] = 0;
+        Jy_ext[i][j][k] = 0;
+        Jz_ext[i][j][k] = 0;
+        for (int s=1; s<ns; s++) {
+          Jx_ext[i][j][k] -= Jxs[s][i][j][k];
+          Jy_ext[i][j][k] -= Jys[s][i][j][k];
+          Jz_ext[i][j][k] -= Jzs[s][i][j][k];
+        }
       }
 }
