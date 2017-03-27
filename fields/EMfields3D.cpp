@@ -210,6 +210,11 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
   Jy_ext = newArr3(double, nxn, nyn, nzn);
   Jz_ext = newArr3(double, nxn, nyn, nzn);
 
+  if (col->getCase() == "Dipole") {
+    damping = 1;
+    Lambda = newArr3(double, nxn, nyn, nzn);
+  } else damping = 0;
+
   // Set to zero all the memory allocated
   setAllzero();
 
@@ -300,6 +305,8 @@ void EMfields3D::setAllzero()
    eqValue(0.0, Jx_ext, nxn, nyn, nzn);
    eqValue(0.0, Jy_ext, nxn, nyn, nzn);
    eqValue(0.0, Jz_ext, nxn, nyn, nzn);
+
+   if (damping == 1) eqValue(0.0, Lambda, nxn, nyn, nzn);
 }
 
 /*! Fix the boundary conditions for r=0. BC are only needed for the electric field.
@@ -597,6 +604,7 @@ void EMfields3D::MaxwellSource(double *bkrylov, Grid * grid, VirtualTopology3D *
 
   
   if (Cylindrical == 1)  fixBC_Cyl_Source(tempX, tempY, tempZ);
+  else fixBC_Source(vct, col, tempX, tempY, tempZ);
 
   // physical space -> Krylov space
   phys2solver(bkrylov, tempX, tempY, tempZ, tempXC, tempYC, tempZC, nxn, nyn, nzn);
@@ -701,7 +709,15 @@ void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTo
       }
   #endif
 
+  // Temporal damping
+  if (damping == 1) {
+    sumscalprod(imageBX, delt, vectX, Lambda, nxn, nyn, nzn);
+    sumscalprod(imageBY, delt, vectY, Lambda, nxn, nyn, nzn);
+    sumscalprod(imageBZ, delt, vectZ, Lambda, nxn, nyn, nzn);
+  }
+
   if (Cylindrical == 1)  fixBC_Cyl_Image(imageBX, imageBY, imageBZ, tempX, tempY, tempZ, tempXC, tempYC, tempZC);
+  else fixBC_Image(vct, imageBX, imageBY, imageBZ, tempX, tempY, tempZ, tempXC, tempYC, tempZC);
 
   // move from physical space to krylov space
   phys2solver(im, imageBX, imageBY, imageBZ, imageEX, imageEY, imageEZ, nxn, nyn, nzn);
@@ -1901,6 +1917,8 @@ void EMfields3D::initDipole(VirtualTopology3D *vct, Grid *grid, Collective *col)
   }
   Fext = 1;
   double distance;
+
+  SetLambda(grid);
 
   double ebc[3];
   cross_product(ue0,ve0,we0,B0x,B0y,B0z,ebc);
@@ -3581,10 +3599,43 @@ void EMfields3D::setZeroCurrent(VirtualTopology3D * vct)
   communicateNode_P(nxn, nyn, nzn, Jy_ext, vct);
   communicateNode_P(nxn, nyn, nzn, Jz_ext, vct);
 
+  /*
   for (int k=1; k<nzn-1; k++) 
     for (int j=1; j<nyn-1; j++) 
       for (int i=1; i<nxn-1; i++) 
         printf("%g %g %g \n", Jx_ext[i][j][k], Jy_ext[i][j][k], Jz_ext[i][j][k]);
 
   getchar();
+  */
 }
+
+void EMfields3D::SetLambda(Grid *grid){
+
+  for (int i=0; i < nxn; i++){
+    for (int j=0; j < nyn; j++){
+      for (int k=0; k < nzn; k++){
+
+        double x = grid->getXN(i,j,k);
+        double y = grid->getYN(i,j,k);
+        double z = grid->getZN(i,j,k);
+
+        double xmin_r = Lx - 75.0 * dx;
+        double xmax_r = Lx - 25.0  * dx;
+
+        Lambda[i][j][k] = 0.0;
+
+        if (x > xmin_r) {
+          if (x < xmax_r) Lambda[i][j][k] = ((x - xmin_r) /  (xmax_r - xmin_r)) * 4.0 * M_PI / dx;
+          else            Lambda[i][j][k] = 4.0 * M_PI / dx;
+        }
+
+      }
+    }
+  }
+
+}
+
+double*** EMfields3D::GetLambda(){
+  return(Lambda);
+}
+

@@ -62,6 +62,8 @@ class EMfields3D                // :public Field
     void fixGhostB();
     void fixBC_Cyl_Image(double ***ImX, double ***ImY, double ***ImZ, double ***nEx, double ***nEy, double ***nEz, double ***cBx, double ***cBy, double ***cBz);
     void fixBC_Cyl_Source(double ***SoX, double ***SoY, double ***SoZ);
+    void fixBC_Image(VirtualTopology3D*, double***, double***, double***, double***, double***, double***, double***, double***, double***);
+    void fixBC_Source(VirtualTopology3D*, Collective*, double***, double***, double***);
 
     /*! Calculate Electric field using the implicit Maxwell solver */
     void calculateE(Grid * grid, VirtualTopology3D * vct, Collective *col);
@@ -309,6 +311,9 @@ class EMfields3D                // :public Field
     void setLagrangianFrame(VirtualTopology3D* vct, Collective* col, bool mode);
     void setZeroCurrent(VirtualTopology3D * vct);
 
+    void SetLambda(Grid *grid);
+    double ***GetLambda();
+
     /* ********************************* // VARIABLES ********************************* */
   private:
     /*! light speed */
@@ -541,6 +546,9 @@ class EMfields3D                // :public Field
     int Cylindrical;
     /** Bulk velocity (for the Lagrangian reference frame */
     double u_bulk, v_bulk, w_bulk;
+
+    double ***Lambda;
+    int damping;
 
 };
 
