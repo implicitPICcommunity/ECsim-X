@@ -541,7 +541,7 @@ void EMfields3D::calculateEB(Grid * grid, VirtualTopology3D * vct, Collective *c
     cout << "*** MAXWELL SOLVER ***" << endl;
   // prepare the source 
   MaxwellSource(bkrylov, grid, vct, col);
-  phys2solver(xkrylov, Ex, Ey, Ez, Bxn, Byn, Bzn, nxn, nyn, nzn);
+  phys2solver(xkrylov, Ex, Ey, Ez, Bxc, Byc, Bzc, nxn, nyn, nzn);
   // solver
   GMRES(&Field::MaxwellImage, xkrylov, dim, bkrylov, 20, 200, GMREStol, grid, vct, col, this);
   endEcalc(xkrylov, vct, col, grid);
@@ -3385,7 +3385,7 @@ void EMfields3D::updateLagrangianFrame(VirtualTopology3D * vct, Collective *col)
   } else {
     k0 = -1;
     k1 = 0;
-    zn += dy;
+    zn += dz;
   }
 
   xn /= dx;
