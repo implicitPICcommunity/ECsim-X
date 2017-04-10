@@ -25,7 +25,10 @@ PetscSolver::PetscSolver(EMfields3D *EMf, Grid* grid, VirtualTopology3D *vct, Co
   int nxn = grid->getNXN();
   int nyn = grid->getNYN();
   int nzn = grid->getNZN();
-  dim = 6*(nxn-2)*(nyn-2)*(nzn-2);
+  int nxc = nxn - 1;
+  int nyc = nyn - 1;
+  int nzc = nzn - 1;
+  dim = 3*(nxn - 2) * (nyn - 2) * (nzn - 2) + 3*(nxc - 2) * (nyc - 2) * (nzc - 2);
 
   double tol = col->getGMREStol();
 
