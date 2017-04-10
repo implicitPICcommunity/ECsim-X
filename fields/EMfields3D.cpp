@@ -6,6 +6,7 @@
 extern MyClock *clocks;
 
 
+#define ZERO_J0 2.4048
 #define ZERO_J1 3.83170597020751
 long double factorial(int k) {
   if (k == 0) return 1;
@@ -211,7 +212,7 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
   Jz_ext = newArr3(double, nxn, nyn, nzn);
 
   if (col->getCase() == "Dipole") {
-    damping = 1;
+    damping = 0;
     Lambda = newArr3(double, nxn, nyn, nzn);
   } else damping = 0;
 
@@ -309,144 +310,6 @@ void EMfields3D::setAllzero()
    if (damping == 1) eqValue(0.0, Lambda, nxn, nyn, nzn);
 }
 
-/*! Fix the boundary conditions for r=0. BC are only needed for the electric field.
- *  In this point, we assume that the electric field has cylindrical symetry. Hence:
- *  Ex(phi) = -Ex(phi + 180) r-component
- *  Ey(phi) =  Ey(phi + 180) z-component
- *  Ez(phi) = -Ez(phi + 180) phi-component
- *
- *  Then: 
- *  Ex(0) = 0     -> Ex[1] = 0
- *  Ey(0) = E(dr) -> Ey[1] - Ey[2] = 0
- *  Ez(0) = 0     -> Ez[1] = 0
- */
-void EMfields3D::fixBC_Cyl_Image(double ***ImX, double ***ImY, double ***ImZ, double ***nEx, double ***nEy, double ***nEz, double ***cBx, double ***cBy, double ***cBz) {
-
-  if (xStart == 0) {
-    if (bcEMfaceXleft == 0) {
-      for (int j=0; j<nyn; j++) 
-        for (int k=0; k<nzn; k++) {
-          ImX[1][j][k] = nEx[1][j][k];
-          ImY[1][j][k] = nEy[1][j][k];
-          ImZ[1][j][k] = nEz[1][j][k];
-        }
-    } else if (bcEMfaceXleft == 1) {
-      for (int j=0; j<nyn; j++) 
-        for (int k=0; k<nzn; k++) {
-          ImX[1][j][k] = nEx[1][j][k];
-          ImY[1][j][k] = nEy[1][j][k] - nEy[2][j][k];
-          ImZ[1][j][k] = nEz[1][j][k];
-        }
-    } else if (bcEMfaceXleft == 2) {
-      for (int j=0; j<nyn; j++) 
-        for (int k=0; k<nzn; k++) {
-          ImX[1][j][k] = nEx[1][j][k];
-          ImY[1][j][k] = nEy[1][j][k] - nEy[2][j][k];
-          ImZ[1][j][k] = nEz[1][j][k];
-        }
-    }
-  }
-
-  if (xEnd == Lx) {
-    if (bcEMfaceXright == 0) {
-      for (int j=0; j<nyn; j++) 
-        for (int k=0; k<nzn; k++) {
-          ImX[nxn-2][j][k] = nEx[nxn-2][j][k];
-          ImY[nxn-2][j][k] = nEy[nxn-2][j][k];
-          ImZ[nxn-2][j][k] = nEz[nxn-2][j][k];
-        }
-    } else if (bcEMfaceXright == 1) {
-      for (int j=0; j<nyn; j++) 
-        for (int k=0; k<nzn; k++) {
-          ImX[nxn-2][j][k] = nEx[nxn-2][j][k];
-          ImY[nxn-2][j][k] = nEy[nxn-2][j][k] - nEy[nxn-3][j][k];
-          ImZ[nxn-2][j][k] = nEz[nxn-2][j][k];
-        }
-    }
-  }
-}
-
-/*! Fix the boundary conditions for r=0. BC are only needed for the electric field.
- *  In this point, we assume that the electric field has cylindrical symetry. Hence:
- *  Ex(phi) = -Ex(phi + 180) r-component
- *  Ey(phi) =  Ey(phi + 180) z-component
- *  Ez(phi) = -Ez(phi + 180) phi-component
- *
- *  Then: 
- *  Ex(0) = 0     -> Ex[1] = 0
- *  Ey(0) = E(dr) -> Ey[1] - Ey[2] = 0
- *  Ez(0) = 0     -> Ez[1] = 0
- */
-void EMfields3D::fixBC_Cyl_Source(double ***SoX, double ***SoY, double ***SoZ) {
-  if (xStart == 0) {
-    if (bcEMfaceXleft == 0) {
-      for (int j=0; j<nyn; j++) 
-        for (int k=0; k<nzn; k++) {
-          SoX[1][j][k] = 0;
-          SoY[1][j][k] = 0;
-          SoZ[1][j][k] = 0;
-        }
-    } else if (bcEMfaceXleft == 1) {
-      for (int j=0; j<nyn; j++) 
-        for (int k=0; k<nzn; k++) {
-          SoX[1][j][k] = 0;
-          SoY[1][j][k] = 0;
-          SoZ[1][j][k] = 0;
-        }
-    }
-
-    /*
-    for (int j=0; j<nyn; j++) 
-      for (int k=0; k<nzn; k++) 
-        for (int c=0; c<NE_MASS; c++) {
-          Mxx[c][1][j][k] = 0;
-          Mxy[c][1][j][k] = 0;
-          Mxz[c][1][j][k] = 0;
-          Myx[c][1][j][k] = 0;
-          Myy[c][1][j][k] = 0;
-          Myz[c][1][j][k] = 0;
-          Mzx[c][1][j][k] = 0;
-          Mzy[c][1][j][k] = 0;
-          Mzz[c][1][j][k] = 0;
-        }
-      */
-  }
-
-  if (xEnd == Lx) {
-    if (bcEMfaceXright == 0) {
-      for (int j=0; j<nyn; j++) 
-        for (int k=0; k<nzn; k++) {
-          SoX[nxn-2][j][k] = 0;
-          SoY[nxn-2][j][k] = 0;
-          SoZ[nxn-2][j][k] = 0;
-        }
-    } else if (bcEMfaceXright == 1) {
-      for (int j=0; j<nyn; j++) 
-        for (int k=0; k<nzn; k++) {
-          SoX[nxn-2][j][k] = 0;
-          SoY[nxn-2][j][k] = 0;
-          SoZ[nxn-2][j][k] = 0;
-        }
-    }
-
-    /*
-    for (int j=0; j<nyn; j++) 
-      for (int k=0; k<nzn; k++) 
-        for (int c=0; c<NE_MASS; c++) {
-          Mxx[c][nxn-2][j][k] = 0;
-          Mxy[c][nxn-2][j][k] = 0;
-          Mxz[c][nxn-2][j][k] = 0;
-          Myx[c][nxn-2][j][k] = 0;
-          Myy[c][nxn-2][j][k] = 0;
-          Myz[c][nxn-2][j][k] = 0;
-          Mzx[c][nxn-2][j][k] = 0;
-          Mzy[c][nxn-2][j][k] = 0;
-          Mzz[c][nxn-2][j][k] = 0;
-        }
-    */
-  }
-}
-
 void EMfields3D::fixGhostB() {
 
   if (Cylindrical == 1) {
@@ -461,9 +324,9 @@ void EMfields3D::fixGhostB() {
     if (xEnd == Lx) {
       for (int j=0; j<nyc; j++) 
         for (int k=0; k<nzc; k++) {
-          Bxc[nxc-1][j][k] = Bxc[nxc-1][j][k];
-          Byc[nxc-1][j][k] = Byc[nxc-1][j][k];
-          Bzc[nxc-1][j][k] = Bzc[nxc-1][j][k];
+          Bxc[nxc-1][j][k] = Bxc[nxc-2][j][k];
+          Byc[nxc-1][j][k] = Byc[nxc-2][j][k];
+          Bzc[nxc-1][j][k] = Bzc[nxc-2][j][k];
         }
     }
   }
@@ -544,30 +407,9 @@ void EMfields3D::calculateEB(Grid * grid, VirtualTopology3D * vct, Collective *c
   phys2solver(xkrylov, Ex, Ey, Ez, Bxc, Byc, Bzc, nxn, nyn, nzn);
   // solver
   GMRES(&Field::MaxwellImage, xkrylov, dim, bkrylov, 20, 200, GMREStol, grid, vct, col, this);
+
   endEcalc(xkrylov, vct, col, grid);
 
-/*
-  // move from krylov space to physical space
-  solver2phys(Exth, Eyth, Ezth, tempXC, tempYC, tempZC, xkrylov, nxn, nyn, nzn);
-  addscale(1 / th, -(1.0 - th) / th, Bxc, tempXC, nxc, nyc, nzc);
-  addscale(1 / th, -(1.0 - th) / th, Byc, tempYC, nxc, nyc, nzc);
-  addscale(1 / th, -(1.0 - th) / th, Bzc, tempZC, nxc, nyc, nzc);
-  addscale(1 / th, -(1.0 - th) / th, Ex, Exth, nxn, nyn, nzn);
-  addscale(1 / th, -(1.0 - th) / th, Ey, Eyth, nxn, nyn, nzn);
-  addscale(1 / th, -(1.0 - th) / th, Ez, Ezth, nxn, nyn, nzn);
-
-  // communicate so the interpolation can have good values
-  communicateNodeBC(nxn, nyn, nzn, Exth, col->bcEx[0],col->bcEx[1],col->bcEx[2],col->bcEx[3],col->bcEx[4],col->bcEx[5], vct);
-  communicateNodeBC(nxn, nyn, nzn, Eyth, col->bcEy[0],col->bcEy[1],col->bcEy[2],col->bcEy[3],col->bcEy[4],col->bcEy[5], vct);
-  communicateNodeBC(nxn, nyn, nzn, Ezth, col->bcEz[0],col->bcEz[1],col->bcEz[2],col->bcEz[3],col->bcEz[4],col->bcEz[5], vct);
-  communicateNodeBC(nxn, nyn, nzn, Ex,   col->bcEx[0],col->bcEx[1],col->bcEx[2],col->bcEx[3],col->bcEx[4],col->bcEx[5], vct);
-  communicateNodeBC(nxn, nyn, nzn, Ey,   col->bcEy[0],col->bcEy[1],col->bcEy[2],col->bcEy[3],col->bcEy[4],col->bcEy[5], vct);
-  communicateNodeBC(nxn, nyn, nzn, Ez,   col->bcEz[0],col->bcEz[1],col->bcEz[2],col->bcEz[3],col->bcEz[4],col->bcEz[5], vct);
-  communicateCenterBC(nxc, nyc, nzc, Bxc, col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5], vct);
-  communicateCenterBC(nxc, nyc, nzc, Byc, col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5], vct);
-  communicateCenterBC(nxc, nyc, nzc, Bzc, col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct);
-
-*/
   // deallocate temporary arrays
   delete[]xkrylov;
   delete[]bkrylov;
@@ -608,7 +450,10 @@ void EMfields3D::MaxwellSource(double *bkrylov, Grid * grid, VirtualTopology3D *
 
   
   if (Cylindrical == 1)  fixBC_Cyl_Source(tempX, tempY, tempZ);
-  else fixBC_Source(vct, col, tempX, tempY, tempZ);
+  else { 
+     fixBC_Source (vct, col, tempX, tempY, tempZ);
+     fixBC_SourceC(vct, col, tempXC, tempYC, tempZC);
+  }
 
   // physical space -> Krylov space
   phys2solver(bkrylov, tempX, tempY, tempZ, tempXC, tempYC, tempZC, nxn, nyn, nzn);
@@ -721,7 +566,10 @@ void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTo
   }
 
   if (Cylindrical == 1)  fixBC_Cyl_Image(imageBX, imageBY, imageBZ, tempX, tempY, tempZ, tempXC, tempYC, tempZC);
-  else fixBC_Image(vct, imageBX, imageBY, imageBZ, tempX, tempY, tempZ, tempXC, tempYC, tempZC);
+  else {
+    fixBC_Image (vct, imageBX, imageBY, imageBZ, tempX, tempY, tempZ, tempXC, tempYC, tempZC);
+    fixBC_ImageC(vct, imageEX, imageEY, imageEZ, tempX, tempY, tempZ, tempXC, tempYC, tempZC);
+  }
 
   // move from physical space to krylov space
   phys2solver(im, imageBX, imageBY, imageBZ, imageEX, imageEY, imageEZ, nxn, nyn, nzn);
@@ -741,6 +589,18 @@ void EMfields3D::smoothEth(double value, VirtualTopology3D * vct, Collective *co
       communicateNodeBoxStencilBC(nxn, nyn, nzn, Exth, col->bcEx[0],col->bcEx[1],col->bcEx[2],col->bcEx[3],col->bcEx[4],col->bcEx[5], vct);
       communicateNodeBoxStencilBC(nxn, nyn, nzn, Eyth, col->bcEy[0],col->bcEy[1],col->bcEy[2],col->bcEy[3],col->bcEy[4],col->bcEy[5], vct);
       communicateNodeBoxStencilBC(nxn, nyn, nzn, Ezth, col->bcEz[0],col->bcEz[1],col->bcEz[2],col->bcEz[3],col->bcEz[4],col->bcEz[5], vct);
+
+      if (Cylindrical == 1) {
+        if (xStart == 0) {
+          for (int j = 0; j < nyn ; j++)
+            for (int k = 0; k < nzn ; k++) {
+              Exth[0][j][k] = Exth[1][j][k];
+              Eyth[0][j][k] = Eyth[1][j][k];
+              Ezth[0][j][k] = Ezth[1][j][k];
+            }
+          }
+
+      }
 
       double ***temp = newArr3(double, nxn, nyn, nzn);
       if (icount % 2 == 1) {
@@ -858,6 +718,17 @@ void EMfields3D::smoothBth(double value, double ***Bxth, double ***Byth, double 
       communicateCenterBoxStencilBC(nxc, nyc, nzc, Bxth, 2, 2, 2 ,2 ,2 ,2 ,vct);
       communicateCenterBoxStencilBC(nxc, nyc, nzc, Byth, 2, 2, 2 ,2 ,2 ,2 ,vct);
       communicateCenterBoxStencilBC(nxc, nyc, nzc, Bzth, 2, 2, 2 ,2 ,2 ,2 ,vct);
+      if (Cylindrical == 1) {
+        if (xStart == 0) {
+          for (int j = 0; j < nyn ; j++)
+            for (int k = 0; k < nzn ; k++) {
+              Bxth[0][j][k] = -Bxth[1][j][k];
+              Byth[0][j][k] =  Byth[1][j][k];
+              Bzth[0][j][k] = -Bzth[1][j][k];
+            }
+          }
+
+      }
 
       double ***temp = newArr3(double, nxn, nyn, nzn);
       if (icount % 2 == 1) {
@@ -916,6 +787,18 @@ void EMfields3D::smoothJh(double value, VirtualTopology3D * vct, Collective *col
       communicateNodeBoxStencilBC(nxn, nyn, nzn, Jxh, col->bcEx[0],col->bcEx[1],col->bcEx[2],col->bcEx[3],col->bcEx[4],col->bcEx[5], vct);
       communicateNodeBoxStencilBC(nxn, nyn, nzn, Jyh, col->bcEy[0],col->bcEy[1],col->bcEy[2],col->bcEy[3],col->bcEy[4],col->bcEy[5], vct);
       communicateNodeBoxStencilBC(nxn, nyn, nzn, Jzh, col->bcEz[0],col->bcEz[1],col->bcEz[2],col->bcEz[3],col->bcEz[4],col->bcEz[5], vct);
+
+      if (Cylindrical == 1) {
+        if (xStart == 0) {
+          for (int j = 0; j < nyn ; j++)
+            for (int k = 0; k < nzn ; k++) {
+              Jxh[0][j][k] = -Jxh[2][j][k];
+              Jyh[0][j][k] =  Jyh[2][j][k];
+              Jzh[0][j][k] = -Jzh[2][j][k];
+            }
+          }
+
+      }
 
       double ***temp = newArr3(double, nxn, nyn, nzn);
       if (icount % 2 == 1) {
@@ -2010,13 +1893,16 @@ void EMfields3D::initDipole(VirtualTopology3D *vct, Grid *grid, Collective *col)
   for (int is=0 ; is<ns; is++)
     grid->interpN2C(rhocs,is,rhons);
 
-  grid->interpN2C(Bxc,Bxn);
-  grid->interpN2C(Byc,Byn);
-  grid->interpN2C(Bzc,Bzn);
-  // communicate ghost
-  communicateCenterBC(nxc, nyc, nzc, Bxc, col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5], vct);
-  communicateCenterBC(nxc, nyc, nzc, Byc, col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5], vct);
-  communicateCenterBC(nxc, nyc, nzc, Bzc, col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct);
+  // initialize B on centers
+  for (int i=0; i < nxc; i++){
+    for (int j=0; j < nyc; j++){
+      for (int k=0; k < nzc; k++){
+        Bxc[i][j][k] = B0x;
+        Byc[i][j][k] = B0y;
+        Bzc[i][j][k] = B0z;
+      }
+    }
+  }
 }
 
 void EMfields3D::initHalfPlanet(VirtualTopology3D *vct, Grid *grid, Collective *col){
@@ -2095,6 +1981,8 @@ void EMfields3D::initHalfPlanet(VirtualTopology3D *vct, Grid *grid, Collective *
   }
 }
 
+//#define MODE_A
+
 /*! initiliaze EM for Bessel test */
 void EMfields3D::initBessel1D(VirtualTopology3D * vct, Grid * grid, Collective *col) {
   // perturbation localized in X
@@ -2126,24 +2014,30 @@ void EMfields3D::initBessel1D(VirtualTopology3D * vct, Grid * grid, Collective *
 #else
 
           Ex[i][j][k] = 0;
-          Ey[i][j][k] = besselJ(0, x*ZERO_J1/Lx);
+          Ey[i][j][k] = 0;
           Ez[i][j][k] = 0;
           // Magnetic field
           Bxn[i][j][k] = 0;
           Byn[i][j][k] = 0;
-          Bzn[i][j][k] = 0;
+          Bzn[i][j][k] = besselJ(1, x*ZERO_J0/Lx); 
 #endif
         }
     // initialize B on centers
     for (int i = 0; i < nxc; i++)
       for (int j = 0; j < nyc; j++)
         for (int k = 0; k < nzc; k++) {
-          double x = grid->getXN(i,j,k);
-          double y = grid->getYN(i,j,k);
-          // Magnetic field
+          double x = grid->getXC(i,j,k);
+          double y = grid->getYC(i,j,k);
+#ifdef MODE_A
           Bxc[i][j][k] = 0;
           Byc[i][j][k] = 0;
           Bzc[i][j][k] = 0;
+#else
+          // Magnetic field
+          Bxc[i][j][k] = 0;
+          Byc[i][j][k] = 0;
+          Bzc[i][j][k] = besselJ(1, x*ZERO_J0/Lx);
+#endif
         }
     for (int is = 0; is < ns; is++)
       grid->interpN2C(rhocs, is, rhons);
@@ -2172,23 +2066,43 @@ void EMfields3D::initBessel2D(VirtualTopology3D * vct, Grid * grid, Collective *
           // electric field
           double x = grid->getXN(i,j,k);
           double y = grid->getYN(i,j,k);
+          double omega = sqrt((ZERO_J0/Lx)*(ZERO_J1/Lx) + (2*M_PI/Ly)*(2*M_PI/Ly));
+          double kz = 2*M_PI/Ly;
+#ifdef MODE_A
           Ex[i][j][k] = 0;
           Ey[i][j][k] = 0;
-          Ez[i][j][k] = cos(y*2*M_PI/Ly)*besselJ(1, x*ZERO_J1/Lx); 
+          Ez[i][j][k] = omega*(Lx/ZERO_J0)*sin(y*2*M_PI/Ly)*besselJ(1, x*ZERO_J0/Lx); //besselJ(1, x*ZERO_J1/Lx);
+          // Magnetic field
+          Bxn[i][j][k] = -kz*(Lx/ZERO_J0)*sin(y*2*M_PI/Ly)*besselJ(1, x*ZERO_J0/Lx);
+          Byn[i][j][k] = besselJ(1, x*ZERO_J0/Lx)*cos(y*2*M_PI/Ly);
+          Bzn[i][j][k] = 0;
+#else
+          Ex[i][j][k] = besselJ(0, x*ZERO_J0/Lx)*sin(y*kz);
+          Ey[i][j][k] = 0;
+          Ez[i][j][k] = 0;
           // Magnetic field
           Bxn[i][j][k] = 0;
           Byn[i][j][k] = 0;
           Bzn[i][j][k] = 0;
+#endif
         }
     // initialize B on centers
     for (int i = 0; i < nxc; i++)
       for (int j = 0; j < nyc; j++)
         for (int k = 0; k < nzc; k++) {
           // Magnetic field
-          double x = grid->getXN(i,j,k);
+          double x = grid->getXC(i,j,k);
+          double y = grid->getYC(i,j,k);
+          double kz = 2*M_PI/Ly;
+#ifdef MODE_A
+          Bxc[i][j][k] = -kz*(Lx/ZERO_J0)*sin(y*2*M_PI/Ly)*besselJ(1, x*ZERO_J1/Lx);
+          Byc[i][j][k] = besselJ(0, x*ZERO_J0/Lx)*cos(y*2*M_PI/Ly);
+          Bzc[i][j][k] = 0;
+#else
           Bxc[i][j][k] = 0;
           Byc[i][j][k] = 0;
           Bzc[i][j][k] = 0;
+#endif
         }
     for (int is = 0; is < ns; is++)
       grid->interpN2C(rhocs, is, rhons);
@@ -3563,7 +3477,7 @@ void EMfields3D::setLagrangianFrame(VirtualTopology3D * vct, Collective *col, bo
         By_ext[i][j][k] = tmpBy - (vz*tmpEx - vx*tmpEz)/c2;
         Bz_ext[i][j][k] = tmpBz - (vx*tmpEy - vy*tmpEx)/c2;
 
-        // Local fields -> -v_bulk
+        // Local fields ->  v_bulk
         tmpEx = Ex[i][j][k];
         tmpEy = Ey[i][j][k];
         tmpEz = Ez[i][j][k];
@@ -3571,13 +3485,13 @@ void EMfields3D::setLagrangianFrame(VirtualTopology3D * vct, Collective *col, bo
         tmpBy = Byn[i][j][k];
         tmpBz = Bzn[i][j][k];
 
-        Ex[i][j][k] = tmpEx - (vy*tmpBz - vz*tmpBy);
-        Ey[i][j][k] = tmpEy - (vz*tmpBx - vx*tmpBz);
-        Ez[i][j][k] = tmpEz - (vx*tmpBy - vy*tmpBx);
+        Ex[i][j][k] = tmpEx + (vy*tmpBz - vz*tmpBy);
+        Ey[i][j][k] = tmpEy + (vz*tmpBx - vx*tmpBz);
+        Ez[i][j][k] = tmpEz + (vx*tmpBy - vy*tmpBx);
 
-        Bxn[i][j][k] = tmpBx + (vy*tmpEz - vz*tmpEy)/c2;
-        Byn[i][j][k] = tmpBy + (vz*tmpEx - vx*tmpEz)/c2;
-        Bzn[i][j][k] = tmpBz + (vx*tmpEy - vy*tmpEx)/c2;
+        Bxn[i][j][k] = tmpBx - (vy*tmpEz - vz*tmpEy)/c2;
+        Byn[i][j][k] = tmpBy - (vz*tmpEx - vx*tmpEz)/c2;
+        Bzn[i][j][k] = tmpBz - (vx*tmpEy - vy*tmpEx)/c2;
 
       }
 }

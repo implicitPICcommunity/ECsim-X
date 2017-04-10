@@ -63,7 +63,9 @@ class EMfields3D                // :public Field
     void fixBC_Cyl_Image(double ***ImX, double ***ImY, double ***ImZ, double ***nEx, double ***nEy, double ***nEz, double ***cBx, double ***cBy, double ***cBz);
     void fixBC_Cyl_Source(double ***SoX, double ***SoY, double ***SoZ);
     void fixBC_Image(VirtualTopology3D*, double***, double***, double***, double***, double***, double***, double***, double***, double***);
+    void fixBC_ImageC(VirtualTopology3D*, double***, double***, double***, double***, double***, double***, double***, double***, double***);
     void fixBC_Source(VirtualTopology3D*, Collective*, double***, double***, double***);
+    void fixBC_SourceC(VirtualTopology3D *vct, Collective *col, double ***SoX, double ***SoY, double ***SoZ) ;
 
     /*! Calculate Electric field using the implicit Maxwell solver */
     void calculateE(Grid * grid, VirtualTopology3D * vct, Collective *col);
