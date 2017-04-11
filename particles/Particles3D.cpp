@@ -140,9 +140,12 @@ void Particles3D::maxwellian(Grid * grid, Field * EMf, VirtualTopology3D * vct) 
               //x[counter] = (ii + 0.5) * (dx / npcelx) + grid->getXN(i, j, k);  
               //y[counter] = (jj + 0.5) * (dy / npcely) + grid->getYN(i, j, k);
               //z[counter] = (kk + 0.5) * (dz / npcelz) + grid->getZN(i, j, k);
-              x[counter] = dx*(rand() / (double) RAND_MAX) + grid->getXN(i, j, k);  
-              y[counter] = dy*(rand() / (double) RAND_MAX) + grid->getYN(i, j, k);
-              z[counter] = dz*(rand() / (double) RAND_MAX) + grid->getZN(i, j, k);
+              //x[counter] = dx*(rand() / (double) RAND_MAX) + grid->getXN(i, j, k);  
+              //y[counter] = dy*(rand() / (double) RAND_MAX) + grid->getYN(i, j, k);
+              //z[counter] = dz*(rand() / (double) RAND_MAX) + grid->getZN(i, j, k);
+              x[counter] = Drand48(seed)*dx + grid->getXN(i,j,k);
+              y[counter] = Drand48(seed)*dy + grid->getYN(i,j,k);
+              z[counter] = Drand48(seed)*dz + grid->getZN(i,j,k);
               // q = charge
               q[counter] = (qom / fabs(qom)) * (fabs(EMf->getRHOcs(i, j, k, ns)) / npcel) * (1.0 / grid->getInvVOLc(i,j,k));
 
@@ -659,6 +662,9 @@ int Particles3D::updatePosition(Grid * grid, VirtualTopology3D * vct, Field * EM
      w[rest] = wp;
   }                             // END OF ALL THE PARTICLES
 
+  fixPosition();
+
+
   // ********************//
   // COMMUNICATION 
   // *******************//
@@ -827,7 +833,7 @@ int Particles3D::particle_repopulator(Grid* grid,VirtualTopology3D* vct, Field* 
   int avail;
   long long store_nop=nop;
 
-  int ncr = 4;
+  int ncr = 3;
 
   ////////////////////////
   // INJECTION FROM XLEFT
@@ -854,9 +860,12 @@ int Particles3D::particle_repopulator(Grid* grid,VirtualTopology3D* vct, Field* 
           for (int ii=0; ii < npcelx; ii++)
             for (int jj=0; jj < npcely; jj++)
               for (int kk=0; kk < npcelz; kk++){
-                x[particles_index] = (ii + Drand48(seed))*(dx/npcelx) + grid->getXN(i,j,k);
-                y[particles_index] = (jj + Drand48(seed))*(dy/npcely) + grid->getYN(i,j,k);
-                z[particles_index] = (kk + Drand48(seed))*(dz/npcelz) + grid->getZN(i,j,k);
+                //x[particles_index] = (ii + Drand48(seed))*(dx/npcelx) + grid->getXN(i,j,k);
+                //y[particles_index] = (jj + Drand48(seed))*(dy/npcely) + grid->getYN(i,j,k);
+                //z[particles_index] = (kk + Drand48(seed))*(dz/npcelz) + grid->getZN(i,j,k);
+                x[particles_index] = Drand48(seed)*dx + grid->getXN(i,j,k);
+                y[particles_index] = Drand48(seed)*dy + grid->getYN(i,j,k);
+                z[particles_index] = Drand48(seed)*dz + grid->getZN(i,j,k);
                 //x[particles_index] = (ii + 0.5)*(dx/npcelx) + grid->getXN(i,j,k);
                 //y[particles_index] = (jj + 0.5)*(dy/npcely) + grid->getYN(i,j,k);
                 //z[particles_index] = (kk + 0.5)*(dz/npcelz) + grid->getZN(i,j,k);
@@ -1016,7 +1025,7 @@ int Particles3D::particle_repopulator(Grid* grid,VirtualTopology3D* vct, Field* 
     long long particles_index=0;
     long long nplast = nop-1;
     while (particles_index < nplast+1) {
-      if (x[particles_index] > (Lx-3.0*dx) ) {
+      if (x[particles_index] > (Lx-ncr*dx) ) {
         del_pack(particles_index,&nplast);
       } else {
         particles_index++;
@@ -1026,15 +1035,18 @@ int Particles3D::particle_repopulator(Grid* grid,VirtualTopology3D* vct, Field* 
     particles_index = nop;
     double prob, theta, sign;
     //particles_index;
-    for (int i=(grid->getNXC()-4); i< grid->getNXC()-1;i++)
+    for (int i=(grid->getNXC()-ncr-1); i< grid->getNXC()-1;i++)
       for (int j=1; j< grid->getNYC()-1;j++)
         for (int k=1; k< grid->getNZC()-1;k++)
           for (int ii=0; ii < npcelx; ii++)
             for (int jj=0; jj < npcely; jj++)
               for (int kk=0; kk < npcelz; kk++){
-                x[particles_index] = (ii + Drand48(seed))*(dx/npcelx) + grid->getXN(i,j,k);
-                y[particles_index] = (jj + Drand48(seed))*(dy/npcely) + grid->getYN(i,j,k);
-                z[particles_index] = (kk + Drand48(seed))*(dz/npcelz) + grid->getZN(i,j,k);
+                //x[particles_index] = (ii + Drand48(seed))*(dx/npcelx) + grid->getXN(i,j,k);
+                //y[particles_index] = (jj + Drand48(seed))*(dy/npcely) + grid->getYN(i,j,k);
+                //z[particles_index] = (kk + Drand48(seed))*(dz/npcelz) + grid->getZN(i,j,k);
+                x[particles_index] = Drand48(seed)*dx + grid->getXN(i,j,k);
+                y[particles_index] = Drand48(seed)*dy + grid->getYN(i,j,k);
+                z[particles_index] = Drand48(seed)*dz + grid->getZN(i,j,k);
                 // q = charge
                 /* ATTENTION: OVther methods can be use, i.e. using the values close to the boundary: */
                    double rho = 1.0/FourPI;

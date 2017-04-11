@@ -1,8 +1,8 @@
 
 #include "EMfields3D.h"
 
-#define NUM_NODE_BC 10
-#define NUM_CELL_BC 9 
+#define NUM_NODE_BC 6
+#define NUM_CELL_BC 5
 
 void EMfields3D::fixBC_Image(VirtualTopology3D *vct, double ***ImX, double ***ImY, double ***ImZ, double ***nEx, double ***nEy, double ***nEz, double ***cBx, double ***cBy, double ***cBz) {
 
@@ -52,6 +52,14 @@ void EMfields3D::fixBC_Image(VirtualTopology3D *vct, double ***ImX, double ***Im
           ImY[nxn-2][j][k] = nEy[nxn-2][j][k] - nEy[nxn-3][j][k];
           ImZ[nxn-2][j][k] = nEz[nxn-2][j][k];
         }
+    } else if (bcEMfaceXright == 2) {
+      for (int i=0; i<NUM_NODE_BC; i++) 
+        for (int j=0; j<nyn; j++) 
+          for (int k=0; k<nzn; k++) {
+            ImX[nxn-1-i][j][k] = nEx[nxn-1-i][j][k];
+            ImY[nxn-1-i][j][k] = nEy[nxn-1-i][j][k];
+            ImZ[nxn-1-i][j][k] = nEz[nxn-1-i][j][k];
+          }
     } else {
       fprintf(stderr,"ERROR: Boundary contitions (%d) not implemented for the fields\n", bcEMfaceXright);
       MPI_Abort(MPI_COMM_WORLD, -1);
@@ -207,6 +215,15 @@ void EMfields3D::fixBC_Source(VirtualTopology3D *vct, Collective *col, double **
           SoY[nxn-2][j][k] = valy;
           SoZ[nxn-2][j][k] = valz;
         }
+    } else if (bcEMfaceXright == 2) {
+      for (int i=0; i<NUM_NODE_BC; i++) 
+        for (int j=0; j<nyn; j++) 
+          for (int k=0; k<nzn; k++) {
+            SoX[nxn-1-i][j][k] = valx;
+            SoY[nxn-1-i][j][k] = valy;
+            SoZ[nxn-1-i][j][k] = valz;
+          }
+
     } else {
       fprintf(stderr,"ERROR: Boundary contitions (%d) not implemented for the fields\n", bcEMfaceXright);
       MPI_Abort(MPI_COMM_WORLD, -1);
@@ -378,8 +395,8 @@ void EMfields3D::fixBC_ImageC(VirtualTopology3D *vct, double ***ImX, double ***I
         }
     } else if (bcEMfaceXleft == 2) {
       for (int i=0; i<NUM_CELL_BC; i++) 
-        for (int j=0; j<nyn; j++) 
-          for (int k=0; k<nzn; k++) {
+        for (int j=0; j<nyc; j++) 
+          for (int k=0; k<nzc; k++) {
             ImX[i][j][k] = cBx[i][j][k];
             ImY[i][j][k] = cBy[i][j][k];
             ImZ[i][j][k] = cBz[i][j][k];
@@ -406,6 +423,14 @@ void EMfields3D::fixBC_ImageC(VirtualTopology3D *vct, double ***ImX, double ***I
           ImY[nxc-2][j][k] = cBy[nxc-2][j][k] - cBy[nxc-3][j][k];
           ImZ[nxc-2][j][k] = cBz[nxc-2][j][k];
         }
+    } else if (bcEMfaceXright == 2) {
+      for (int i=0; i<NUM_CELL_BC; i++) 
+        for (int j=0; j<nyc; j++) 
+          for (int k=0; k<nzc; k++) {
+            ImX[nxc-1-i][j][k] = cBx[nxc-1-i][j][k];
+            ImY[nxc-1-i][j][k] = cBy[nxc-1-i][j][k];
+            ImZ[nxc-1-i][j][k] = cBz[nxc-1-i][j][k];
+          }
     } else {
       fprintf(stderr,"ERROR: Boundary contitions (%d) not implemented for the fields\n", bcEMfaceXright);
       MPI_Abort(MPI_COMM_WORLD, -1);
@@ -561,8 +586,16 @@ void EMfields3D::fixBC_SourceC(VirtualTopology3D *vct, Collective *col, double *
           SoY[nxc-2][j][k] = valy;
           SoZ[nxc-2][j][k] = valz;
         }
-    }
-      else {
+    } else if (bcEMfaceXright == 2) {
+      for (int i=0; i<NUM_CELL_BC; i++) 
+        for (int j=0; j<nyc; j++) 
+          for (int k=0; k<nzc; k++) {
+            SoX[nxc-1-i][j][k] = valx;
+            SoY[nxc-1-i][j][k] = valy;
+            SoZ[nxc-1-i][j][k] = valz;
+          }
+
+      } else {
       fprintf(stderr,"ERROR: Boundary contitions (%d) not implemented for the fields\n", bcEMfaceXright);
       MPI_Abort(MPI_COMM_WORLD, -1);
     }

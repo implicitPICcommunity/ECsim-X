@@ -140,7 +140,6 @@ int c_Solver::Init(int argc, char **argv) {
     //part[i].fixCharge(grid, EMf, vct, col);
 
     if (col->getCylindrical() == 1) part[i].fixZcylindrical();
-    part[i].fixPosition();
 
     if (col->getLagrangian() == 1) part[i].setLagrangianFrame(true);
   }

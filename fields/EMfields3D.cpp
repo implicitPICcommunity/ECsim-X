@@ -356,7 +356,7 @@ void EMfields3D::endEcalc(double* xkrylov, VirtualTopology3D * vct, Collective *
   smoothEth(Smooth, vct, col);
   //smoothEth(Smooth, vct, col);
   //smoothEth(Smooth, vct, col);
-  //smoothBth(Smooth, tempXC, tempYC, tempZC, vct, col);
+  smoothBth(Smooth, tempXC, tempYC, tempZC, vct, col);
   //smoothBth(Smooth, tempXC, tempYC, tempZC, vct, col);
   //smoothBth(Smooth, tempXC, tempYC, tempZC, vct, col);
 
@@ -375,9 +375,9 @@ void EMfields3D::endEcalc(double* xkrylov, VirtualTopology3D * vct, Collective *
   communicateNodeBC(nxn, nyn, nzn, Ex,   col->bcEx[0],col->bcEx[1],col->bcEx[2],col->bcEx[3],col->bcEx[4],col->bcEx[5], vct);
   communicateNodeBC(nxn, nyn, nzn, Ey,   col->bcEy[0],col->bcEy[1],col->bcEy[2],col->bcEy[3],col->bcEy[4],col->bcEy[5], vct);
   communicateNodeBC(nxn, nyn, nzn, Ez,   col->bcEz[0],col->bcEz[1],col->bcEz[2],col->bcEz[3],col->bcEz[4],col->bcEz[5], vct);
-  communicateCenterBC(nxc, nyc, nzc, Bxc,   col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5], vct);
-  communicateCenterBC(nxc, nyc, nzc, Byc,   col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5], vct);
-  communicateCenterBC(nxc, nyc, nzc, Bzc,   col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct);
+  communicateCenterBC(nxc, nyc, nzc, Bxc, 2, 2, 2, 2, 2, 2, vct);
+  communicateCenterBC(nxc, nyc, nzc, Byc, 2, 2, 2, 2, 2, 2, vct);
+  communicateCenterBC(nxc, nyc, nzc, Bzc, 2, 2, 2, 2, 2, 2, vct);
 
 
   #ifdef __PROFILING__
@@ -452,7 +452,7 @@ void EMfields3D::MaxwellSource(double *bkrylov, Grid * grid, VirtualTopology3D *
   if (Cylindrical == 1)  fixBC_Cyl_Source(tempX, tempY, tempZ);
   else { 
      fixBC_Source (vct, col, tempX, tempY, tempZ);
-     fixBC_SourceC(vct, col, tempXC, tempYC, tempZC);
+     if (col->getCase() == "Dipole") fixBC_SourceC(vct, col, tempXC, tempYC, tempZC);
   }
 
   // physical space -> Krylov space
@@ -568,7 +568,7 @@ void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTo
   if (Cylindrical == 1)  fixBC_Cyl_Image(imageBX, imageBY, imageBZ, tempX, tempY, tempZ, tempXC, tempYC, tempZC);
   else {
     fixBC_Image (vct, imageBX, imageBY, imageBZ, tempX, tempY, tempZ, tempXC, tempYC, tempZC);
-    fixBC_ImageC(vct, imageEX, imageEY, imageEZ, tempX, tempY, tempZ, tempXC, tempYC, tempZC);
+    if (col->getCase() == "Dipole") fixBC_ImageC(vct, imageEX, imageEY, imageEZ, tempX, tempY, tempZ, tempXC, tempYC, tempZC);
   }
 
   // move from physical space to krylov space
