@@ -1403,11 +1403,15 @@ double Particles3D::deleteParticlesInsideSphere(double R, double x_center, doubl
   long long np_current = 0;
   long long nplast     = nop-1;
 
+  bool twodim = false;
+  if ( nzn == 4) twodim = true;
+
   while (np_current < nplast+1){
 
     double xd = x[np_current] - x_center;
     double yd = y[np_current] - y_center;
     double zd = z[np_current] - z_center;
+    if (twodim) zd = 0.0;
 
     if ( (xd*xd+yd*yd+zd*zd) < R*R ){
       Q_removed += q[np_current];

@@ -452,7 +452,11 @@ void EMfields3D::MaxwellSource(double *bkrylov, Grid * grid, VirtualTopology3D *
   if (Cylindrical == 1)  fixBC_Cyl_Source(tempX, tempY, tempZ);
   else { 
      fixBC_Source (vct, col, tempX, tempY, tempZ);
-     if (col->getCase() == "Dipole") fixBC_SourceC(vct, col, tempXC, tempYC, tempZC);
+     if (col->getCase() == "Dipole"){
+       fixBC_SourceC(vct, col, tempXC, tempYC, tempZC);
+       fixBC_PlanetSource (vct, col, grid, tempX , tempY , tempZ );
+       fixBC_PlanetSourceC(vct, col, grid, tempXC, tempYC, tempZC);
+     }
   }
 
   // physical space -> Krylov space
@@ -568,7 +572,11 @@ void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTo
   if (Cylindrical == 1)  fixBC_Cyl_Image(imageBX, imageBY, imageBZ, tempX, tempY, tempZ, tempXC, tempYC, tempZC);
   else {
     fixBC_Image (vct, imageBX, imageBY, imageBZ, tempX, tempY, tempZ, tempXC, tempYC, tempZC);
-    if (col->getCase() == "Dipole") fixBC_ImageC(vct, imageEX, imageEY, imageEZ, tempX, tempY, tempZ, tempXC, tempYC, tempZC);
+    if (col->getCase() == "Dipole"){
+      fixBC_ImageC(vct, imageEX, imageEY, imageEZ, tempX, tempY, tempZ, tempXC, tempYC, tempZC);
+      fixBC_PlanetImage (vct, col, grid, imageBX, imageBY, imageBZ, tempX, tempY, tempZ, tempXC, tempYC, tempZC);
+      fixBC_PlanetImageC(vct, col, grid, imageEX, imageEY, imageEZ, tempX, tempY, tempZ, tempXC, tempYC, tempZC);
+    }
   }
 
   // move from physical space to krylov space

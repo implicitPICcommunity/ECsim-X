@@ -661,3 +661,183 @@ void EMfields3D::fixBC_SourceC(VirtualTopology3D *vct, Collective *col, double *
     }
   }
 }
+
+/* ====================================== */
+/* FIX SOURCE AND IMAGE INSIDE THE PLANET */
+/* ====================================== */
+
+void EMfields3D::fixBC_PlanetImage(VirtualTopology3D *vct, Collective *col, Grid *grid, double ***ImX, double ***ImY, double ***ImZ, double ***nEx, double ***nEy, double ***nEz, double ***cBx, double ***cBy, double ***cBz) {
+
+  double xc = col->getx_center();
+  double yc = col->gety_center();
+  double zc = col->getz_center();
+  double L2 = col->getL_square() * col->getL_square();
+
+  bool twodim = false;
+  if ( nzn == 4) twodim = true;
+
+  for (int i=0; i<nxn; i++) 
+    for (int j=0; j<nyn; j++) 
+      for (int k=0; k<nzn; k++) {
+        double x = grid->getXN(i,j,k);
+        double y = grid->getYN(i,j,k);
+        double z = grid->getZN(i,j,k);
+        double rx = x-xc;
+        double ry = y-yc;
+        double rz = z-zc;
+        if (twodim) rz = 0.0;
+  
+        double r = rx*rx + ry*ry + rz*rz;
+
+        if (r<L2) {
+          ImX[i][j][k] = nEx[i][j][k];
+          ImY[i][j][k] = nEy[i][j][k];
+          ImZ[i][j][k] = nEz[i][j][k];
+        }
+      }
+
+}
+
+void EMfields3D::fixBC_PlanetSource(VirtualTopology3D *vct, Collective *col, Grid *grid, double ***SoX, double ***SoY, double ***SoZ) {
+
+  double ut0 = col->getU0(0);
+  double vt0 = col->getV0(0);
+  double wt0 = col->getW0(0);
+
+  double tmpBx = B0x;
+  double tmpBy = B0y;
+  double tmpBz = B0z;
+  double tmpEx = wt0*B0y-vt0*B0z;
+  double tmpEy = ut0*B0z-wt0*B0x;
+  double tmpEz = vt0*B0x-ut0*B0y;
+
+  double valx, valy, valz;
+  if (col->getLagrangian() == 1) {
+    double vx = u_bulk;
+    double vy = v_bulk;
+    double vz = w_bulk;
+    valx = tmpEx + (vy*tmpBz - vz*tmpBy);
+    valy = tmpEy + (vz*tmpBx - vx*tmpBz);
+    valz = tmpEz + (vx*tmpBy - vy*tmpBx);
+  } else {
+    valx = tmpEx;
+    valy = tmpEy;
+    valz = tmpEz;
+  }
+
+  double xc = col->getx_center();
+  double yc = col->gety_center();
+  double zc = col->getz_center();
+  double L2 = col->getL_square() * col->getL_square();
+
+  bool twodim = false;
+  if ( nzn == 4) twodim = true;
+
+  for (int i=0; i<nxn; i++) 
+    for (int j=0; j<nyn; j++) 
+      for (int k=0; k<nzn; k++) {
+        double x  = grid->getXN(i,j,k);
+        double y  = grid->getYN(i,j,k);
+        double z  = grid->getZN(i,j,k);
+        double rx = x-xc;
+        double ry = y-yc;
+        double rz = z-zc;
+        if (twodim) rz = 0.0;
+  
+        double r = rx*rx + ry*ry + rz*rz;
+
+        if (r<L2) {
+          SoX[i][j][k] = valx;
+          SoY[i][j][k] = valy;
+          SoZ[i][j][k] = valz;
+        }
+      }
+}
+
+void EMfields3D::fixBC_PlanetImageC(VirtualTopology3D *vct, Collective *col, Grid *grid, double ***ImX, double ***ImY, double ***ImZ, double ***nEx, double ***nEy, double ***nEz, double ***cBx, double ***cBy, double ***cBz) {
+
+  double xc = col->getx_center();
+  double yc = col->gety_center();
+  double zc = col->getz_center();
+  double L2 = col->getL_square() * col->getL_square();
+
+  bool twodim = false;
+  if ( nzn == 4) twodim = true;
+
+  for (int i=0; i<nxc; i++) 
+    for (int j=0; j<nyc; j++) 
+      for (int k=0; k<nzc; k++) {
+        double x = grid->getXC(i,j,k);
+        double y = grid->getYC(i,j,k);
+        double z = grid->getZC(i,j,k);
+        double rx = x-xc;
+        double ry = y-yc;
+        double rz = z-zc;
+        if (twodim) rz = 0.0;
+  
+        double r = rx*rx + ry*ry + rz*rz;
+
+        if (r<L2) {
+          ImX[i][j][k] = cBx[i][j][k];
+          ImY[i][j][k] = cBy[i][j][k];
+          ImZ[i][j][k] = cBz[i][j][k];
+        }
+      }
+}
+
+void EMfields3D::fixBC_PlanetSourceC(VirtualTopology3D *vct, Collective *col, Grid *grid, double ***SoX, double ***SoY, double ***SoZ) {
+
+  double ut0 = col->getU0(0);
+  double vt0 = col->getV0(0);
+  double wt0 = col->getW0(0);
+
+  double tmpBx = B0x;
+  double tmpBy = B0y;
+  double tmpBz = B0z;
+  double tmpEx = wt0*B0y-vt0*B0z;
+  double tmpEy = ut0*B0z-wt0*B0x;
+  double tmpEz = vt0*B0x-ut0*B0y;
+
+  double valx, valy, valz;
+  if (col->getLagrangian() == 1) {
+    double vx = u_bulk;
+    double vy = v_bulk;
+    double vz = w_bulk;
+    valx = tmpBx - (vy*tmpEz - vz*tmpEy);
+    valy = tmpBy - (vz*tmpEx - vx*tmpEz);
+    valz = tmpBz - (vx*tmpEy - vy*tmpEx);
+  } else {
+    valx = tmpBx;
+    valy = tmpBy;
+    valz = tmpBz;
+  }
+
+  double xc = col->getx_center();
+  double yc = col->gety_center();
+  double zc = col->getz_center();
+  double L2 = col->getL_square() * col->getL_square();
+
+  bool twodim = false;
+  if ( nzn == 4) twodim = true;
+
+  for (int i=0; i<nxc; i++) 
+    for (int j=0; j<nyc; j++) 
+      for (int k=0; k<nzc; k++) {
+        double x  = grid->getXC(i,j,k);
+        double y  = grid->getYC(i,j,k);
+        double z  = grid->getZC(i,j,k);
+        double rx = x-xc;
+        double ry = y-yc;
+        double rz = z-zc;
+        if (twodim) rz = 0.0;
+  
+        double r = rx*rx + ry*ry + rz*rz;
+
+        if (r<L2) {
+          SoX[i][j][k] = valx;
+          SoY[i][j][k] = valy;
+          SoZ[i][j][k] = valz;
+        }
+      }
+}
+
