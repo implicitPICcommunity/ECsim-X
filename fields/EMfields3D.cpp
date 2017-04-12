@@ -1795,7 +1795,7 @@ void EMfields3D::initWB8(VirtualTopology3D *vct, Grid *grid, Collective *col){
 void EMfields3D::initWB8_6(VirtualTopology3D *vct, Grid *grid, Collective *col){
   if (vct->getCartesian_rank() == 0) {
     cout << "------------------------------------------" << endl;
-    cout << "Initialize two coils" << endl;
+    cout << "Initialize six coils" << endl;
     cout << "------------------------------------------" << endl;
     cout << "B0x                              = " << B0x << endl;
     cout << "B0y                              = " << B0y << endl;
@@ -1808,6 +1808,7 @@ void EMfields3D::initWB8_6(VirtualTopology3D *vct, Grid *grid, Collective *col){
   //sprintf(BlogName, "/home/aws/VacuumB.%d.csv", vct->getCartesian_rank());
   //FILE *Blog = fopen(BlogName, "w");
   //fprintf(Blog, "x,y,z,Bx,By,Bz\n");
+  printf("CoilD = %g\n",coilD);
 
    for (int i=0; i < nxn; i++){
      for (int j=0; j < nyn; j++){
@@ -1830,21 +1831,21 @@ void EMfields3D::initWB8_6(VirtualTopology3D *vct, Grid *grid, Collective *col){
          double y = grid->getYN(i,j,k);
          double z = grid->getZN(i,j,k);
          loopZ(blp, x, y, z, a, xc, yc, zc+deltaz, -B0z);
-         Bxn[i][j][k] = blp[0];
-         Byn[i][j][k] = blp[1];
-         Bzn[i][j][k] = blp[2];
+         Bx_ext[i][j][k] = blp[0];
+         By_ext[i][j][k] = blp[1];
+         Bz_ext[i][j][k] = blp[2];
          loopZ(blp, x, y, z, a, xc, yc, zc-deltaz, B0z);
-         Bxn[i][j][k] += blp[0];
-         Byn[i][j][k] += blp[1];
-         Bzn[i][j][k] += blp[2];
+         Bx_ext[i][j][k] += blp[0];
+         By_ext[i][j][k] += blp[1];
+         Bz_ext[i][j][k] += blp[2];
          loopX(blp, x, y, z, a, xc+deltax, yc, zc, -B0x);
-         Bxn[i][j][k] += blp[0];
-         Byn[i][j][k] += blp[1];
-         Bzn[i][j][k] += blp[2];
+         Bx_ext[i][j][k] += blp[0];
+         By_ext[i][j][k] += blp[1];
+         Bz_ext[i][j][k] += blp[2];
          loopX(blp, x, y, z, a, xc-deltax, yc, zc, B0x);
-         Bxn[i][j][k] += blp[0];
-         Byn[i][j][k] += blp[1];
-         Bzn[i][j][k] += blp[2];
+         Bx_ext[i][j][k] += blp[0];
+         By_ext[i][j][k] += blp[1];
+         Bz_ext[i][j][k] += blp[2];
          loopY(blp, x, y, z, a, xc, yc+deltay, zc, -B0y);
          Bx_ext[i][j][k] += blp[0];
          By_ext[i][j][k] += blp[1];
@@ -2074,7 +2075,7 @@ void EMfields3D::initHalfPlanet(VirtualTopology3D *vct, Grid *grid, Collective *
   }
 }
 
-//#define MODE_A
+#define MODE_A
 
 /*! initiliaze EM for Bessel test */
 void EMfields3D::initBessel1D(VirtualTopology3D * vct, Grid * grid, Collective *col) {
@@ -2164,19 +2165,19 @@ void EMfields3D::initBessel2D(VirtualTopology3D * vct, Grid * grid, Collective *
 #ifdef MODE_A
           Ex[i][j][k] = 0;
           Ey[i][j][k] = 0;
-          Ez[i][j][k] = omega*(Lx/ZERO_J0)*sin(y*2*M_PI/Ly)*besselJ(1, x*ZERO_J0/Lx); //besselJ(1, x*ZERO_J1/Lx);
+          Ez[i][j][k] = cos(y*2*M_PI/Ly)*besselJ(1, x*ZERO_J1/Lx); 
           // Magnetic field
-          Bxn[i][j][k] = -kz*(Lx/ZERO_J0)*sin(y*2*M_PI/Ly)*besselJ(1, x*ZERO_J0/Lx);
-          Byn[i][j][k] = besselJ(1, x*ZERO_J0/Lx)*cos(y*2*M_PI/Ly);
+          Bxn[i][j][k] = 0;
+          Byn[i][j][k] = 0;
           Bzn[i][j][k] = 0;
 #else
-          Ex[i][j][k] = besselJ(0, x*ZERO_J0/Lx)*sin(y*kz);
+          Ex[i][j][k] = 0;
           Ey[i][j][k] = 0;
           Ez[i][j][k] = 0;
           // Magnetic field
           Bxn[i][j][k] = 0;
           Byn[i][j][k] = 0;
-          Bzn[i][j][k] = 0;
+          Bzn[i][j][k] = cos(y*2*M_PI/Ly)*besselJ(1, x*ZERO_J1/Lx);
 #endif
         }
     // initialize B on centers
@@ -2188,13 +2189,13 @@ void EMfields3D::initBessel2D(VirtualTopology3D * vct, Grid * grid, Collective *
           double y = grid->getYC(i,j,k);
           double kz = 2*M_PI/Ly;
 #ifdef MODE_A
-          Bxc[i][j][k] = -kz*(Lx/ZERO_J0)*sin(y*2*M_PI/Ly)*besselJ(1, x*ZERO_J1/Lx);
-          Byc[i][j][k] = besselJ(0, x*ZERO_J0/Lx)*cos(y*2*M_PI/Ly);
+          Bxc[i][j][k] = 0;
+          Byc[i][j][k] = 0;
           Bzc[i][j][k] = 0;
 #else
           Bxc[i][j][k] = 0;
           Byc[i][j][k] = 0;
-          Bzc[i][j][k] = 0;
+          Bzc[i][j][k] = cos(y*2*M_PI/Ly)*besselJ(1, x*ZERO_J1/Lx);
 #endif
         }
     for (int is = 0; is < ns; is++)
