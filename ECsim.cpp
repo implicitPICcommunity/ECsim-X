@@ -19,11 +19,12 @@ int main(int argc, char **argv) {
 
   KCode.Init(argc, argv);
   KCode.InjectBoundaryParticles();
+  KCode.WriteOutput(0);
 
   /* ------------ */
   /* 1- Main loop */
   /* ------------ */
-  for (int i = KCode.FirstCycle(); i <= KCode.LastCycle(); i++) {
+  for (int i = KCode.FirstCycle()+1; i <= KCode.LastCycle(); i++) {
 
     if (KCode.get_myrank() == 0) cout << " ======= Cycle " << i << " ======= " << endl;
 
