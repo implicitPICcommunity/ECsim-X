@@ -85,6 +85,7 @@ int c_Solver::Init(int argc, char **argv) {
     else if (col->getCase()=="DoubleHarris")EMf->initDoublePeriodicHarrisWithGaussianHumpPerturbation(vct,grid,col);
     else if (col->getCase()=="Whistler")    EMf->initDoublePeriodicHarrisWithGaussianHumpPerturbation(vct,grid,col);
     else if (col->getCase()=="Coils")       EMf->initWB8(vct,grid,col);
+    else if (col->getCase()=="Coils6")      EMf->initWB8_6(vct,grid,col);
     else if (col->getCase()=="Dipole")      EMf->initDipole(vct,grid,col);
     else if (col->getCase()=="Bessel1D")    EMf->initBessel1D(vct,grid,col);
     else if (col->getCase()=="Bessel2D")    EMf->initBessel2D(vct,grid,col);
@@ -112,7 +113,7 @@ int c_Solver::Init(int argc, char **argv) {
     if (col->getCase()=="DoubleGEM") {
       part[i].MaxwellianDoubleGEM(grid, EMf, vct);
 
-    } else if (col->getCase()=="Coils"){
+    } else if (col->getCase()=="Coils" || col->getCase()=="Coils6"){
       if (col->getRHOinject(i) == 0.0) part[i].monoenergetic_box(grid,EMf,vct,L_square,x_center,y_center,z_center, 1.0);  // generated maxwellian in a box
       else part[i].empty(grid, EMf, vct);
 
@@ -313,7 +314,7 @@ void c_Solver::InjectBoundaryParticles(){
          mem_avail = part[i].particle_repopulator(grid,vct,EMf,i);
       }
     }
-    if (col->getCase()=="Coils") {
+    if (col->getCase()=="Coils" || col->getCase()=="Coils6") {
       //Remove particles from outside the simulation box
       //Qremoved[i] = part[i].deleteParticlesOutsideBox(col->getLx());
       Qremoved[i] = part[i].deleteParticlesOuterFrame(6.0,6.0,0.0);
