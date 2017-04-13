@@ -89,6 +89,8 @@ int c_Solver::Init(int argc, char **argv) {
     else if (col->getCase()=="Dipole")      EMf->initDipole(vct,grid,col);
     else if (col->getCase()=="Bessel1D")    EMf->initBessel1D(vct,grid,col);
     else if (col->getCase()=="Bessel2D")    EMf->initBessel2D(vct,grid,col);
+    else if (col->getCase()=="TEmode")      EMf->initTEmode(vct,grid,col);
+    else if (col->getCase()=="TMmode")      EMf->initTMmode(vct,grid,col);
     else if (col->getCase()=="HalfPlanet")  EMf->initHalfPlanet(vct,grid,col);
     else {
       if (myrank==0) {
@@ -408,21 +410,182 @@ void c_Solver::WriteOutput(int cycle) {
     int nxn = grid->getNXN();
     int nyn = grid->getNYN();
     int nzn = grid->getNZN();
-    for (int i=1; i<nxn-1; i++) 
-      for (int j=1; j<nyn-1; j++) 
-        for (int k=1; k<nzn-1; k++) {
-          double x = grid->getXN(i,j,k);
-          double y = grid->getYN(i,j,k);
-          double z = grid->getZN(i,j,k);
-          fprintf(fd,"%8.4f %8.4f %8.4f   %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e   %13.6e \n"
-                    ,x,y,z
-                    ,Ex[i][j][k],  Ey[i][j][k],  Ez[i][j][k]
-                    ,Bx[i][j][k],  By[i][j][k],  Bz[i][j][k]
-                    ,Jxh[i][j][k], Jyh[i][j][k], Jzh[i][j][k]
-                    ,Jxh[i][j][k]+Jx_ext[i][j][k], Jyh[i][j][k]+Jy_ext[i][j][k], Jzh[i][j][k]+Jz_ext[i][j][k]
-                    ,rhon[i][j][k]
-                  );
-        }
+
+
+    if (col->getCase() == "Bessel1D") {
+      double Kx = ZERO_J1/col->getLx();
+      double dt = col->getDt();
+      double omega = Kx;
+      double t = dt*cycle;
+      double totErr = 0;
+      static double sumTotErr = 0;
+      for (int i=1; i<nxn-1; i++) 
+        for (int j=1; j<nyn-1; j++) 
+          for (int k=1; k<nzn-1; k++) {
+            double x = grid->getXN(i,j,k);
+            double y = grid->getYN(i,j,k);
+            double z = grid->getZN(i,j,k);
+            double feX = 0;
+            double feY = 0;
+            double feZ = besselJ(1, x*Kx)*cos(t*omega); 
+            double fbX = 0;
+            double fbY = -besselJ(0, x*Kx)*sin(t*omega)*Kx/omega;
+            double fbZ = 0;
+            double errEx = fabs(Ex[i][j][k] - feX);
+            double errEy = fabs(Ey[i][j][k] - feY);
+            double errEz = fabs(Ez[i][j][k] - feZ);
+            double errBx = fabs(Bx[i][j][k] - fbX);
+            double errBy = fabs(By[i][j][k] - fbY);
+            double errBz = fabs(Bz[i][j][k] - fbZ);
+           
+            totErr += errEx + errEy + errEz + errBx + errBy + errBz;
+            fprintf(fd,"%8.4f %8.4f %8.4f   %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e\n"
+                      ,x,y,z
+                      ,Ex[i][j][k],  Ey[i][j][k],  Ez[i][j][k]
+                      ,Bx[i][j][k],  By[i][j][k],  Bz[i][j][k]
+                      ,feX, feY, feZ, fbX, fbY, fbZ
+                      ,errEx, errEy, errEz, errBx, errBy, errBz);
+          }
+      totErr /= (nxn-2)*(nyn-2)*(nzn-2);
+      sumTotErr += totErr;
+      if (cycle == LastCycle()) fprintf(stderr,"%3d  %13.6e  %13.6e \n", cycle, totErr, sumTotErr/cycle);
+
+    } else if (col->getCase() == "Bessel2D") {
+      double Kx = ZERO_J1/col->getLx();
+      double Ky = 2*M_PI/col->getLy();
+      double dt = col->getDt();
+      double omega = sqrt(Ky*Ky + Kx*Kx);
+      double t = dt*cycle;
+      double totErr = 0;
+      static double sumTotErr = 0;
+      for (int i=1; i<nxn-1; i++) 
+        for (int j=1; j<nyn-1; j++) 
+          for (int k=1; k<nzn-1; k++) {
+            double x = grid->getXN(i,j,k);
+            double y = grid->getYN(i,j,k);
+            double z = grid->getZN(i,j,k);
+            double feX = 0;
+            double feY = 0;
+            double feZ = cos(y*Ky)*besselJ(1, x*Kx)*cos(t*omega); 
+            double fbX = -sin(y*Ky)*besselJ(1, x*Kx)*sin(t*omega)*Ky/omega;
+            double fbY = -cos(y*Ky)*besselJ(0, x*Kx)*sin(t*omega)*Kx/omega;
+            double fbZ = 0;
+            double errEx = fabs(Ex[i][j][k] - feX);
+            double errEy = fabs(Ey[i][j][k] - feY);
+            double errEz = fabs(Ez[i][j][k] - feZ);
+            double errBx = fabs(Bx[i][j][k] - fbX);
+            double errBy = fabs(By[i][j][k] - fbY);
+            double errBz = fabs(Bz[i][j][k] - fbZ);
+           
+            totErr += errEx + errEy + errEz + errBx + errBy + errBz;
+            fprintf(fd,"%8.4f %8.4f %8.4f   %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e\n"
+                      ,x,y,z
+                      ,Ex[i][j][k],  Ey[i][j][k],  Ez[i][j][k]
+                      ,Bx[i][j][k],  By[i][j][k],  Bz[i][j][k]
+                      ,feX, feY, feZ, fbX, fbY, fbZ
+                      ,errEx, errEy, errEz, errBx, errBy, errBz);
+          }
+      totErr /= (nxn-2)*(nyn-2)*(nzn-2);
+      sumTotErr += totErr;
+      if (cycle == LastCycle()) fprintf(stderr,"%3d  %13.6e  %13.6e \n", cycle, totErr, sumTotErr/cycle);
+
+    } else if (col->getCase() == "TEmode") {
+      double Kr = ZERO_J1/col->getLx();
+      double Kz = 2*M_PI/col->getLy();
+      double dt = col->getDt();
+      double omega = sqrt(Kz*Kz + Kr*Kr);
+      double t = dt*cycle;
+      double totErr = 0;
+      static double sumTotErr = 0;
+      for (int i=1; i<nxn-1; i++) 
+        for (int j=1; j<nyn-1; j++) 
+          for (int k=1; k<nzn-1; k++) {
+            double x = grid->getXN(i,j,k);
+            double y = grid->getYN(i,j,k);
+            double z = grid->getZN(i,j,k);
+            double feX = 0;
+            double feY = 0;
+            double feZ = -(omega/Kr)*besselJ(1, x*Kr)*sin(y*Kz-omega*t);
+            double fbX = (Kz/Kr)*besselJ(1, x*Kr)*sin(y*Kz-omega*t);
+            double fbY = besselJ(0, x*Kr)*cos(y*Kz-omega*t);
+            double fbZ = 0;
+            double errEx = fabs(Ex[i][j][k] - feX);
+            double errEy = fabs(Ey[i][j][k] - feY);
+            double errEz = fabs(Ez[i][j][k] - feZ);
+            double errBx = fabs(Bx[i][j][k] - fbX);
+            double errBy = fabs(By[i][j][k] - fbY);
+            double errBz = fabs(Bz[i][j][k] - fbZ);
+           
+            totErr += errEx + errEy + errEz + errBx + errBy + errBz;
+            fprintf(fd,"%8.4f %8.4f %8.4f   %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e\n"
+                      ,x,y,z
+                      ,Ex[i][j][k],  Ey[i][j][k],  Ez[i][j][k]
+                      ,Bx[i][j][k],  By[i][j][k],  Bz[i][j][k]
+                      ,feX, feY, feZ, fbX, fbY, fbZ
+                      ,errEx, errEy, errEz, errBx, errBy, errBz);
+          }
+      totErr /= (nxn-2)*(nyn-2)*(nzn-2);
+      sumTotErr += totErr;
+      if (cycle == LastCycle()) fprintf(stderr,"%3d  %13.6e  %13.6e \n", cycle, totErr, sumTotErr/cycle);
+
+    } else if (col->getCase() == "TMmode") {
+      double Kr = ZERO_J0/col->getLx();
+      double Kz = 2*M_PI/col->getLy();
+      double dt = col->getDt();
+      double omega = sqrt(Kz*Kz + Kr*Kr);
+      double t = dt*cycle;
+      double totErr = 0;
+      static double sumTotErr = 0;
+      for (int i=1; i<nxn-1; i++) 
+        for (int j=1; j<nyn-1; j++) 
+          for (int k=1; k<nzn-1; k++) {
+            double x = grid->getXN(i,j,k);
+            double y = grid->getYN(i,j,k);
+            double z = grid->getZN(i,j,k);
+            double feX = Kz*besselJ(1, x*Kr)*sin(Kz*y - omega*t);
+            double feY = besselJ(0, x*Kr)*cos(Kz*y - omega*t);
+            double feZ = 0;
+            double fbX = 0;
+            double fbY = 0;
+            //double fbZ = -besselJ(1, x*Kr)*sin(Kz*y + omega*t);
+            double fbZ = omega*besselJ(1, x*Kr)*sin(Kz*y - omega*t);
+            double errEx = fabs(Ex[i][j][k] - feX);
+            double errEy = fabs(Ey[i][j][k] - feY);
+            double errEz = fabs(Ez[i][j][k] - feZ);
+            double errBx = fabs(Bx[i][j][k] - fbX);
+            double errBy = fabs(By[i][j][k] - fbY);
+            double errBz = fabs(Bz[i][j][k] - fbZ);
+           
+            totErr += errEx + errEy + errEz + errBx + errBy + errBz;
+            fprintf(fd,"%8.4f %8.4f %8.4f   %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e\n"
+                      ,x,y,z
+                      ,Ex[i][j][k],  Ey[i][j][k],  Ez[i][j][k]
+                      ,Bx[i][j][k],  By[i][j][k],  Bz[i][j][k]
+                      ,feX, feY, feZ, fbX, fbY, fbZ
+                      ,errEx, errEy, errEz, errBx, errBy, errBz);
+          }
+      totErr /= (nxn-2)*(nyn-2)*(nzn-2);
+      sumTotErr += totErr;
+      if (cycle == LastCycle()) fprintf(stderr,"%3d  %13.6e  %13.6e \n", cycle, totErr, sumTotErr/cycle);
+
+
+    } else {
+      for (int i=1; i<nxn-1; i++) 
+        for (int j=1; j<nyn-1; j++) 
+          for (int k=1; k<nzn-1; k++) {
+            double x = grid->getXN(i,j,k);
+            double y = grid->getYN(i,j,k);
+            double z = grid->getZN(i,j,k);
+            fprintf(fd,"%8.4f %8.4f %8.4f   %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e   %13.6e \n"
+                      ,x,y,z
+                      ,Ex[i][j][k],  Ey[i][j][k],  Ez[i][j][k]
+                      ,Bx[i][j][k],  By[i][j][k],  Bz[i][j][k]
+                      ,Jxh[i][j][k], Jyh[i][j][k], Jzh[i][j][k]
+                      ,Jxh[i][j][k]+Jx_ext[i][j][k], Jyh[i][j][k]+Jy_ext[i][j][k], Jzh[i][j][k]+Jz_ext[i][j][k]
+                      ,rhon[i][j][k]
+                    );
+          }
+    }
     fclose(fd);
   } else if (col->getWriteMethod() == "h5hut") {
 

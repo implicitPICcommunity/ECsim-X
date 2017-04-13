@@ -6,8 +6,6 @@
 extern MyClock *clocks;
 
 
-#define ZERO_J0 2.4048
-#define ZERO_J1 3.83170597020751
 long double factorial(int k) {
   if (k == 0) return 1;
   else if (k == 1) return k;
@@ -2205,6 +2203,107 @@ void EMfields3D::initBessel2D(VirtualTopology3D * vct, Grid * grid, Collective *
           Byc[i][j][k] = 0;
           Bzc[i][j][k] = cos(y*2*M_PI/Ly)*besselJ(1, x*ZERO_J1/Lx);
 #endif
+        }
+    for (int is = 0; is < ns; is++)
+      grid->interpN2C(rhocs, is, rhons);
+  }
+  else {
+    init(vct, grid, col);            // use the fields from restart file
+  }
+}
+
+void EMfields3D::initTEmode(VirtualTopology3D * vct, Grid * grid, Collective *col) {
+  // perturbation localized in X
+  if (restart1 == 0) {
+    // initialize
+    if (vct->getCartesian_rank() == 0) {
+      cout << "------------------------------------------" << endl;
+      cout << "Initialize TE mode                       " << endl;
+      cout << "------------------------------------------" << endl;
+    }
+
+    double Kz = 2*M_PI/Ly;
+    double Kr = ZERO_J1/Lx;
+    double omega = sqrt(Kz*Kz + Kr*Kr);
+
+    for (int i = 0; i < nxn; i++)
+      for (int j = 0; j < nyn; j++)
+        for (int k = 0; k < nzn; k++) {
+          // initialize the density for species
+          for (int is = 0; is < ns; is++) {
+              rhons[is][i][j][k] = rhoINIT[is] / FourPI;
+          }
+          // electric field
+          double x = grid->getXN(i,j,k);
+          double y = grid->getYN(i,j,k);
+          Ex[i][j][k] = 0;
+          Ey[i][j][k] = 0;
+          Ez[i][j][k] = -(omega/Kr)*besselJ(1, x*Kr)*sin(y*Kz);
+          // Magnetic field
+          Bxn[i][j][k] = (Kz/Kr)*besselJ(1, x*Kr)*sin(y*Kz);
+          Byn[i][j][k] = besselJ(0, x*Kr)*cos(y*Kz);
+          Bzn[i][j][k] = 0;
+        }
+    // initialize B on centers
+    for (int i = 0; i < nxc; i++)
+      for (int j = 0; j < nyc; j++)
+        for (int k = 0; k < nzc; k++) {
+          // Magnetic field
+          double x = grid->getXC(i,j,k);
+          double y = grid->getYC(i,j,k);
+          Bxc[i][j][k] = (Kz/Kr)*besselJ(1, x*Kr)*sin(y*Kz);
+          Byc[i][j][k] = besselJ(0, x*Kr)*cos(y*Kz);
+          Bzc[i][j][k] = 0;
+        }
+    for (int is = 0; is < ns; is++)
+      grid->interpN2C(rhocs, is, rhons);
+  }
+  else {
+    init(vct, grid, col);            // use the fields from restart file
+  }
+}
+
+void EMfields3D::initTMmode(VirtualTopology3D * vct, Grid * grid, Collective *col) {
+  // perturbation localized in X
+  if (restart1 == 0) {
+    // initialize
+    if (vct->getCartesian_rank() == 0) {
+      cout << "------------------------------------------" << endl;
+      cout << "Initialize TM mode                       " << endl;
+      cout << "------------------------------------------" << endl;
+    }
+    double Kz = 2*M_PI/Ly;
+    double Kr = ZERO_J0/Lx;
+    double omega = sqrt(Kz*Kz + Kr*Kr);
+
+    for (int i = 0; i < nxn; i++)
+      for (int j = 0; j < nyn; j++)
+        for (int k = 0; k < nzn; k++) {
+          // initialize the density for species
+          for (int is = 0; is < ns; is++) {
+              rhons[is][i][j][k] = rhoINIT[is] / FourPI;
+          }
+          // electric field
+          double x = grid->getXN(i,j,k);
+          double y = grid->getYN(i,j,k);
+          Ex[i][j][k] = Kz*besselJ(1, x*Kr)*sin(Kz*y);
+          Ey[i][j][k] = besselJ(0, x*Kr)*cos(Kz*y);
+          Ez[i][j][k] = 0;
+          // Magnetic field
+          Bxn[i][j][k] = 0;
+          Byn[i][j][k] = 0;
+          Bzn[i][j][k] = omega*besselJ(1, x*Kr)*sin(Kz*y);
+        }
+    // initialize B on centers
+    for (int i = 0; i < nxc; i++)
+      for (int j = 0; j < nyc; j++)
+        for (int k = 0; k < nzc; k++) {
+          // Magnetic field
+          double x = grid->getXC(i,j,k);
+          double y = grid->getYC(i,j,k);
+          Bxc[i][j][k] = 0;
+          Byc[i][j][k] = 0;
+          Bzc[i][j][k] = omega*besselJ(1, x*Kr)*sin(Kz*y);
         }
     for (int is = 0; is < ns; is++)
       grid->interpN2C(rhocs, is, rhons);

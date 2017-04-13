@@ -311,15 +311,15 @@ void EMfields3D::fixBC_Cyl_Image(double ***ImX, double ***ImY, double ***ImZ, do
       for (int j=0; j<nyn; j++) 
         for (int k=0; k<nzn; k++) {
           ImX[1][j][k] = nEx[1][j][k] - nEx[2][j][k];
-          ImY[1][j][k] = nEy[1][j][k] - nEy[2][j][k];
-          ImZ[1][j][k] = nEz[1][j][k] - nEz[2][j][k];
+          ImY[1][j][k] = nEy[1][j][k];
+          ImZ[1][j][k] = nEz[1][j][k];
         }
     } else if (bcEMfaceXleft == 2) {
       for (int j=1; j<nyn; j++) 
         for (int k=1; k<nzn; k++) {
-          ImX[1][j][k] = nEx[1][j][k] - nEx[2][j][k];
-          ImY[1][j][k] = nEy[1][j][k] - (4*dt*th/dx)*(cBz[1][j-1][k] + cBz[1][j][k])*0.5;
-          ImZ[1][j][k] = nEz[1][j][k] - 0.5*(2*dt*th/dx)*(cBy[1][j-1][k] + cBy[1][j][k]) + 0.5*(dt*th/dy)*(cBx[1][j][k] - cBx[1][j-1][k]);
+          ImX[1][j][k] = nEx[1][j][k];
+          ImY[1][j][k] = nEy[1][j][k] - (4*dt*th/dx)*(cBz[1][j-1][k] + cBz[1][j][k])/2;
+          ImZ[1][j][k] = nEz[1][j][k];
         }
     }
   }
@@ -335,9 +335,9 @@ void EMfields3D::fixBC_Cyl_Image(double ***ImX, double ***ImY, double ***ImZ, do
     } else if (bcEMfaceXright == 1) {
       for (int j=0; j<nyn; j++) 
         for (int k=0; k<nzn; k++) {
-          ImX[nxn-2][j][k] = nEx[nxn-2][j][k];
-          ImY[nxn-2][j][k] = nEy[nxn-2][j][k]-nEy[nxn-3][j][k];
-          ImZ[nxn-2][j][k] = nEz[nxn-2][j][k]-nEz[nxn-3][j][k];
+          ImX[nxn-2][j][k] = nEx[nxn-2][j][k]-nEx[nxn-3][j][k];;
+          ImY[nxn-2][j][k] = nEy[nxn-2][j][k];
+          ImZ[nxn-2][j][k] = nEz[nxn-2][j][k];
         }
     }
   }
@@ -358,7 +358,9 @@ void EMfields3D::fixBC_Cyl_Source(double ***SoX, double ***SoY, double ***SoZ)
         for (int k=0; k<nzn; k++) {
           SoX[1][j][k] = 0;
           SoY[1][j][k] = Ey[1][j][k];
-          SoZ[1][j][k] = Ez[1][j][k];
+          SoZ[1][j][k] = 0;
+          //SoZ[1][j][k] = Ez[1][j][k] - (2*dt*th/dx)*(Byc[1][j-1][k] + Byc[1][j][k])/2
+                                     //+ (dt*th/dy)*(Bxc[1][j][k] - Bxc[1][j-1][k]);
         }
     }
   }

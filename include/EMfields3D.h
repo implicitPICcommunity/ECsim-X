@@ -9,6 +9,8 @@
 #ifndef EMfields3D_H
 #define EMfields3D_H
 
+#define ZERO_J0 2.40482555769577
+#define ZERO_J1 3.83170597020751
 
 #include <iostream>
 #include <sstream>
@@ -57,6 +59,8 @@ class EMfields3D                // :public Field
     void initDipole(VirtualTopology3D *vct, Grid *grid, Collective *col);
     void initBessel1D(VirtualTopology3D * vct, Grid * grid, Collective *col);
     void initBessel2D(VirtualTopology3D * vct, Grid * grid, Collective *col);
+    void initTEmode(VirtualTopology3D * vct, Grid * grid, Collective *col);
+    void initTMmode(VirtualTopology3D * vct, Grid * grid, Collective *col);
     void initHalfPlanet(VirtualTopology3D *vct, Grid *grid, Collective *col);
 
     /* Fix boundary conditions in cylindrical coordinate */
@@ -560,5 +564,6 @@ class EMfields3D                // :public Field
 };
 
 typedef EMfields3D Field;
+extern double besselJ(int alpha, double x);
 
 #endif
