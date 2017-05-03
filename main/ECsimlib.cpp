@@ -91,6 +91,7 @@ int c_Solver::Init(int argc, char **argv) {
     else if (col->getCase()=="Bessel2D")    EMf->initBessel2D(vct,grid,col);
     else if (col->getCase()=="TEmode")      EMf->initTEmode(vct,grid,col);
     else if (col->getCase()=="TMmode")      EMf->initTMmode(vct,grid,col);
+    else if (col->getCase()=="pulse")       EMf->initPulse(vct,grid,col);
     else if (col->getCase()=="HalfPlanet")  EMf->initHalfPlanet(vct,grid,col);
     else {
       if (myrank==0) {
@@ -339,8 +340,9 @@ void c_Solver::WriteRestart(int cycle) {
 }
 
 void c_Solver::WriteConserved(int cycle) {
+  if (cycle == first_cycle) return;
 
-  if (cycle == first_cycle) {
+  if (cycle == first_cycle+1) {
     totEn0 = EMf->getEenergy() + EMf->getBenergy();
     for (int is = 0; is < ns; is++) {
       totEn0 +=  part[is].getKe();

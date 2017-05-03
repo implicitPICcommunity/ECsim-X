@@ -62,10 +62,11 @@ class EMfields3D                // :public Field
     void initTEmode(VirtualTopology3D * vct, Grid * grid, Collective *col);
     void initTMmode(VirtualTopology3D * vct, Grid * grid, Collective *col);
     void initHalfPlanet(VirtualTopology3D *vct, Grid *grid, Collective *col);
+    void initPulse(VirtualTopology3D * vct, Grid * grid, Collective *col);
 
     /* Fix boundary conditions in cylindrical coordinate */
     void fixGhostB();
-    void fixBC_Cyl_Image(double ***ImX, double ***ImY, double ***ImZ, double ***nEx, double ***nEy, double ***nEz, double ***cBx, double ***cBy, double ***cBz);
+    void fixBC_Cyl_Image(Grid* grid, double ***ImX, double ***ImY, double ***ImZ, double ***nEx, double ***nEy, double ***nEz, double ***cBx, double ***cBy, double ***cBz);
     void fixBC_Cyl_Source(double ***SoX, double ***SoY, double ***SoZ);
     void fixBC_Image(VirtualTopology3D*, double***, double***, double***, double***, double***, double***, double***, double***, double***);
     void fixBC_ImageC(VirtualTopology3D*, double***, double***, double***, double***, double***, double***, double***, double***, double***);

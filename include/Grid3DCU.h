@@ -58,6 +58,8 @@ public:
   /** calculate curl on central points, given a vector field defined on nodes  */
   void curlN2C(double ***curlXC, double ***curlYC, double ***curlZC, double ***vecFieldXN, double ***vecFieldYN, double ***vecFieldZN);
   void curlN2C_cyl(double ***curlXC, double ***curlYC, double ***curlZC, double ***vecFieldXN, double ***vecFieldYN, double ***vecFieldZN);
+  double integral_z(double r, double A1, double A2);
+  double integral_r(double r1, double r2, double A1, double A2);
 
   /** calculate divergence on central points, given a Tensor field defined on nodes  */
   void divSymmTensorN2C(double ***divCX, double ***divCY, double ***divCZ, double ****pXX, double ****pXY, double ****pXZ, double ****pYY, double ****pYZ, double ****pZZ, int ns);

@@ -297,8 +297,9 @@ void EMfields3D::fixBC_Source(VirtualTopology3D *vct, Collective *col, double **
  * Fix the boundary conditions for r=0. BC are only needed for the electric field.
 
  */
-void EMfields3D::fixBC_Cyl_Image(double ***ImX, double ***ImY, double ***ImZ, double ***nEx, double ***nEy, double ***nEz, double ***cBx, double ***cBy, double ***cBz) {
+void EMfields3D::fixBC_Cyl_Image(Grid *grid, double ***ImX, double ***ImY, double ***ImZ, double ***nEx, double ***nEy, double ***nEz, double ***cBx, double ***cBy, double ***cBz) {
 
+/*
   if (xStart == 0) {
     if (bcEMfaceXleft == 0) {
       for (int j=0; j<nyn; j++) 
@@ -323,6 +324,7 @@ void EMfields3D::fixBC_Cyl_Image(double ***ImX, double ***ImY, double ***ImZ, do
         }
     }
   }
+*/
 
   if (xEnd == Lx) {
     if (bcEMfaceXright == 0) {
@@ -345,6 +347,7 @@ void EMfields3D::fixBC_Cyl_Image(double ***ImX, double ***ImY, double ***ImZ, do
 
 void EMfields3D::fixBC_Cyl_Source(double ***SoX, double ***SoY, double ***SoZ) 
 {
+/*
   if (xStart == 0) {
     if (bcEMfaceXleft == 0 || bcEMfaceXleft == 1) {
       for (int j=0; j<nyn; j++) 
@@ -364,6 +367,7 @@ void EMfields3D::fixBC_Cyl_Source(double ***SoX, double ***SoY, double ***SoZ)
         }
     }
   }
+*/
 
   if (xEnd == Lx) {
     if (bcEMfaceXright == 0 || bcEMfaceXright == 1) {

@@ -567,7 +567,7 @@ void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTo
     sumscalprod(imageBZ, delt, vectZ, Lambda, nxn, nyn, nzn);
   }
 
-  if (Cylindrical == 1)  fixBC_Cyl_Image(imageBX, imageBY, imageBZ, tempX, tempY, tempZ, tempXC, tempYC, tempZC);
+  if (Cylindrical == 1)  fixBC_Cyl_Image(grid, imageBX, imageBY, imageBZ, tempX, tempY, tempZ, tempXC, tempYC, tempZC);
   else {
     fixBC_Image (vct, imageBX, imageBY, imageBZ, tempX, tempY, tempZ, tempXC, tempYC, tempZC);
     if (col->getCase() == "Dipole"){
@@ -2170,8 +2170,8 @@ void EMfields3D::initBessel2D(VirtualTopology3D * vct, Grid * grid, Collective *
           double kz = 2*M_PI/Ly;
 #ifdef MODE_A
           Ex[i][j][k] = 0;
-          Ey[i][j][k] = 0;
-          Ez[i][j][k] = cos(y*2*M_PI/Ly)*besselJ(1, x*ZERO_J1/Lx); 
+          Ey[i][j][k] = besselJ(0, x*ZERO_J0/Lx);
+          Ez[i][j][k] = sin(y*2*M_PI/Ly)*besselJ(1, x*ZERO_J1/Lx); 
           // Magnetic field
           Bxn[i][j][k] = 0;
           Byn[i][j][k] = 0;
@@ -2183,7 +2183,7 @@ void EMfields3D::initBessel2D(VirtualTopology3D * vct, Grid * grid, Collective *
           // Magnetic field
           Bxn[i][j][k] = 0;
           Byn[i][j][k] = 0;
-          Bzn[i][j][k] = cos(y*2*M_PI/Ly)*besselJ(1, x*ZERO_J1/Lx);
+          Bzn[i][j][k] = sin(y*2*M_PI/Ly)*besselJ(1, x*ZERO_J1/Lx);
 #endif
         }
     // initialize B on centers
@@ -2201,7 +2201,7 @@ void EMfields3D::initBessel2D(VirtualTopology3D * vct, Grid * grid, Collective *
 #else
           Bxc[i][j][k] = 0;
           Byc[i][j][k] = 0;
-          Bzc[i][j][k] = cos(y*2*M_PI/Ly)*besselJ(1, x*ZERO_J1/Lx);
+          Bzc[i][j][k] = sin(y*2*M_PI/Ly)*besselJ(1, x*ZERO_J1/Lx);
 #endif
         }
     for (int is = 0; is < ns; is++)
@@ -2313,6 +2313,24 @@ void EMfields3D::initTMmode(VirtualTopology3D * vct, Grid * grid, Collective *co
   }
 }
 
+
+void EMfields3D::initPulse(VirtualTopology3D * vct, Grid * grid, Collective *col) {
+    double x0 = Lx/2 - (0.6*dx);
+    double x1 = Lx/2 + (0.6*dx);
+    double y0 = Ly/2 - (0.6*dx);
+    double y1 = Ly/2 + (0.6*dx);
+    for (int i = 0; i < nxn; i++)
+      for (int j = 0; j < nyn; j++)
+        for (int k = 0; k < nzn; k++) {
+          double x = grid->getXN(i,j,k);
+          double y = grid->getYN(i,j,k);
+          if (x > x0 && x < x1 && y > y0 && y < y1)
+	    Ey[i][j][k] = 1;
+
+        }
+
+
+}
 
 
 /*! Calculate the susceptibility on the boundary leftX */
