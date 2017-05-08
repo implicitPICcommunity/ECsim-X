@@ -248,8 +248,14 @@ bool c_Solver::ParticlesMover() {
   /*  Particle mover */
   /*  -------------- */
 
+  #ifdef  __JDOTE_TEST__
+		double totK0 = 0;
+    for (int is = 0; is < ns; is++) {
+      totK0 +=  part[is].getKe();
+    }
+  #endif 
+
   // move each species
-//#define PC_MOVER
 #ifdef PC_MOVER
   for (int i = 0; i < ns; i++)  
   mem_avail = part[i].mover_PC_sub(grid, vct, EMf);
@@ -258,10 +264,14 @@ bool c_Solver::ParticlesMover() {
     mem_avail = part[i].updateVelocity(grid, vct, EMf);
 
   #ifdef  __JDOTE_TEST__
-  for (int i = 0; i < ns; i++)  
+  double totK1 = 0;
+  for (int i = 0; i < ns; i++) {
     part[i].computeCurrentBar(EMf, grid, vct); 
+    totK1 +=  part[i].getKe();
+  }
+  double deltaK = totK1 - totK0;
   EMf->communicateGhostP2G_spec(vct);
-  EMf->testJdotE(grid);
+  EMf->testJdotE(grid, deltaK);
   #endif
 
   for (int i = 0; i < ns; i++)  {
@@ -421,6 +431,14 @@ void c_Solver::WriteOutput(int cycle) {
       double t = dt*cycle;
       double totErr = 0;
       static double sumTotErr = 0;
+      fprintf(fd,"# 1,2,3   : x, y, z \n"
+                 "# 4,5,6   : Ex, Ey, Ez\n"
+                 "# 7,8,9   : Bx, By, Bz\n"
+                 "# 10,11,12: Ex, Ey, Ez (Analytical solution)\n"
+                 "# 13,14,15: Bx, By, Bz (Analytical solution)\n"
+                 "# 16,17,18: error Ex, Ey, Ez \n"
+                 "# 19,20,21: error Bx, By, Bz \n"
+             );
       for (int i=1; i<nxn-1; i++) 
         for (int j=1; j<nyn-1; j++) 
           for (int k=1; k<nzn-1; k++) {
@@ -460,6 +478,14 @@ void c_Solver::WriteOutput(int cycle) {
       double t = dt*cycle;
       double totErr = 0;
       static double sumTotErr = 0;
+      fprintf(fd,"# 1,2,3   : x, y, z \n"
+                 "# 4,5,6   : Ex, Ey, Ez\n"
+                 "# 7,8,9   : Bx, By, Bz\n"
+                 "# 10,11,12: Ex, Ey, Ez (Analytical solution)\n"
+                 "# 13,14,15: Bx, By, Bz (Analytical solution)\n"
+                 "# 16,17,18: error Ex, Ey, Ez \n"
+                 "# 19,20,21: error Bx, By, Bz \n"
+             );
       for (int i=1; i<nxn-1; i++) 
         for (int j=1; j<nyn-1; j++) 
           for (int k=1; k<nzn-1; k++) {
@@ -499,6 +525,14 @@ void c_Solver::WriteOutput(int cycle) {
       double t = dt*cycle;
       double totErr = 0;
       static double sumTotErr = 0;
+      fprintf(fd,"# 1,2,3   : x, y, z \n"
+                 "# 4,5,6   : Ex, Ey, Ez\n"
+                 "# 7,8,9   : Bx, By, Bz\n"
+                 "# 10,11,12: Ex, Ey, Ez (Analytical solution)\n"
+                 "# 13,14,15: Bx, By, Bz (Analytical solution)\n"
+                 "# 16,17,18: error Ex, Ey, Ez \n"
+                 "# 19,20,21: error Bx, By, Bz \n"
+             );
       for (int i=1; i<nxn-1; i++) 
         for (int j=1; j<nyn-1; j++) 
           for (int k=1; k<nzn-1; k++) {
@@ -538,6 +572,14 @@ void c_Solver::WriteOutput(int cycle) {
       double t = dt*cycle;
       double totErr = 0;
       static double sumTotErr = 0;
+      fprintf(fd,"# 1,2,3   : x, y, z \n"
+                 "# 4,5,6   : Ex, Ey, Ez\n"
+                 "# 7,8,9   : Bx, By, Bz\n"
+                 "# 10,11,12: Ex, Ey, Ez (Analytical solution)\n"
+                 "# 13,14,15: Bx, By, Bz (Analytical solution)\n"
+                 "# 16,17,18: error Ex, Ey, Ez \n"
+                 "# 19,20,21: error Bx, By, Bz \n"
+             );
       for (int i=1; i<nxn-1; i++) 
         for (int j=1; j<nyn-1; j++) 
           for (int k=1; k<nzn-1; k++) {

@@ -55,6 +55,7 @@ public:
   /** calculate curl on nodes, given a vector field defined on central points  */
   void curlC2N(double ***curlXN, double ***curlYN, double ***curlZN, double ***vecFieldXC, double ***vecFieldYC, double ***vecFieldZC);
   void curlC2N_cyl(double ***curlXN, double ***curlYN, double ***curlZN, double ***vecFieldXC, double ***vecFieldYC, double ***vecFieldZC);
+  void curlC2N_cylAxis(double ***curlXN, double ***curlYN, double ***curlZN, double ***vecXC, double ***vecYC, double ***vecZC);
   /** calculate curl on central points, given a vector field defined on nodes  */
   void curlN2C(double ***curlXC, double ***curlYC, double ***curlZC, double ***vecFieldXN, double ***vecFieldYN, double ***vecFieldZN);
   void curlN2C_cyl(double ***curlXC, double ***curlYC, double ***curlZC, double ***vecFieldXN, double ***vecFieldYN, double ***vecFieldZN);

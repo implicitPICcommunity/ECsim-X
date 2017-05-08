@@ -317,7 +317,8 @@ class EMfields3D                // :public Field
 
     void testCurl(Grid* grid);
     void computeRhotilde(VirtualTopology3D * vct, Collective *col, Grid* grid, int is);
-    void testJdotE(Grid* grid);
+    void testJdotE(Grid* grid, double deltaK);
+    void PoyntingFluxTest();
 
     void updateLagrangianFrame(VirtualTopology3D * vct, Collective *col);
     void setLagrangianFrame(VirtualTopology3D* vct, Collective* col, bool mode);
@@ -561,6 +562,9 @@ class EMfields3D                // :public Field
 
     double ***Lambda;
     int damping;
+
+    double Eenergy;
+    double Benergy;
 
 };
 

@@ -599,7 +599,6 @@ void Grid3DCU::curlN2C_cyl(double ***curlXC, double ***curlYC, double ***curlZC,
          double At_10 = vecZN[i1][j0][k];
          double At_11 = vecZN[i1][j1][k];
 
-#ifdef FINITE_VOLUME
         // faces along r        
         curlZC[i][j][k] = - (integral_z(r1,Az_10,Az_11) - integral_z(r0,Az_00,Az_01))*invVOLc[i][j][k];
         curlYC[i][j][k] =   (integral_z(r1,At_10,At_11) - integral_z(r0,At_00,At_01))*invVOLc[i][j][k];
@@ -611,50 +610,6 @@ void Grid3DCU::curlN2C_cyl(double ***curlXC, double ***curlYC, double ***curlZC,
         // faces along theta
         curlZC[i][j][k] += ((Az_01 + Az_00 + Az_11 + Az_10)*Dz*(r1-r0)/4)*invVOLc[i][j][k];
 
-
-#elif defined FINITE_VOLUME_2
-       // r component
-       curlXC[i][j][k] = -0.5*Dr*invVOLc[i][j][k]*( r0*vecZN[i0][j1][k] + r1*vecZN[i1][j1][k]
-                                                     -r0*vecZN[i0][j0][k] - r1*vecZN[i1][j0][k]);
-       // z component
-       curlYC[i][j][k] =  0.5*Dz*invVOLc[i][j][k]*( r1*(vecZN[i1][j0][k] + vecZN[i1][j1][k]) 
-                                                     -r0*(vecZN[i0][j0][k] + vecZN[i0][j1][k]));
-       // phi component
-       curlZC[i][j][k] =  0.5*Dr*invVOLc[i][j][k]*( r0*vecXN[i0][j1][k] + r1*vecXN[i1][j1][k]
-                                                  -r0*vecXN[i0][j0][k] - r1*vecXN[i1][j0][k])
-                         -0.5*Dz*invVOLc[i][j][k]*( r1*vecYN[i1][j0][k] - r0*vecYN[i0][j0][k] - 0.5*Dr*(vecYN[i1][j0][k] + vecYN[i0][j0][k])
-                                                   +r1*vecYN[i1][j1][k] - r0*vecYN[i0][j1][k] - 0.5*Dr*(vecYN[i1][j1][k] + vecYN[i0][j1][k]));
-
-
-/*
-       curlXC[i][j][k] = Dr*(At_00*(r0*2.0 + r1) - At_01*(r0*2.0 + r1) + At_10*(r0 + r1*2.0) - At_11*(r0 +r1*2.0))*(1.0/6.0); 
-       curlYC[i][j][k] = -0.5*Dz*(r0*(At_00 + At_01) - r1*(At_10 + At_11));
-       curlZC[i][j][k] = Dr*(Ar_00*(r0*2.0 + r1) - Ar_01*(r0*2.0 + r1) + Ar_10*(r0 + r1*2.0) - Ar_11*(r0 + r1*2.0))*(-1.0/6.0)-
-                         (Dz*(r0*r0-r1*r1)*(Az_00+Az_01-Az_10-Az_11)*(1.0/4.0))/Dr;
-
-       curlXC[i][j][k] *= invVOLc[i][j][k];
-       curlYC[i][j][k] *= invVOLc[i][j][k];
-       curlZC[i][j][k] *= invVOLc[i][j][k];
-*/
-
-#else
-       // Finite differences:
-       curlXC[i][j][k] = -0.5*(At_01-At_00 + At_11-At_10)/Dz;
-
-       double r = getXC(i,j,k);
-       curlYC[i][j][k] = 0.5*((1.0/r)*0.5*(At_00+At_10) + (At_10 - At_00)/Dr) +
-                         0.5*((1.0/r)*0.5*(At_01+At_11) + (At_11 - At_01)/Dr);
-
-       curlZC[i][j][k] = 0.5*(Ar_01-Ar_00 + Ar_11-Ar_10)/Dz -
-                         0.5*(Az_10-Az_00 + Az_11-Az_01)/Dr;
-
-       // New Approach (Atilde = At*r)
-     
-       //curlXC[i][j][k] = -(r0*At_01 - r0*At_00 + r1*At_11 - r1*At_10)/(Dz*r);
-       //curlYC[i][j][k] = (r1*At_10 - r0*At_00 + r1*At_11 - r0*Ar_01)/(Dr*r);
-
-       
-#endif
       }
 }
 /** Curl in cylindrical coordinates: field defined in centers -> curl in nodes */
@@ -691,7 +646,6 @@ void Grid3DCU::curlC2N_cyl(double ***curlXN, double ***curlYN, double ***curlZN,
          double At_10 = vecZC[i1][j0][k];
          double At_11 = vecZC[i1][j1][k];
 
-#ifdef FINITE_VOLUME
         // faces along r        
         curlZN[i][j][k] = - (integral_z(r1,Az_10,Az_11) - integral_z(r0,Az_00,Az_01))*invVOLn[i][j][k];
         curlYN[i][j][k] =   (integral_z(r1,At_10,At_11) - integral_z(r0,At_00,At_01))*invVOLn[i][j][k];
@@ -702,48 +656,13 @@ void Grid3DCU::curlC2N_cyl(double ***curlXN, double ***curlYN, double ***curlZN,
 
         // faces along theta
         curlZN[i][j][k] += ((Az_01 + Az_00 + Az_11 + Az_10)*Dz*(r1-r0)/4)*invVOLn[i][j][k];
-
-#elif defined FINITE_VOLUME_2
-          // r component
-          curlXN[i][j][k] = -0.5*Dr*invVOLn[i][j][k]*( r0*vecZC[i0][j1][k] + r1*vecZC[i1][j1][k]
-                                                     -r0*vecZC[i0][j0][k] - r1*vecZC[i1][j0][k]);
-          // z component
-          curlYN[i][j][k] =  0.5*Dz*invVOLn[i][j][k]*( r1*(vecZC[i1][j0][k] + vecZC[i1][j1][k]) 
-                                                     -r0*(vecZC[i0][j0][k] + vecZC[i0][j1][k]));
-          // phi component
-          curlZN[i][j][k] =  0.5*Dr*invVOLn[i][j][k]*( r0*vecXC[i0][j1][k] + r1*vecXC[i1][j1][k]
-                                                     -r0*vecXC[i0][j0][k] - r1*vecXC[i1][j0][k])
-                            -0.5*Dz*invVOLn[i][j][k]*( r1*vecYC[i1][j0][k] - r0*vecYC[i0][j0][k] - 0.5*(r1-r0)*(vecYC[i1][j0][k] + vecYC[i0][j0][k])
-                                                     +r1*vecYC[i1][j1][k] - r0*vecYC[i0][j1][k] - 0.5*(r1-r0)*(vecYC[i1][j1][k] + vecYC[i0][j1][k]));
-
-/*
-       curlXN[i][j][k] = Dr*(At_00*(r0*2.0 + r1) - At_01*(r0*2.0 + r1) + At_10*(r0 + r1*2.0) - At_11*(r0 +r1*2.0))*(1.0/6.0); 
-       curlYN[i][j][k] = -0.5*Dz*(r0*(At_00 + At_01) - r1*(At_10 + At_11));
-       curlZN[i][j][k] = Dr*(Ar_00*(r0*2.0 + r1) - Ar_01*(r0*2.0 + r1) + Ar_10*(r0 + r1*2.0) - Ar_11*(r0 + r1*2.0))*(-1.0/6.0)-
-                         (Dz*(r0*r0-r1*r1)*(Az_00+Az_01-Az_10-Az_11)*(1.0/4.0))/Dr;
-
-
-       curlXN[i][j][k] *= invVOLc[i][j][k];
-       curlYN[i][j][k] *= invVOLc[i][j][k];
-       curlZN[i][j][k] *= invVOLc[i][j][k];
-*/
-
-
-#else
-       curlXN[i][j][k] = -0.5*(At_01-At_00 + At_11-At_10)/Dz;
-
-       double r = getXN(i,j,k);
-       curlYN[i][j][k] = 0.5*((1.0/r)*0.5*(At_00+At_10) + (At_10 - At_00)/Dr) +
-                         0.5*((1.0/r)*0.5*(At_01+At_11) + (At_11 - At_01)/Dr);
-
-       curlZN[i][j][k] = 0.5*(Ar_01-Ar_00 + Ar_11-Ar_10)/Dz -
-                         0.5*(Az_10-Az_00 + Az_11-Az_01)/Dr;
-
-       //curlXN[i][j][k] = -(r0*At_01 - r0*At_00 + r1*At_11 - r1*At_10)/(Dz*r);
-       //curlYN[i][j][k] =  (r1*At_10 - r0*At_00 + r1*At_11 - r0*Ar_01)/(Dr*r);
-#endif
       }
 
+      curlC2N_cylAxis(curlXN, curlYN, curlZN, vecXC, vecYC, vecZC);
+}
+
+
+void Grid3DCU::curlC2N_cylAxis(double ***curlXN, double ***curlYN, double ***curlZN, double ***vecXC, double ***vecYC, double ***vecZC) {
   if (xStart == 0) {
     // Boundary conditions for r=0
     for (register int j = 1; j < nyn - 1; j++)
@@ -769,7 +688,6 @@ void Grid3DCU::curlC2N_cyl(double ***curlXN, double ***curlYN, double ***curlZN,
          curlZN[i][j][k] = 0.0;
       }
   }
-
 }
 
   /** Divergence in cylindrical coordinates: field defined in centers -> divergence in nodes */

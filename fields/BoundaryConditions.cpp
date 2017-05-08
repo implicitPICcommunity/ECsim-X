@@ -299,32 +299,16 @@ void EMfields3D::fixBC_Source(VirtualTopology3D *vct, Collective *col, double **
  */
 void EMfields3D::fixBC_Cyl_Image(Grid *grid, double ***ImX, double ***ImY, double ***ImZ, double ***nEx, double ***nEy, double ***nEz, double ***cBx, double ***cBy, double ***cBz) {
 
-/*
   if (xStart == 0) {
-    if (bcEMfaceXleft == 0) {
-      for (int j=0; j<nyn; j++) 
-        for (int k=0; k<nzn; k++) {
-          ImX[1][j][k] = nEx[1][j][k];
-          ImY[1][j][k] = nEy[1][j][k];
-          ImZ[1][j][k] = nEz[1][j][k];
-        }
-    } else if (bcEMfaceXleft == 1) {
-      for (int j=0; j<nyn; j++) 
-        for (int k=0; k<nzn; k++) {
-          ImX[1][j][k] = nEx[1][j][k] - nEx[2][j][k];
-          ImY[1][j][k] = nEy[1][j][k];
-          ImZ[1][j][k] = nEz[1][j][k];
-        }
-    } else if (bcEMfaceXleft == 2) {
-      for (int j=1; j<nyn; j++) 
-        for (int k=1; k<nzn; k++) {
-          ImX[1][j][k] = nEx[1][j][k];
-          ImY[1][j][k] = nEy[1][j][k] - (4*dt*th/dx)*(cBz[1][j-1][k] + cBz[1][j][k])/2;
-          ImZ[1][j][k] = nEz[1][j][k];
-        }
-    }
+    //grid->curlC2N_cylAxis(ImX, ImY, ImZ, cBx, cBy, cBz);
+    double cthdt = c*th*dt;
+    for (int j=0; j<nyn; j++)
+			for (int k=0; k<nzn; k++) {
+				ImX[1][j][k] = nEx[1][j][k];
+				//ImY[1][j][k] = -cthdt*ImY[1][j][k] + nEy[1][j][k];
+				ImZ[1][j][k] = nEz[1][j][k];
+ 			}
   }
-*/
 
   if (xEnd == Lx) {
     if (bcEMfaceXright == 0) {
@@ -347,27 +331,14 @@ void EMfields3D::fixBC_Cyl_Image(Grid *grid, double ***ImX, double ***ImY, doubl
 
 void EMfields3D::fixBC_Cyl_Source(double ***SoX, double ***SoY, double ***SoZ) 
 {
-/*
   if (xStart == 0) {
-    if (bcEMfaceXleft == 0 || bcEMfaceXleft == 1) {
-      for (int j=0; j<nyn; j++) 
-        for (int k=0; k<nzn; k++) {
-          SoX[1][j][k] = 0.0;
-          SoY[1][j][k] = 0.0;
-          SoZ[1][j][k] = 0.0;
-        }
-    } else if (bcEMfaceXleft == 2) {
-      for (int j=0; j<nyn; j++) 
-        for (int k=0; k<nzn; k++) {
-          SoX[1][j][k] = 0;
-          SoY[1][j][k] = Ey[1][j][k];
-          SoZ[1][j][k] = 0;
-          //SoZ[1][j][k] = Ez[1][j][k] - (2*dt*th/dx)*(Byc[1][j-1][k] + Byc[1][j][k])/2
-                                     //+ (dt*th/dy)*(Bxc[1][j][k] - Bxc[1][j-1][k]);
-        }
-    }
+    for (int j=0; j<nyn; j++) 
+      for (int k=0; k<nzn; k++) {
+        SoX[1][j][k] = Ex[1][j][k];
+        //SoY[1][j][k] = Ey[1][j][k];
+        SoZ[1][j][k] = Ez[1][j][k];
+      }
   }
-*/
 
   if (xEnd == Lx) {
     if (bcEMfaceXright == 0 || bcEMfaceXright == 1) {

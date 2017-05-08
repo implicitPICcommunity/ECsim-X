@@ -529,7 +529,6 @@ void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTo
   scale(imageBX, -cthdt, nxn, nyn, nzn);
   scale(imageBY, -cthdt, nxn, nyn, nzn);
   scale(imageBZ, -cthdt, nxn, nyn, nzn);
-
   addscale(1, imageBX, tempX, nxn, nyn, nzn);
   addscale(1, imageBY, tempY, nxn, nyn, nzn);
   addscale(1, imageBZ, tempZ, nxn, nyn, nzn);
@@ -966,6 +965,25 @@ void EMfields3D::communicateGhostP2G(VirtualTopology3D * vct) {
     communicateNode_P(nxn, nyn, nzn, Mzz, i, vct);
   }
 
+
+  // If in cylindrical coordinates, set to zero the mass matrices of the ghost node
+  // at the left of the axis
+  if (Cylindrical == 1 && xStart == 0) {
+    for (int j = 0; j < nyn; j++)
+      for (int k = 0; k < nzn; k++) 
+        for (int g=0; g<NE_MASS; g++) {
+				  Mxx[g][0][j][k] = 0;
+				  Mxy[g][0][j][k] = 0;
+				  Mxz[g][0][j][k] = 0;
+				  Myx[g][0][j][k] = 0;
+				  Myy[g][0][j][k] = 0;
+				  Myz[g][0][j][k] = 0;
+				  Mzx[g][0][j][k] = 0;
+				  Mzy[g][0][j][k] = 0;
+				  Mzz[g][0][j][k] = 0;
+        }
+  }
+
 }
 
 /*! communicate ghost for grid -> Particles interpolation: Only curernt and density*/
@@ -1197,6 +1215,10 @@ void EMfields3D::sumOverSpecies(VirtualTopology3D * vct) {
 /*! initialize Magnetic and Electric Field with initial configuration */
 void EMfields3D::init(VirtualTopology3D * vct, Grid * grid, Collective *col) {
 
+  
+  double kx = 2*M_PI/Lx;
+  double ky = 2*M_PI/Ly;
+  double kz = 2*M_PI/Lz;
   if (restart1 == 0) {
     for (int i = 0; i < nxn; i++) {
       for (int j = 0; j < nyn; j++) {
@@ -3442,14 +3464,20 @@ void EMfields3D::testCurl(Grid* grid)
 }
 #endif
 
-void EMfields3D::testJdotE(Grid* grid) 
+/*! Check if JdotE is equal from the particles and from the fields.
+ * It also checks if the variation of the magnetic energy equals the
+ * variation of the kinetic energy (and equals to JdotE) */
+void EMfields3D::testJdotE(Grid* grid, double deltaK) 
 {
+  double Een = getEenergy();
+  double Ben = getBenergy();
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   char name[128];
   sprintf(name, "testJdotE_%d.txt",rank);
   FILE* fd = fopen(name,"w");
 
+  double delE = 0;
   double maxErr = 0;
   for (int i=1; i<nxn-1; i++)
     for (int j=1; j<nyn-1; j++) 
@@ -3478,12 +3506,22 @@ void EMfields3D::testJdotE(Grid* grid)
         double err = fabs(JE_part - JE_fields);
         if (err > maxErr) maxErr = err;
         fprintf(fd, "%2d %2d %2d %13.6e %13.6e %13.6e\n", i,j,k,JE_part, JE_fields, err);
+        if (i < nxn-2 && j<nyn-2 && k < nzn-2) delE += JE_fields;
       }
   fclose(fd);
 
+  delE *= dt;
   fprintf(stderr,"TEST JdotE :rank [%d] Max. error %13.6e\n", rank, maxErr);
+  fprintf(stderr,"     Delta Energy: %13.6e(JdotE)  %13.6e(EM) %13.6e (Kinetic)   (%13.6e) \n", delE, (Een+Ben - Eenergy - Benergy), deltaK, (Een+Ben - Eenergy - Benergy)+deltaK);
 
   getchar();
+  Eenergy = Een;
+  Benergy = Ben;
+}
+
+void EMfields3D::PoyntingFluxTest()
+{
+
 }
 
 void EMfields3D::updateLagrangianFrame(VirtualTopology3D * vct, Collective *col)

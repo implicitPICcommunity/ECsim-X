@@ -131,6 +131,7 @@ void Particles3D::maxwellian(Grid * grid, Field * EMf, VirtualTopology3D * vct) 
   double harvest;
   double prob, theta, sign;
   long long counter = 0;
+/*
   for (int i = 1; i < grid->getNXC() - 1; i++)
     for (int j = 1; j < grid->getNYC() - 1; j++)
       for (int k = 1; k < grid->getNZC() - 1; k++)
@@ -148,6 +149,37 @@ void Particles3D::maxwellian(Grid * grid, Field * EMf, VirtualTopology3D * vct) 
               z[counter] = Drand48(seed)*dz + grid->getZN(i,j,k);
               // q = charge
               q[counter] = (qom / fabs(qom)) * (fabs(EMf->getRHOcs(i, j, k, ns)) / npcel) * (1.0 / grid->getInvVOLc(i,j,k));
+
+              harvest = rand() / (double) RAND_MAX;
+              prob = sqrt(-2.0 * log(1.0 - .999999 * harvest));
+              harvest = rand() / (double) RAND_MAX;
+              theta = 2.0 * M_PI * harvest;
+              u[counter] = u0 + uth * prob * cos(theta);
+              v[counter] = v0 + vth * prob * sin(theta);
+              harvest = rand() / (double) RAND_MAX;
+              prob = sqrt(-2.0 * log(1.0 - .999999 * harvest));
+              harvest = rand() / (double) RAND_MAX;
+              theta = 2.0 * M_PI * harvest;
+              w[counter] = w0 + wth * prob * cos(theta);
+
+              if (TrackParticleID)
+                ParticleID[counter] = counter * (unsigned long) pow(10.0, BirthRank[1]) + BirthRank[0];
+
+              counter++;
+            }
+*/
+  for (int i = 1; i < grid->getNXN() - 1; i++)
+    for (int j = 1; j < grid->getNYN() - 1; j++)
+      for (int k = 1; k < grid->getNZN() - 1; k++)
+        for (int ii = 0; ii < npcelx; ii++)
+          for (int jj = 0; jj < npcely; jj++)
+            for (int kk = 0; kk < npcelz; kk++) {
+              x[counter] =  grid->getXN(i,j,k) + (0.5 - Drand48(seed))*dx ;
+              y[counter] =  grid->getYN(i,j,k) + (0.5 - Drand48(seed))*dy ;
+              z[counter] =  grid->getZN(i,j,k) + (0.5 - Drand48(seed))*dz ;
+							if (x[counter] < 0 || x[counter] > Lx || y[counter] < 0 || y[counter] > Ly || z[counter] < 0 || z[counter] > Lz) continue;
+              // q = charge
+              q[counter] = (qom / fabs(qom)) * (fabs(EMf->getRHOcs(i, j, k, ns)) / npcel) * (1.0 / grid->getInvVOLn(i,j,k));
 
               harvest = rand() / (double) RAND_MAX;
               prob = sqrt(-2.0 * log(1.0 - .999999 * harvest));
@@ -441,7 +473,8 @@ void Particles3D::get_Bl(const double weights[2][2][2], int ix, int iy, int iz, 
 // Particles mover for the ECIMM algorithm
 int Particles3D::updateVelocity(Grid * grid, VirtualTopology3D * vct, Field * EMf) {
   if (vct->getCartesian_rank() == 0) {
-    cout << "*** ECSIM MOVER species " << ns << "( " << nop << " part ) ***"<< endl;
+    cout << "*** ECSIM MOVER species " << "***" << endl;
+    //cout << "*** ECSIM MOVER species " << ns << "( " << nop << " part ) ***"<< endl;
   }
   double start_mover_PC = MPI_Wtime();
   double ***Exth= asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getExth());
@@ -560,32 +593,32 @@ int Particles3D::updateVelocity(Grid * grid, VirtualTopology3D * vct, Field * EM
     Bzl += weight110 * (Bz[ix - 1][iy - 1][iz]     + Fext*Bz_ext[ix-1][iy-1][iz]);
     Bzl += weight111 * (Bz[ix - 1][iy - 1][iz - 1] + Fext*Bz_ext[ix-1][iy-1][iz-1]);
     // 
-    Exl += weight000 * Exth[ix][iy][iz];            + Fext*Ex_ext[ix][iy][iz];
-    Exl += weight001 * Exth[ix][iy][iz - 1];        + Fext*Ex_ext[ix][iy][iz - 1];
-    Exl += weight010 * Exth[ix][iy - 1][iz];        + Fext*Ex_ext[ix][iy - 1][iz];
-    Exl += weight011 * Exth[ix][iy - 1][iz - 1];    + Fext*Ex_ext[ix][iy - 1][iz - 1];
-    Exl += weight100 * Exth[ix - 1][iy][iz];        + Fext*Ex_ext[ix - 1][iy][iz];
-    Exl += weight101 * Exth[ix - 1][iy][iz - 1];    + Fext*Ex_ext[ix - 1][iy][iz - 1];
-    Exl += weight110 * Exth[ix - 1][iy - 1][iz];    + Fext*Ex_ext[ix - 1][iy - 1][iz];
-    Exl += weight111 * Exth[ix - 1][iy - 1][iz - 1] + Fext*Ex_ext[ix - 1][iy - 1][iz - 1];
-    //                                                                                   
-    Eyl += weight000 * Eyth[ix][iy][iz];            + Fext*Ey_ext[ix][iy][iz];
-    Eyl += weight001 * Eyth[ix][iy][iz - 1];        + Fext*Ey_ext[ix][iy][iz - 1];
-    Eyl += weight010 * Eyth[ix][iy - 1][iz];        + Fext*Ey_ext[ix][iy - 1][iz];
-    Eyl += weight011 * Eyth[ix][iy - 1][iz - 1];    + Fext*Ey_ext[ix][iy - 1][iz - 1];
-    Eyl += weight100 * Eyth[ix - 1][iy][iz];        + Fext*Ey_ext[ix - 1][iy][iz];
-    Eyl += weight101 * Eyth[ix - 1][iy][iz - 1];    + Fext*Ey_ext[ix - 1][iy][iz - 1];
-    Eyl += weight110 * Eyth[ix - 1][iy - 1][iz];    + Fext*Ey_ext[ix - 1][iy - 1][iz];
-    Eyl += weight111 * Eyth[ix - 1][iy - 1][iz - 1] + Fext*Ey_ext[ix - 1][iy - 1][iz - 1];
-    //                                                                                   
-    Ezl += weight000 * Ezth[ix][iy][iz];            + Fext*Ez_ext[ix][iy][iz];
-    Ezl += weight001 * Ezth[ix][iy][iz - 1];        + Fext*Ez_ext[ix][iy][iz - 1];
-    Ezl += weight010 * Ezth[ix][iy - 1][iz];        + Fext*Ez_ext[ix][iy - 1][iz];
-    Ezl += weight011 * Ezth[ix][iy - 1][iz - 1];    + Fext*Ez_ext[ix][iy - 1][iz - 1];
-    Ezl += weight100 * Ezth[ix - 1][iy][iz];        + Fext*Ez_ext[ix - 1][iy][iz];
-    Ezl += weight101 * Ezth[ix - 1][iy][iz - 1];    + Fext*Ez_ext[ix - 1][iy][iz - 1];
-    Ezl += weight110 * Ezth[ix - 1][iy - 1][iz];    + Fext*Ez_ext[ix - 1][iy - 1][iz];
-    Ezl += weight111 * Ezth[ix - 1][iy - 1][iz - 1] + Fext*Ez_ext[ix - 1][iy - 1][iz - 1];
+    Exl += weight000 * (Exth[ix][iy][iz]             + Fext*Ex_ext[ix][iy][iz]);
+    Exl += weight001 * (Exth[ix][iy][iz - 1]         + Fext*Ex_ext[ix][iy][iz - 1]);
+    Exl += weight010 * (Exth[ix][iy - 1][iz]         + Fext*Ex_ext[ix][iy - 1][iz]);
+    Exl += weight011 * (Exth[ix][iy - 1][iz - 1]     + Fext*Ex_ext[ix][iy - 1][iz - 1]);
+    Exl += weight100 * (Exth[ix - 1][iy][iz]         + Fext*Ex_ext[ix - 1][iy][iz]);
+    Exl += weight101 * (Exth[ix - 1][iy][iz - 1]     + Fext*Ex_ext[ix - 1][iy][iz - 1]);
+    Exl += weight110 * (Exth[ix - 1][iy - 1][iz]     + Fext*Ex_ext[ix - 1][iy - 1][iz]);
+    Exl += weight111 * (Exth[ix - 1][iy - 1][iz - 1] + Fext*Ex_ext[ix - 1][iy - 1][iz - 1]);
+    //                                                                                    
+    Eyl += weight000 * (Eyth[ix][iy][iz]             + Fext*Ey_ext[ix][iy][iz]);
+    Eyl += weight001 * (Eyth[ix][iy][iz - 1]         + Fext*Ey_ext[ix][iy][iz - 1]);
+    Eyl += weight010 * (Eyth[ix][iy - 1][iz]         + Fext*Ey_ext[ix][iy - 1][iz]);
+    Eyl += weight011 * (Eyth[ix][iy - 1][iz - 1]     + Fext*Ey_ext[ix][iy - 1][iz - 1]);
+    Eyl += weight100 * (Eyth[ix - 1][iy][iz]         + Fext*Ey_ext[ix - 1][iy][iz]);
+    Eyl += weight101 * (Eyth[ix - 1][iy][iz - 1]     + Fext*Ey_ext[ix - 1][iy][iz - 1]);
+    Eyl += weight110 * (Eyth[ix - 1][iy - 1][iz]     + Fext*Ey_ext[ix - 1][iy - 1][iz]);
+    Eyl += weight111 * (Eyth[ix - 1][iy - 1][iz - 1] + Fext*Ey_ext[ix - 1][iy - 1][iz - 1]);
+    //                                                                                    
+    Ezl += weight000 * (Ezth[ix][iy][iz]             + Fext*Ez_ext[ix][iy][iz]);
+    Ezl += weight001 * (Ezth[ix][iy][iz - 1]         + Fext*Ez_ext[ix][iy][iz - 1]);
+    Ezl += weight010 * (Ezth[ix][iy - 1][iz]         + Fext*Ez_ext[ix][iy - 1][iz]);
+    Ezl += weight011 * (Ezth[ix][iy - 1][iz - 1]     + Fext*Ez_ext[ix][iy - 1][iz - 1]);
+    Ezl += weight100 * (Ezth[ix - 1][iy][iz]         + Fext*Ez_ext[ix - 1][iy][iz]);
+    Ezl += weight101 * (Ezth[ix - 1][iy][iz - 1]     + Fext*Ez_ext[ix - 1][iy][iz - 1]);
+    Ezl += weight110 * (Ezth[ix - 1][iy - 1][iz]     + Fext*Ez_ext[ix - 1][iy - 1][iz]);
+    Ezl += weight111 * (Ezth[ix - 1][iy - 1][iz - 1] + Fext*Ez_ext[ix - 1][iy - 1][iz - 1]);
 
     // 
     // End of interpolation
