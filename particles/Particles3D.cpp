@@ -131,7 +131,6 @@ void Particles3D::maxwellian(Grid * grid, Field * EMf, VirtualTopology3D * vct) 
   double harvest;
   double prob, theta, sign;
   long long counter = 0;
-/*
   for (int i = 1; i < grid->getNXC() - 1; i++)
     for (int j = 1; j < grid->getNYC() - 1; j++)
       for (int k = 1; k < grid->getNZC() - 1; k++)
@@ -149,37 +148,6 @@ void Particles3D::maxwellian(Grid * grid, Field * EMf, VirtualTopology3D * vct) 
               z[counter] = Drand48(seed)*dz + grid->getZN(i,j,k);
               // q = charge
               q[counter] = (qom / fabs(qom)) * (fabs(EMf->getRHOcs(i, j, k, ns)) / npcel) * (1.0 / grid->getInvVOLc(i,j,k));
-
-              harvest = rand() / (double) RAND_MAX;
-              prob = sqrt(-2.0 * log(1.0 - .999999 * harvest));
-              harvest = rand() / (double) RAND_MAX;
-              theta = 2.0 * M_PI * harvest;
-              u[counter] = u0 + uth * prob * cos(theta);
-              v[counter] = v0 + vth * prob * sin(theta);
-              harvest = rand() / (double) RAND_MAX;
-              prob = sqrt(-2.0 * log(1.0 - .999999 * harvest));
-              harvest = rand() / (double) RAND_MAX;
-              theta = 2.0 * M_PI * harvest;
-              w[counter] = w0 + wth * prob * cos(theta);
-
-              if (TrackParticleID)
-                ParticleID[counter] = counter * (unsigned long) pow(10.0, BirthRank[1]) + BirthRank[0];
-
-              counter++;
-            }
-*/
-  for (int i = 1; i < grid->getNXN() - 1; i++)
-    for (int j = 1; j < grid->getNYN() - 1; j++)
-      for (int k = 1; k < grid->getNZN() - 1; k++)
-        for (int ii = 0; ii < npcelx; ii++)
-          for (int jj = 0; jj < npcely; jj++)
-            for (int kk = 0; kk < npcelz; kk++) {
-              x[counter] =  grid->getXN(i,j,k) + (0.5 - Drand48(seed))*dx ;
-              y[counter] =  grid->getYN(i,j,k) + (0.5 - Drand48(seed))*dy ;
-              z[counter] =  grid->getZN(i,j,k) + (0.5 - Drand48(seed))*dz ;
-							if (x[counter] < 0 || x[counter] > Lx || y[counter] < 0 || y[counter] > Ly || z[counter] < 0 || z[counter] > Lz) continue;
-              // q = charge
-              q[counter] = (qom / fabs(qom)) * (fabs(EMf->getRHOcs(i, j, k, ns)) / npcel) * (1.0 / grid->getInvVOLn(i,j,k));
 
               harvest = rand() / (double) RAND_MAX;
               prob = sqrt(-2.0 * log(1.0 - .999999 * harvest));
