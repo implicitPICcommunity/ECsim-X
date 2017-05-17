@@ -354,7 +354,7 @@ void EMfields3D::endEcalc(double* xkrylov, VirtualTopology3D * vct, Collective *
   smoothEth(Smooth, vct, col);
   //smoothEth(Smooth, vct, col);
   //smoothEth(Smooth, vct, col);
-  smoothBth(Smooth, tempXC, tempYC, tempZC, vct, col);
+  //smoothBth(Smooth, tempXC, tempYC, tempZC, vct, col);
   //smoothBth(Smooth, tempXC, tempYC, tempZC, vct, col);
   //smoothBth(Smooth, tempXC, tempYC, tempZC, vct, col);
 
@@ -599,9 +599,9 @@ void EMfields3D::smoothEth(double value, VirtualTopology3D * vct, Collective *co
         if (xStart == 0) {
           for (int j = 0; j < nyn ; j++)
             for (int k = 0; k < nzn ; k++) {
-              Exth[0][j][k] = Exth[1][j][k];
-              Eyth[0][j][k] = Eyth[1][j][k];
-              Ezth[0][j][k] = Ezth[1][j][k];
+              Exth[0][j][k] = -Exth[2][j][k];
+              Eyth[0][j][k] = Eyth[2][j][k];
+              Ezth[0][j][k] = -Ezth[2][j][k];
             }
           }
 
@@ -998,6 +998,13 @@ void EMfields3D::communicateGhostP2G_spec(VirtualTopology3D * vct) {
     communicateInterp(nxn, nyn, nzn, i, Jxs, 0, 0, 0, 0, 0, 0, vct);
     communicateInterp(nxn, nyn, nzn, i, Jys, 0, 0, 0, 0, 0, 0, vct);
     communicateInterp(nxn, nyn, nzn, i, Jzs, 0, 0, 0, 0, 0, 0, vct);
+
+    communicateInterp(nxn, nyn, nzn, i, pXXsn, 0, 0, 0, 0, 0, 0, vct);
+    communicateInterp(nxn, nyn, nzn, i, pXYsn, 0, 0, 0, 0, 0, 0, vct);
+    communicateInterp(nxn, nyn, nzn, i, pXZsn, 0, 0, 0, 0, 0, 0, vct);
+    communicateInterp(nxn, nyn, nzn, i, pYYsn, 0, 0, 0, 0, 0, 0, vct);
+    communicateInterp(nxn, nyn, nzn, i, pYZsn, 0, 0, 0, 0, 0, 0, vct);
+    communicateInterp(nxn, nyn, nzn, i, pZZsn, 0, 0, 0, 0, 0, 0, vct);
   }
 
   // put the correct values on ghost cells
@@ -1007,6 +1014,13 @@ void EMfields3D::communicateGhostP2G_spec(VirtualTopology3D * vct) {
     communicateNode_P(nxn, nyn, nzn, Jxs, i, vct);
     communicateNode_P(nxn, nyn, nzn, Jys, i, vct);
     communicateNode_P(nxn, nyn, nzn, Jzs, i, vct);
+
+    communicateNode_P(nxn, nyn, nzn, pXXsn, i, vct);
+    communicateNode_P(nxn, nyn, nzn, pXYsn, i, vct);
+    communicateNode_P(nxn, nyn, nzn, pXZsn, i, vct);
+    communicateNode_P(nxn, nyn, nzn, pYYsn, i, vct);
+    communicateNode_P(nxn, nyn, nzn, pYZsn, i, vct);
+    communicateNode_P(nxn, nyn, nzn, pZZsn, i, vct);
   }
 }
 
@@ -3087,6 +3101,15 @@ double ****EMfields3D::getJzs() {
 double ***EMfields3D::getJzs(int is) {
   return (Jzs[is]);
 }
+
+/* get the pressure tensor */
+double ***EMfields3D::getPxx(int is) { return pXXsn[is]; }
+double ***EMfields3D::getPxy(int is) { return pXYsn[is]; }
+double ***EMfields3D::getPxz(int is) { return pXZsn[is]; }
+double ***EMfields3D::getPyy(int is) { return pYYsn[is]; }
+double ***EMfields3D::getPyz(int is) { return pYZsn[is]; }
+double ***EMfields3D::getPzz(int is) { return pZZsn[is]; }
+
 
 double EMfields3D::getJxcs (int i,int j,int k,int is) {
   double ret = .125 * (Jxs[is][i][j][k]     +

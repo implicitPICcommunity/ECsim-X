@@ -267,6 +267,14 @@ class EMfields3D                // :public Field
     /*! get pressure tensor ZZ for species */
     double ****getpZZsn();
 
+    /* get the pressure tensor */
+    double ***getPxx(int is);
+    double ***getPxy(int is);
+    double ***getPxz(int is);
+    double ***getPyy(int is);
+    double ***getPyz(int is);
+    double ***getPzz(int is);
+
     /*! get Jxh(X,Y,Z) */
     double &getJxh(int indexX, int indexY, int indexZ) const;
     /*! get current -Direction X */

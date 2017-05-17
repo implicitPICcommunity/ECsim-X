@@ -511,37 +511,37 @@ void Particles3Dcomm::computeCurrent(Field * EMf, Grid * grid, VirtualTopology3D
       for (int ii = 0; ii < 2; ii++)
         for (int jj = 0; jj < 2; jj++)
           for (int kk = 0; kk < 2; kk++)
-            temp[ii][jj][kk] = u[ip] * u[ip] * weight[ii][jj][kk];
+            temp[ii][jj][kk] = q[ip] * u[ip] * u[ip] * weight[ii][jj][kk];
       EMf->addPxx(temp, ix, iy, iz, ns);
       // Pxy - add pressure tensor
       for (int ii = 0; ii < 2; ii++)
         for (int jj = 0; jj < 2; jj++)
           for (int kk = 0; kk < 2; kk++)
-            temp[ii][jj][kk] = u[ip] * v[ip] * weight[ii][jj][kk];
+            temp[ii][jj][kk] = q[ip] * u[ip] * v[ip] * weight[ii][jj][kk];
       EMf->addPxy(temp, ix, iy, iz, ns);
       // Pxz - add pressure tensor
       for (int ii = 0; ii < 2; ii++)
         for (int jj = 0; jj < 2; jj++)
           for (int kk = 0; kk < 2; kk++)
-            temp[ii][jj][kk] = u[ip] * w[ip] * weight[ii][jj][kk];
+            temp[ii][jj][kk] = q[ip] * u[ip] * w[ip] * weight[ii][jj][kk];
       EMf->addPxz(temp, ix, iy, iz, ns);
       // Pyy - add pressure tensor
       for (int ii = 0; ii < 2; ii++)
         for (int jj = 0; jj < 2; jj++)
           for (int kk = 0; kk < 2; kk++)
-            temp[ii][jj][kk] = v[ip] * v[ip] * weight[ii][jj][kk];
+            temp[ii][jj][kk] = q[ip] * v[ip] * v[ip] * weight[ii][jj][kk];
       EMf->addPyy(temp, ix, iy, iz, ns);
       // Pyz - add pressure tensor
       for (int ii = 0; ii < 2; ii++)
         for (int jj = 0; jj < 2; jj++)
           for (int kk = 0; kk < 2; kk++)
-            temp[ii][jj][kk] = v[ip] * w[ip] * weight[ii][jj][kk];
+            temp[ii][jj][kk] = q[ip] * v[ip] * w[ip] * weight[ii][jj][kk];
       EMf->addPyz(temp, ix, iy, iz, ns);
       // Pzz - add pressure tensor
       for (int ii = 0; ii < 2; ii++)
         for (int jj = 0; jj < 2; jj++)
           for (int kk = 0; kk < 2; kk++)
-            temp[ii][jj][kk] = w[ip] * w[ip] * weight[ii][jj][kk];
+            temp[ii][jj][kk] = q[ip] * w[ip] * w[ip] * weight[ii][jj][kk];
       EMf->addPzz(temp, ix, iy, iz, ns);
 
     }
