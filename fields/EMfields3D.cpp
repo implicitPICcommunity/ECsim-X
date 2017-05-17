@@ -1850,7 +1850,6 @@ void EMfields3D::initWB8_6(VirtualTopology3D *vct, Grid *grid, Collective *col){
   //sprintf(BlogName, "/home/aws/VacuumB.%d.csv", vct->getCartesian_rank());
   //FILE *Blog = fopen(BlogName, "w");
   //fprintf(Blog, "x,y,z,Bx,By,Bz\n");
-  printf("CoilD = %g\n",coilD);
 
    for (int i=0; i < nxn; i++){
      for (int j=0; j < nyn; j++){

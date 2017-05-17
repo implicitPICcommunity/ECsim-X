@@ -199,7 +199,7 @@ void Collective::ReadInput(string inputfile) {
     z_center = config.read < double >("z_center");
     L_square = config.read < double >("L_square");
 
-    if (Case == "Coils" || Case == "Coils6") {
+    if (Case == "TwoCoils" || Case == "SixCoils") {
       coilD = config.read<double>( "CoilD" );
       coilSpacing = config.read<double>( "CoilSpacing" );
     } 

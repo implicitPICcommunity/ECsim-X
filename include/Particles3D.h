@@ -39,6 +39,7 @@ class Particles3D:public Particles3Dcomm {
     void MaxwellianDoubleGEM(Grid * grid, Field * EMf, VirtualTopology3D * vct) ;
     /** Initial condition: localised in a box and monoenergetic in velocity */
     int monoenergetic_box(Grid* grid,Field* EMf, VirtualTopology3D* vct, double L_square, double x_center, double y_center, double z_center, double multiple=1.0);
+    int maxwell_box(Grid* grid,Field* EMf,VirtualTopology3D* vct, double L_square, double x_center, double y_center, double z_center, double multiple);
     /** Initial condition: empty system */
     void empty(Grid* grid,Field* EMf, VirtualTopology3D* vct);
        
@@ -80,6 +81,7 @@ class Particles3D:public Particles3Dcomm {
     /** Delete the particles outside the cube with dimension L */
     double deleteParticlesOutsideBox(double L);
     double deleteParticlesOuterFrame(double multx, double multy, double multz);
+    double ReturnToCenterCircle(double L_outer);
     void fixZcylindrical();
     void fixPosition();
     void fixCharge(Grid* grid,Field* EMf,VirtualTopology3D* vct, Collective *col);
