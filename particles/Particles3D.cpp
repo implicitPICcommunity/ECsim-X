@@ -137,15 +137,15 @@ void Particles3D::maxwellian(Grid * grid, Field * EMf, VirtualTopology3D * vct) 
         for (int ii = 0; ii < npcelx; ii++)
           for (int jj = 0; jj < npcely; jj++)
             for (int kk = 0; kk < npcelz; kk++) {
-              //x[counter] = (ii + 0.5) * (dx / npcelx) + grid->getXN(i, j, k);  
-              //y[counter] = (jj + 0.5) * (dy / npcely) + grid->getYN(i, j, k);
-              //z[counter] = (kk + 0.5) * (dz / npcelz) + grid->getZN(i, j, k);
+              x[counter] = (ii + 0.5) * (dx / npcelx) + grid->getXN(i, j, k);  
+              y[counter] = (jj + 0.5) * (dy / npcely) + grid->getYN(i, j, k);
+              z[counter] = (kk + 0.5) * (dz / npcelz) + grid->getZN(i, j, k);
               //x[counter] = dx*(rand() / (double) RAND_MAX) + grid->getXN(i, j, k);  
               //y[counter] = dy*(rand() / (double) RAND_MAX) + grid->getYN(i, j, k);
               //z[counter] = dz*(rand() / (double) RAND_MAX) + grid->getZN(i, j, k);
-              x[counter] = Drand48(seed)*dx + grid->getXN(i,j,k);
-              y[counter] = Drand48(seed)*dy + grid->getYN(i,j,k);
-              z[counter] = Drand48(seed)*dz + grid->getZN(i,j,k);
+              //x[counter] = Drand48(seed)*dx + grid->getXN(i,j,k);
+              //y[counter] = Drand48(seed)*dy + grid->getYN(i,j,k);
+              //z[counter] = Drand48(seed)*dz + grid->getZN(i,j,k);
               // q = charge
               q[counter] = (qom / fabs(qom)) * (fabs(EMf->getRHOcs(i, j, k, ns)) / npcel) * (1.0 / grid->getInvVOLc(i,j,k));
 

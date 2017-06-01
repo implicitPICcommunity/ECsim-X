@@ -93,6 +93,7 @@ int c_Solver::Init(int argc, char **argv) {
     else if (col->getCase()=="TMmode")      EMf->initTMmode(vct,grid,col);
     else if (col->getCase()=="pulse")       EMf->initPulse(vct,grid,col);
     else if (col->getCase()=="HalfPlanet")  EMf->initHalfPlanet(vct,grid,col);
+    else if (col->getCase()=="FluxRope")    EMf->initFluxRope(vct,grid,col);
     else {
       if (myrank==0) {
         cout << " =========================================================== " << endl;
@@ -113,27 +114,14 @@ int c_Solver::Init(int argc, char **argv) {
   part = new Particles3D[ns];
   for (int i = 0; i < ns; i++) {
     part[i].allocate(i, 0, col, vct, grid);
-    if (col->getCase()=="DoubleGEM") {
-      part[i].MaxwellianDoubleGEM(grid, EMf, vct);
-
-    } else if (col->getCase()=="TwoCoils" || col->getCase()=="SixCoils"){
+    if (col->getCase()=="DoubleGEM")      part[i].MaxwellianDoubleGEM(grid, EMf, vct);
+    else if (col->getCase()=="Dipole")    part[i].maxwellian(grid, EMf, vct);
+    else if (col->getCase()=="FluxRope")  part[i].maxwellian(grid, EMf, vct);
+    else if (col->getCase()=="TwoCoils" || col->getCase()=="SixCoils"){
       if (col->getRHOinject(i) == 0.0) 
         //part[i].monoenergetic_box(grid,EMf,vct,L_square,x_center,y_center,z_center, 1.0);  // generated maxwellian in a box
         part[i].maxwell_box(grid,EMf,vct,L_square,x_center,y_center,z_center, 1.0);  // generated maxwellian in a box
       else part[i].empty(grid, EMf, vct);
-
-    } else if (col->getCase()=="HalfPlanet") {
-      if (col->getRHOinject(i) > 0.0)  part[i].empty(grid, EMf, vct);
-      else {
-        part[i].maxwellian(grid, EMf, vct);
-        Qremoved[i]  = part[i].deleteParticlesInsideSphere(col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
-        Qremoved[i] += part[i].deleteParticlesOuterFrame(2.0, 2.0, 0.0);
-      }
-    } else if (col->getCase()=="Dipole") {
-      //if (col->getRHOinject(i) > 0.0)  part[i].empty(grid, EMf, vct);
-      //else 
-        part[i].maxwellian(grid, EMf, vct);
-
     } else {
       if (col->getPartInit() == "FromFieldFile") {
         part[i].MaxwellianFromFieldFile(grid, EMf, vct);
