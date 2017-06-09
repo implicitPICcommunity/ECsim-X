@@ -17,6 +17,7 @@
 #include "ConfigFile.h"
 #include "input_array.h"
 #include "hdf5.h"
+#include "mpi.h"
 
 #ifdef BATSRUS
 #include "InterfaceFluid.h"
