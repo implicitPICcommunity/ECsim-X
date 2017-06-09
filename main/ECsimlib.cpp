@@ -321,7 +321,8 @@ void c_Solver::InjectBoundaryParticles(){
       //Remove particles from outside the simulation box
       //Qremoved[i] = part[i].deleteParticlesOutsideBox(col->getLx());
       //Qremoved[i] = part[i].deleteParticlesOuterFrame(6.0,6.0,0.0);
-      Qremoved[i] = part[i].ReturnToCenterCircle(col->getcoilSpacing()/2.0+col->getcoilD()/4.0);
+      //Qremoved[i] = part[i].ReturnToCenterCircle(col->getcoilSpacing()/2.0+col->getcoilD()/4.0);
+      Qremoved[i] = part[i].ReturnToCenterCircle(col->getDelta());
     } else if (col->getCase()=="Dipole") {
        Qremoved[i] = part[i].deleteParticlesInsideSphere(col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
        //Qremoved[i] = part[i].deleteParticlesOuterFrame(2.0, 2.0, 0.0);

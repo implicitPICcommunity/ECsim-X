@@ -210,7 +210,8 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
   Jz_ext = newArr3(double, nxn, nyn, nzn);
 
   if (col->getCase() == "Dipole" ||
-      col->getCase() == "FluxRope" ) {
+      col->getCase() == "TwoCoils" ||
+      col->getCase() == "FluxRope") {
     Lambda = newArr3(double, nxn, nyn, nzn);
     damping = 1;
   } else damping = 0;
@@ -353,8 +354,8 @@ void EMfields3D::endEcalc(double* xkrylov, VirtualTopology3D * vct, Collective *
   // move from krylov space to physical space
   solver2phys(Exth, Eyth, Ezth, tempXC, tempYC, tempZC, xkrylov, nxn, nyn, nzn);
   smoothEth(Smooth, vct, col);
-  //smoothEth(Smooth, vct, col);
-  //smoothEth(Smooth, vct, col);
+  smoothEth(Smooth, vct, col);
+  smoothEth(Smooth, vct, col);
   //smoothBth(Smooth, tempXC, tempYC, tempZC, vct, col);
   //smoothBth(Smooth, tempXC, tempYC, tempZC, vct, col);
   //smoothBth(Smooth, tempXC, tempYC, tempZC, vct, col);
@@ -562,9 +563,9 @@ void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTo
 
   // Temporal damping
   if (damping == 1) {
-    sumscalprod(imageBX, delt, vectX, Lambda, nxn, nyn, nzn);
-    sumscalprod(imageBY, delt, vectY, Lambda, nxn, nyn, nzn);
-    sumscalprod(imageBZ, delt, vectZ, Lambda, nxn, nyn, nzn);
+    sumscalprod(imageBX, 1.0, tempX, Lambda, nxn, nyn, nzn);
+    sumscalprod(imageBY, 1.0, tempY, Lambda, nxn, nyn, nzn);
+    sumscalprod(imageBZ, 1.0, tempZ, Lambda, nxn, nyn, nzn);
   }
 
   if (Cylindrical == 1)  fixBC_Cyl_Image(grid, imageBX, imageBY, imageBZ, tempX, tempY, tempZ, tempXC, tempYC, tempZC);
@@ -1825,6 +1826,20 @@ void EMfields3D::initWB8(VirtualTopology3D *vct, Grid *grid, Collective *col){
   } else { // EM initialization from RESTART
     init(vct,grid,col);  // use the fields from restart file
   }
+
+  double dst = col->getDelta()+dx;
+	double scale_decay = dst/10.0;
+  for (int i=0; i < nxn; i++)
+  	for (int j=0; j < nyn; j++)
+  		for (int k=0; k < nzn; k++){
+  			Lambda[i][j][k]  = 0.0;
+        double r;
+        if (Cylindrical == 1) r = sqrt(pow(grid->getXN(i,j,k),2.0) + pow(grid->getYN(i,j,k)-Ly/2.0,2.0));
+        else r = sqrt(pow(grid->getXN(i,j,k)-Lx/2.0,2.0) + pow(grid->getYN(i,j,k)-Ly/2.0,2.0) + pow(grid->getZN(i,j,k)-Lz/2.0,2.0));
+  			if(r>dst){
+  				Lambda[i][j][k]  = 1.0* tanh((r-dst)/scale_decay);
+  			}
+  		}
 }
 
 //Initializes the vacuum fields for EMC2. 6 coils
@@ -2039,8 +2054,8 @@ void EMfields3D::initFluxRope(VirtualTopology3D *vct, Grid *grid, Collective *co
 			for (int k=0; k < nzn; k++){
 				Lambda[i][j][k]  = 0.0;
         double r;
-        if (Cylindrical == 1) r = sqrt(pow(grid->getXN(i,j,k),2.0) + pow(grid->getZN(i,j,k),2.0));
-        else r = sqrt(pow(grid->getXN(i,j,k)-Lx/2.0,2.0) + pow(grid->getYN(i,j,k)-Ly/2.0,2.0));
+        if (Cylindrical == 1) r = sqrt(pow(grid->getXN(i,j,k),2.0) + pow(grid->getYN(i,j,k)-Ly/2.0,2.0));
+        else r = sqrt(pow(grid->getXN(i,j,k)-Lx/2.0,2.0) + pow(grid->getYN(i,j,k)-Ly/2.0,2.0) +  pow(grid->getZN(i,j,k)-Lz/2.0,2.0));
 				if(r>L_square){
 					Lambda[i][j][k]  = 1.0* tanh((r-L_square)/scale_decay);
 				}
