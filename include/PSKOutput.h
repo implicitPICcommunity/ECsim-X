@@ -550,7 +550,6 @@ public:
     }
 
     // pressure for species s is written without ghost cells and defined in nodes
-    /*
     if (tag.find("pressure", 0) != string::npos) {
       for (int i = 0; i < ns; ++i) {
         stringstream ii;
@@ -563,7 +562,6 @@ public:
         this->output_adaptor.write("/moments/species_" + ii.str() + "/pZZ/cycle_" + cc.str(), PSK::Dimens(_grid->getNXN() - 2, _grid->getNYN() - 2, _grid->getNZN() - 2), i, _field->getpZZsn());
       }
     }
-    */
 
     // kinetic energy for species s (normalized on q)
     if (tag.find("k_energy", 0) != string::npos) {
