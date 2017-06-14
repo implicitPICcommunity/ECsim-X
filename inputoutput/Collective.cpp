@@ -52,6 +52,7 @@ void Collective::ReadInput(string inputfile) {
     Lagrangian        = config.read < int >("Lagrangian");
     zeroCurrent       = config.read < int >("ZeroCurrent");
 
+
     rhoINIT = new double[ns];
     array_double rhoINIT0 = config.read < array_double > ("rhoINIT");
     rhoINIT[0] = rhoINIT0.a;
@@ -312,6 +313,23 @@ void Collective::ReadInput(string inputfile) {
     PERIODICX = config.read < bool >("PERIODICX");
     PERIODICY = config.read < bool >("PERIODICY");
     PERIODICZ = config.read < bool >("PERIODICZ");
+
+    // In cylindrical coordinates the x direction cannot be periodic
+    if (Cylindrical == 1) {
+        int rank;
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        if (rank == 0) {
+          fprintf(stderr,"WARNING: in cylindrical coordinates the following setup is required:"
+                         "\t PERIODICX = 0\n"
+                         "\t PERIODICZ = 1\n"
+                         "\t npcelz    = 1\n"
+                         "The values in the input file are ignored\n");
+        }
+        PERIODICX = false;
+        PERIODICZ = true;
+        nzc = 1;
+    }
+
 
     // PHI Electrostatic Potential 
     bcPHIfaceXright = config.read < int >("bcPHIfaceXright");
