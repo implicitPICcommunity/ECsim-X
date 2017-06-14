@@ -260,7 +260,10 @@ int Particles3D::monoenergetic_box(Grid* grid,Field* EMf,VirtualTopology3D* vct,
 int Particles3D::maxwell_box(Grid* grid,Field* EMf,VirtualTopology3D* vct, double L_square, double x_center, double y_center, double z_center, double multiple){
 
 /* initialize random generator with different seed on different processor */
- srand(vct->getCartesian_rank()*20+ns);
+ 
+  int rank = vct->getCartesian_rank()+1;
+  long long seed = rank*20+ ns;
+  srand(seed);
 
 	double harvest;
 	double prob, theta, sign;

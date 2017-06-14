@@ -379,7 +379,6 @@ void EMfields3D::endEcalc(double* xkrylov, VirtualTopology3D * vct, Collective *
   communicateCenterBC(nxc, nyc, nzc, Byc, 2, 2, 2, 2, 2, 2, vct);
   communicateCenterBC(nxc, nyc, nzc, Bzc, 2, 2, 2, 2, 2, 2, vct);
 
-
   #ifdef __PROFILING__
   clocks->stop(14);
   #endif
@@ -2488,17 +2487,17 @@ void EMfields3D::initTMmode(VirtualTopology3D * vct, Grid * grid, Collective *co
 
 
 void EMfields3D::initPulse(VirtualTopology3D * vct, Grid * grid, Collective *col) {
-    double x0 = Lx/2 - (0.6*dx);
-    double x1 = Lx/2 + (0.6*dx);
-    double y0 = Ly/2 - (0.6*dx);
-    double y1 = Ly/2 + (0.6*dx);
     for (int i = 0; i < nxn; i++)
       for (int j = 0; j < nyn; j++)
         for (int k = 0; k < nzn; k++) {
           double x = grid->getXN(i,j,k);
           double y = grid->getYN(i,j,k);
-          if (x > x0 && x < x1 && y > y0 && y < y1)
-	    Ey[i][j][k] = 1;
+          double z = grid->getZN(i,j,k);
+          double xl = x-x_center;
+          double yl = y-y_center;
+          double zl = z-z_center;
+          double r = sqrt(xl*xl + yl*yl + zl*zl);
+          if (r < L_square) Ey[i][j][k] = 1;
 
         }
 
