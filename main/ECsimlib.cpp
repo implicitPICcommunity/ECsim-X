@@ -120,7 +120,8 @@ int c_Solver::Init(int argc, char **argv) {
     else if (col->getCase()=="TwoCoils" || col->getCase()=="SixCoils"){
       if (col->getRHOinject(i) == 0.0) 
         //part[i].monoenergetic_box(grid,EMf,vct,L_square,x_center,y_center,z_center, 1.0);  // generated maxwellian in a box
-        part[i].maxwell_box(grid,EMf,vct,L_square,x_center,y_center,z_center, 1.0);  // generated maxwellian in a box
+        //part[i].maxwell_box(grid,EMf,vct,L_square,x_center,y_center,z_center, 1.0);  // generated maxwellian in a box
+        part[i].maxwell_sphere(grid,EMf,vct,L_square,x_center,y_center,z_center, 1.0);  // generated maxwellian in a box
       else part[i].empty(grid, EMf, vct);
     } else {
       if (col->getPartInit() == "FromFieldFile") {

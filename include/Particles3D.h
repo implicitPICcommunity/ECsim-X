@@ -40,6 +40,7 @@ class Particles3D:public Particles3Dcomm {
     /** Initial condition: localised in a box and monoenergetic in velocity */
     int monoenergetic_box(Grid* grid,Field* EMf, VirtualTopology3D* vct, double L_square, double x_center, double y_center, double z_center, double multiple=1.0);
     int maxwell_box(Grid* grid,Field* EMf,VirtualTopology3D* vct, double L_square, double x_center, double y_center, double z_center, double multiple);
+    int maxwell_sphere(Grid* grid,Field* EMf,VirtualTopology3D* vct, double L_square, double x_center, double y_center, double z_center, double multiple);
     /** Initial condition: empty system */
     void empty(Grid* grid,Field* EMf, VirtualTopology3D* vct);
        
