@@ -2497,7 +2497,7 @@ void EMfields3D::initPulse(VirtualTopology3D * vct, Grid * grid, Collective *col
           double yl = y-y_center;
           double zl = z-z_center;
           double r = sqrt(xl*xl + yl*yl + zl*zl);
-          if (r < L_square) Ey[i][j][k] = 1;
+          if (r < L_square) Ez[i][j][k] = 1.0;
 
         }
 
