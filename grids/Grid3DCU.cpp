@@ -1,8 +1,6 @@
 
 #include "Grid3DCU.h"
 
-#define FINITE_VOLUME
-
 /*! constructor */
 Grid3DCU::Grid3DCU(Collective * col, VirtualTopology3D * vct) {
   // FOR TESTS - this must be uncommented next
@@ -553,14 +551,13 @@ double*** Grid3DCU::getInvVOLn() {
 
 double Grid3DCU::integral_z(double r, double A1, double A2)
 {
-  return 0.5*r*(A1+A2)*dy;
+  return M_PI*r*(A1+A2)*dy;
 }
 
 double Grid3DCU::integral_r(double r1, double r2, double A1, double A2)
 {
-  //return (A2 - A1 )/ 3.0 *(r1*r1 + r2*r2 + r1*r2) + (A1*r2 - A2*r1)*(r1 + r2)/2;
   double rm = (r1+r2)*0.5;
-  return (A1*(rm*rm - r1*r1) + A2*(r2*r2 - rm*rm))*0.5;
+  return M_PI*(A1*(rm*rm - r1*r1) + A2*(r2*r2 - rm*rm));
 }
 
 /**********************************************************/
@@ -725,23 +722,50 @@ void Grid3DCU::divC2N_cyl(double ***divN, double ***vecXC, double ***vecYC, doub
          double Az_10 = vecYC[i1][j0][k];
          double Az_11 = vecYC[i1][j1][k];
    
-         double At_00 = vecZC[i0][j0][k];
-         double At_01 = vecZC[i0][j1][k];
-         double At_10 = vecZC[i1][j0][k];
-         double At_11 = vecZC[i1][j1][k];
+         // z = -theta
+         double At_00 = -vecZC[i0][j0][k];
+         double At_01 = -vecZC[i0][j1][k];
+         double At_10 = -vecZC[i1][j0][k];
+         double At_11 = -vecZC[i1][j1][k];
    
+         divN[i][j][k] = (  integral_z(r1,Ar_10,Ar_11)    - integral_z(r0,Ar_00,Ar_01)     // Fases along r
+                          + integral_r(r0,r1,Az_01,Az_11) - integral_r(r0,r1,Az_00,Az_10)  // Fases along z
+                         )*invVOLn[i][j][k];
+      }
 
-#ifdef FINITE_VOLUME
-         divN[i][j][k] = Dz*(Ar_00*r0+Ar_01*r0-Ar_10*r1-Ar_11*r1)*(-1.0/2.0)-Dr*(Az_00*r0*2.0+Az_00*r1-Az_01*r0*2.0
-                        -Az_01*r1+Az_10*r0+Az_10*r1*2.0-Az_11*r0-Az_11*r1*2.0)*(1.0/6.0);
-#else
-         double r = getXN(i,j,k);
-         divN[i][j][k] = 0.5*((1.0/r)*0.5*(Ar_00+Ar_10) + (Ar_10 - Ar_00)/Dr)  +  0.5*((1.0/r)*0.5*(Ar_01+Ar_11) + (Ar_11 - Ar_01)/Dr)
-                       + 0.5*(Az_01-Az_00 + Az_11-Az_10)/Dz; 
-#endif
+      divC2N_cylAxis(divN, vecXC, vecYC, vecZC);
+}
+
+void Grid3DCU::divC2N_cylAxis(double ***divN, double ***vecXC, double ***vecYC, double ***vecZC) {
+  if (xStart == 0) {
+    // Boundary conditions for r=0
+    for (register int j = 1; j < nyn - 1; j++)
+      for (register int k = 1; k < nzn - 1; k++) {
+         int i = 1;
+         int i1 = i;
+         int j0 = j-1;
+         int j1 = j;
+         double r0 = 0;
+         double r1 = getXC(i1,j,k);
+         double Dr = (r1-r0);
+   
+         double Ar_10 = vecXC[i1][j0][k];
+         double Ar_11 = vecXC[i1][j1][k];
+    
+         double Az_10 = vecYC[i1][j0][k];
+         double Az_11 = vecYC[i1][j1][k];
+         double Az_00 = Az_10;
+         double Az_01 = Az_11;
+    
+         // z = -theta
+         double At_10 = -vecZC[i1][j0][k];
+         double At_11 = -vecZC[i1][j1][k];
+   
+         divN[i][j][k] = (integral_z(r1,Ar_10,Ar_11) - integral_r(r0, r1, Az_00, Az_10) + integral_r(r0, r1, Az_01, Az_11)
+                         )*invVOLn[i][j][k];
       }
   }
-
+}
 /** Divergence in cylindrical coordinates: field defined in nodes -> divergence in centers */
 // ATENTION; 2D -> d/d phi = 0
 // x = r   y = z  z = phi
@@ -771,19 +795,15 @@ void Grid3DCU::divN2C_cyl(double ***divC, double ***vecXN, double ***vecYN, doub
          double Az_10 = vecYN[i1][j0][k];
          double Az_11 = vecYN[i1][j1][k];
 
-         double At_00 = vecZN[i0][j0][k];
-         double At_01 = vecZN[i0][j1][k];
-         double At_10 = vecZN[i1][j0][k];
-         double At_11 = vecZN[i1][j1][k];
+         // z = -theta
+         double At_00 = -vecZN[i0][j0][k];
+         double At_01 = -vecZN[i0][j1][k];
+         double At_10 = -vecZN[i1][j0][k];
+         double At_11 = -vecZN[i1][j1][k];
 
-#ifdef FINITE_VOLUME
-         divC[i][j][k] = Dz*(Ar_00*r0+Ar_01*r0-Ar_10*r1-Ar_11*r1)*(-1.0/2.0)-Dr*(Az_00*r0*2.0+Az_00*r1-Az_01*r0*2.0
-                        -Az_01*r1+Az_10*r0+Az_10*r1*2.0-Az_11*r0-Az_11*r1*2.0)*(1.0/6.0);
-#else
-         double r = getXC(i,j,k);
-         divC[i][j][k] = 0.5*((1.0/r)*0.5*(Ar_00+Ar_10) + (Ar_10 - Ar_00)/Dr)  +  0.5*((1.0/r)*0.5*(Ar_01+Ar_11) + (Ar_11 - Ar_01)/Dr)
-                       + 0.5*(Az_01-Az_00 + Az_11-Az_10)/Dz; 
+         divC[i][j][k] = (  integral_z(r1,Ar_10,Ar_11)    - integral_z(r0,Ar_00,Ar_01)        // Fases along r
+                          + integral_r(r0,r1,Az_01,Az_11) - integral_r(r0,r1,Az_00,Az_10)  // Fases along z
+                         )*invVOLc[i][j][k];
 
-#endif
       }
 }

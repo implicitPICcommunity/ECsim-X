@@ -224,6 +224,12 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
     exit(0);
   #endif
 
+#define _TEST_DIV_
+  #ifdef _TEST_DIV_
+    testDivergence(grid);
+    exit(0);
+  #endif
+
 }
 
 void EMfields3D::setAllzero()
@@ -3622,6 +3628,47 @@ void EMfields3D::testCurl(Grid* grid)
   fclose(fd);
 }
 #endif
+
+/*! Test of the divergence in cylindrical coordinates */
+void EMfields3D::testDivergence(Grid* grid)
+{
+  printf("Test Divergence Nodes -> Centers\n");
+  FILE* fd = fopen("testDivergence.txt","w");
+
+  for (int i=0; i<nxn; i++)
+    for (int j=0; j<nyn; j++) 
+      for (int k=0; k<nzn; k++) {
+        double r = grid->getXN(i,j,k);
+        double z = grid->getYN(i,j,k);
+        double p = grid->getZN(i,j,k);
+        Ex[i][j][k] = r*r*z;
+        Ey[i][j][k] = 5*cos(2*z);
+        Ez[i][j][k] = 0;
+        fprintf(fd,"%8.4f %8.4f %8.4f  %13.6e  %13.6e  %13.6e\n", r,z,p,Ex[i][j][k],Ey[i][j][k],Ez[i][j][k]);
+      } 
+
+  fprintf(fd,"\n\n\n\n");
+
+  grid->divN2C_cyl(tempX, Ex, Ey, Ez);
+
+  int ntc = (nxc-2)*(nyc-2)*(nzc-2);
+  double err = 0;
+  for (int i=1; i<nxc-1; i++)
+    for (int j=1; j<nyc-1; j++) 
+      for (int k=1; k<nzc-1; k++) {
+        double r = grid->getXC(i,j,k);
+        double z = grid->getYC(i,j,k);
+        double p = grid->getZC(i,j,k);
+
+        double ref = 3*r*z - sin(2*z)*10;
+        double val = tempX[i][j][k];
+
+        fprintf(fd,"%8.4f %8.4f %8.4f  %13.6e  %13.6e  %13.6e \n", r,z,p, ref, val, ref-val);
+				err += (ref-val)*(ref-val);
+      } 
+  fprintf(stderr,"%3d %3d  %13.6e %13.6e \n",nxc-2, nyc-2, sqrt(err)/ntc, err/ntc);
+  fclose(fd);
+}
 
 /*! Check if JdotE is equal from the particles and from the fields.
  * It also checks if the variation of the magnetic energy equals the

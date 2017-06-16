@@ -325,6 +325,7 @@ class EMfields3D                // :public Field
     void updateInfoFields(Grid *grid,VirtualTopology3D *vct,Collective *col);
 
     void testCurl(Grid* grid);
+    void testDivergence(Grid* grid);
     void computeRhotilde(VirtualTopology3D * vct, Collective *col, Grid* grid, int is);
     void testJdotE(Grid* grid, double deltaK);
     void PoyntingFluxTest();

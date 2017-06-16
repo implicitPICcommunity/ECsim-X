@@ -52,6 +52,7 @@ public:
   /** calculate divergence on nodes, given a vector field defined on central points  */
   void divC2N(double ***divN, double ***vecFieldXC, double ***vecFieldYC, double ***vecFieldZC);
   void divC2N_cyl(double ***divN, double ***vecFieldXC, double ***vecFieldYC, double ***vecFieldZC);
+  void divC2N_cylAxis(double ***divN, double ***vecFieldXC, double ***vecFieldYC, double ***vecFieldZC);
   /** calculate curl on nodes, given a vector field defined on central points  */
   void curlC2N(double ***curlXN, double ***curlYN, double ***curlZN, double ***vecFieldXC, double ***vecFieldYC, double ***vecFieldZC);
   void curlC2N_cyl(double ***curlXN, double ***curlYN, double ***curlZN, double ***vecFieldXC, double ***vecFieldYC, double ***vecFieldZC);
