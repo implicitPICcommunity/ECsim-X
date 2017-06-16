@@ -252,7 +252,7 @@ int Particles3D::monoenergetic_box(Grid* grid,Field* EMf,VirtualTopology3D* vct,
                 counter++ ;
               }
             }
-  nop = counter - 1;
+  nop = counter;
   return nop;
 }
 
@@ -304,7 +304,7 @@ int Particles3D::maxwell_box(Grid* grid,Field* EMf,VirtualTopology3D* vct, doubl
 							}
 						}
 
-	nop = counter - 1;
+	nop = counter;
 	return nop;
 }
 
@@ -360,7 +360,7 @@ int Particles3D::maxwell_sphere(Grid* grid,Field* EMf,VirtualTopology3D* vct, do
 							}
 						}
 
-	nop = counter - 1;
+	nop = counter;
 	return nop;
 }
 
