@@ -224,7 +224,6 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
     exit(0);
   #endif
 
-#define _TEST_DIV_
   #ifdef _TEST_DIV_
     testDivergence(grid);
     exit(0);
