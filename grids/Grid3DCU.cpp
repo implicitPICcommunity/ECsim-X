@@ -84,8 +84,10 @@ Grid3DCU::Grid3DCU(Collective * col, VirtualTopology3D * vct) {
           double r0 = center_xcoord[i-1];
           double r1 = center_xcoord[i];
           if (r0 < 0) { 
+            //invVOLn[i][j][k] = 2.0/(dy*r1*r1);
             invVOLn[i][j][k] = 2.0/(2*M_PI*dy*r1*r1);
           } else {
+            //invVOLn[i][j][k] = 2.0/(dy*(r1*r1 - r0*r0));
             invVOLn[i][j][k] = 2.0/(2*M_PI*dy*(r1*r1 - r0*r0));
           }
         }
@@ -551,12 +553,14 @@ double*** Grid3DCU::getInvVOLn() {
 
 double Grid3DCU::integral_z(double r, double A1, double A2)
 {
+  //return 0.5*r*(A1+A2)*dy;
   return M_PI*r*(A1+A2)*dy;
 }
 
 double Grid3DCU::integral_r(double r1, double r2, double A1, double A2)
 {
   double rm = (r1+r2)*0.5;
+  //return 0.5*(A1*(rm*rm - r1*r1) + A2*(r2*r2 - rm*rm));
   return M_PI*(A1*(rm*rm - r1*r1) + A2*(r2*r2 - rm*rm));
 }
 
@@ -606,7 +610,7 @@ void Grid3DCU::curlN2C_cyl(double ***curlXC, double ***curlYC, double ***curlZC,
         curlXC[i][j][k] = - (integral_r(r0,r1,At_01,At_11) - integral_r(r0,r1,At_00,At_10))*invVOLc[i][j][k];
 
         // faces along theta
-        curlZC[i][j][k] += ((Az_01 + Az_00 + Az_11 + Az_10)*Dz*(r1-r0)/4)*invVOLc[i][j][k];
+        curlZC[i][j][k] += 2*M_PI*((Az_01 + Az_00 + Az_11 + Az_10)*Dz*(r1-r0)/4)*invVOLc[i][j][k];
 
         // z = -theta
         curlZC[i][j][k] *= -1;
@@ -657,7 +661,7 @@ void Grid3DCU::curlC2N_cyl(double ***curlXN, double ***curlYN, double ***curlZN,
         curlXN[i][j][k] = - (integral_r(r0,r1,At_01,At_11) - integral_r(r0,r1,At_00,At_10))*invVOLn[i][j][k];
 
         // faces along theta
-        curlZN[i][j][k] += ((Az_01 + Az_00 + Az_11 + Az_10)*Dz*(r1-r0)/4)*invVOLn[i][j][k];
+        curlZN[i][j][k] += 2*M_PI*((Az_01 + Az_00 + Az_11 + Az_10)*Dz*(r1-r0)/4)*invVOLn[i][j][k];
 
         // z = -theta
         curlZN[i][j][k] *= -1;
