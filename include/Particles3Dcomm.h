@@ -36,6 +36,7 @@ public:
   /** Compute the current (for writting the results) */
   void computeCurrent(Field * EMf, Grid * grid, VirtualTopology3D * vct);
   void computeCurrentBar(Field * EMf, Grid * grid, VirtualTopology3D * vct);
+  void computeCharge(Field * EMf, Grid * grid, VirtualTopology3D * vct);
   /** method for communicating exiting particles to X-RIGHT, X-LEFT, Y-RIGHT, Y-LEFT, Z-RIGHT, Z-LEFT processes */
   int communicate(VirtualTopology3D * ptVCT);
   /** put a particle exiting to X-LEFT in the bufferXLEFT for communication and check if you're sending the particle to the right subdomain*/

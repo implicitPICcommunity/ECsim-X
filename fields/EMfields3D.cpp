@@ -136,6 +136,10 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
   Jxh = newArr3(double, nxn, nyn, nzn);
   Jyh = newArr3(double, nxn, nyn, nzn);
   Jzh = newArr3(double, nxn, nyn, nzn);
+  Jxhs = newArr4(double, ns, nxn, nyn, nzn);
+  Jyhs = newArr4(double, ns, nxn, nyn, nzn);
+  Jzhs = newArr4(double, ns, nxn, nyn, nzn);
+  Jzhs = newArr4(double, ns, nxn, nyn, nzn);
 
   rhotilde = newArr4(double, ns, nxn, nyn, nzn);
 
@@ -247,6 +251,9 @@ void EMfields3D::setAllzero()
    eqValue(0.0, Jxh, nxn, nyn, nzn);
    eqValue(0.0, Jyh, nxn, nyn, nzn);
    eqValue(0.0, Jzh, nxn, nyn, nzn);
+   eqValue(0.0, Jxhs, ns, nxn, nyn, nzn);
+   eqValue(0.0, Jyhs, ns, nxn, nyn, nzn);
+   eqValue(0.0, Jzhs, ns, nxn, nyn, nzn);
 
    eqValue(0.0, rhotilde, ns, nxn, nyn, nzn);
    eqValue(0.0, Jxs, ns, nxn, nyn, nzn);
@@ -931,7 +938,7 @@ double EMfields3D::productMassEV(double ***vX, int i, int j, int k, Grid* grid)
 /*! interpolate charge density and pressure density from node to center */
 void EMfields3D::interpDensitiesN2C(VirtualTopology3D * vct, Grid * grid) {
   // do we need communication or not really?
-  grid->interpN2C(rhoc, rhon);
+  for (int is=0; is<ns; is++) grid->interpN2C(rhocs[is], rhons[is]);
 }
 
 /*! communicate ghost for grid -> Particles interpolation */
@@ -943,6 +950,11 @@ void EMfields3D::communicateGhostP2G(VirtualTopology3D * vct) {
   communicateInterp(nxn, nyn, nzn, Jxh, 0, 0, 0, 0, 0, 0, vct);
   communicateInterp(nxn, nyn, nzn, Jyh, 0, 0, 0, 0, 0, 0, vct);
   communicateInterp(nxn, nyn, nzn, Jzh, 0, 0, 0, 0, 0, 0, vct);
+  for (int i=0; i<ns; i++) {
+    communicateInterp(nxn, nyn, nzn, i, Jxhs, 0, 0, 0, 0, 0, 0, vct);
+    communicateInterp(nxn, nyn, nzn, i, Jyhs, 0, 0, 0, 0, 0, 0, vct);
+    communicateInterp(nxn, nyn, nzn, i, Jzhs, 0, 0, 0, 0, 0, 0, vct);
+  }
   for (int i=0; i<NE_MASS; i++) { 
     communicateInterp(nxn, nyn, nzn, i, Mxx, 0, 0, 0, 0, 0, 0, vct);
     communicateInterp(nxn, nyn, nzn, i, Mxy, 0, 0, 0, 0, 0, 0, vct);
@@ -959,6 +971,11 @@ void EMfields3D::communicateGhostP2G(VirtualTopology3D * vct) {
   communicateNode_P(nxn, nyn, nzn, Jxh, vct);
   communicateNode_P(nxn, nyn, nzn, Jyh, vct);
   communicateNode_P(nxn, nyn, nzn, Jzh, vct);
+  for (int i=0; i<ns; i++) {
+    communicateNode_P(nxn, nyn, nzn, Jxhs, i, vct);
+    communicateNode_P(nxn, nyn, nzn, Jyhs, i, vct);
+    communicateNode_P(nxn, nyn, nzn, Jzhs, i, vct);
+  }
   for (int i=0; i<NE_MASS; i++) {
     communicateNode_P(nxn, nyn, nzn, Mxx, i, vct);
     communicateNode_P(nxn, nyn, nzn, Mxy, i, vct);
@@ -993,14 +1010,12 @@ void EMfields3D::communicateGhostP2G(VirtualTopology3D * vct) {
 }
 
 /*! communicate ghost for grid -> Particles interpolation: Only curernt and density*/
-void EMfields3D::communicateGhostP2G_spec(VirtualTopology3D * vct) {
+void EMfields3D::communicateGhostP2G_JP(VirtualTopology3D * vct) {
 
   int rank = vct->getCartesian_rank();
 
   // interpolate adding common nodes among processors
-  communicateInterp(nxn, nyn, nzn, rhon, 0, 0, 0, 0, 0, 0, vct);
   for (int i=0; i<ns; i++) { 
-    communicateInterp(nxn, nyn, nzn, i, rhons, 0, 0, 0, 0, 0, 0, vct);
     communicateInterp(nxn, nyn, nzn, i, Jxs, 0, 0, 0, 0, 0, 0, vct);
     communicateInterp(nxn, nyn, nzn, i, Jys, 0, 0, 0, 0, 0, 0, vct);
     communicateInterp(nxn, nyn, nzn, i, Jzs, 0, 0, 0, 0, 0, 0, vct);
@@ -1014,9 +1029,7 @@ void EMfields3D::communicateGhostP2G_spec(VirtualTopology3D * vct) {
   }
 
   // put the correct values on ghost cells
-  communicateNode_P(nxn, nyn, nzn, rhon, vct);
   for (int i=0; i<ns; i++) { 
-    communicateNode_P(nxn, nyn, nzn, rhons, i, vct);
     communicateNode_P(nxn, nyn, nzn, Jxs, i, vct);
     communicateNode_P(nxn, nyn, nzn, Jys, i, vct);
     communicateNode_P(nxn, nyn, nzn, Jzs, i, vct);
@@ -1027,6 +1040,23 @@ void EMfields3D::communicateGhostP2G_spec(VirtualTopology3D * vct) {
     communicateNode_P(nxn, nyn, nzn, pYYsn, i, vct);
     communicateNode_P(nxn, nyn, nzn, pYZsn, i, vct);
     communicateNode_P(nxn, nyn, nzn, pZZsn, i, vct);
+  }
+}
+
+
+/*! communicate ghost for grid -> Particles interpolation: Only curernt and density*/
+void EMfields3D::communicateGhostP2G_Rho(VirtualTopology3D * vct) {
+
+  int rank = vct->getCartesian_rank();
+
+  // interpolate adding common nodes among processors
+  for (int i=0; i<ns; i++) { 
+    communicateInterp(nxn, nyn, nzn, i, rhons, 2, 2, 2, 2, 2, 2, vct);
+  }
+
+  // put the correct values on ghost cells
+  for (int i=0; i<ns; i++) { 
+    communicateNode_P(nxn, nyn, nzn, rhons, i, vct);
   }
 }
 
@@ -1055,30 +1085,30 @@ void EMfields3D::addRho(double weight[][2][2], int X, int Y, int Z, int is) {
 }
 
 /** add an amount of current density to current density - direction X to current density field on the node*/
-void EMfields3D::addJxh(double weight[][2][2], int X, int Y, int Z) {
+void EMfields3D::addJxh(double weight[][2][2], int X, int Y, int Z, int is) {
   for (int i = 0; i < 2; i++)
     for (int j = 0; j < 2; j++)
       for (int k = 0; k < 2; k++) {
         const double temp = weight[i][j][k];
-        Jxh[X - i][Y - j][Z - k] += temp;
+        Jxhs[is][X - i][Y - j][Z - k] += temp;
       }
 }
 /** add an amount of current density - direction Y to current density field on the node */
-void EMfields3D::addJyh(double weight[][2][2], int X, int Y, int Z) {
+void EMfields3D::addJyh(double weight[][2][2], int X, int Y, int Z, int is) {
   for (int i = 0; i < 2; i++)
     for (int j = 0; j < 2; j++)
       for (int k = 0; k < 2; k++) {
         const double temp = weight[i][j][k];
-        Jyh[X - i][Y - j][Z - k] += temp;
+        Jyhs[is][X - i][Y - j][Z - k] += temp;
       }
 }
 /** add an amount of current density - direction Z to current density field on the node */
-void EMfields3D::addJzh(double weight[][2][2], int X, int Y, int Z) {
+void EMfields3D::addJzh(double weight[][2][2], int X, int Y, int Z, int is) {
   for (int i = 0; i < 2; i++)
     for (int j = 0; j < 2; j++)
       for (int k = 0; k < 2; k++) {
         const double temp = weight[i][j][k];
-        Jzh[X - i][Y - j][Z - k] += temp;
+        Jzhs[is][X - i][Y - j][Z - k] += temp;
       }
 }
 
@@ -1169,8 +1199,13 @@ void EMfields3D::addPzz(double weight[][2][2], int X, int Y, int Z, int is) {
         pZZsn[is][X - i][Y - j][Z - k] += weight[i][j][k] * invVOLn[X - i][Y - j][Z - k];
 }
 
+void EMfields3D::setZeroRho() {
+  eqValue(0.0, rhons, ns, nxn, nyn, nzn);
+  eqValue(0.0, rhocs, ns, nxc, nyc, nzc);
 
-/*! set to 0 all the densities fields */
+}
+
+/*! set to 0 all the densities fields expect from rho*/
 void EMfields3D::setZeroDensities() {
   for (register int i = 0; i < nxn; i++)
     for (register int j = 0; j < nyn; j++)
@@ -1178,24 +1213,20 @@ void EMfields3D::setZeroDensities() {
         Jxh [i][j][k] = 0.0;
         Jyh [i][j][k] = 0.0;
         Jzh [i][j][k] = 0.0;
-        rhon[i][j][k] = 0.0;
       }
 
   setZeroMass();
 
-  for (register int i = 0; i < nxc; i++)
-    for (register int j = 0; j < nyc; j++)
-      for (register int k = 0; k < nzc; k++) {
-        rhoc[i][j][k] = 0.0;
-      }
   for (register int kk = 0; kk < ns; kk++)
     for (register int i = 0; i < nxn; i++)
       for (register int j = 0; j < nyn; j++)
         for (register int k = 0; k < nzn; k++) {
-          rhons[kk][i][j][k] = 0.0;
           Jxs[kk][i][j][k] = 0.0;
           Jys[kk][i][j][k] = 0.0;
           Jzs[kk][i][j][k] = 0.0;
+          Jxhs[kk][i][j][k] = 0.0;
+          Jyhs[kk][i][j][k] = 0.0;
+          Jzhs[kk][i][j][k] = 0.0;
           pXXsn[kk][i][j][k] = 0.0;
           pXYsn[kk][i][j][k] = 0.0;
           pXZsn[kk][i][j][k] = 0.0;
@@ -1228,6 +1259,9 @@ void EMfields3D::sumOverSpecies(VirtualTopology3D * vct) {
       for (register int j = 0; j < nyn; j++)
         for (register int k = 0; k < nzn; k++) {
           rhon[i][j][k] += rhons[is][i][j][k];
+          Jxh[i][j][k]  += Jxhs[is][i][j][k];
+          Jyh[i][j][k]  += Jyhs[is][i][j][k];
+          Jzh[i][j][k]  += Jzhs[is][i][j][k];
         }
 }
 
@@ -1261,8 +1295,9 @@ void EMfields3D::init(VirtualTopology3D * vct, Grid * grid, Collective *col) {
     communicateCenterBC(nxc, nyc, nzc, Byc, col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5], vct);
     communicateCenterBC(nxc, nyc, nzc, Bzc, col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct);
 
-    for (int is = 0; is < ns; is++)
+    for (int is = 0; is < ns; is++) 
       grid->interpN2C(rhocs, is, rhons);
+
   }
   else {                        // READING FROM RESTART
     if (vct->getCartesian_rank() == 0)
@@ -4019,3 +4054,34 @@ double*** EMfields3D::GetLambda(){
   return(Lambda);
 }
 
+// Compute the charge density from the 
+void EMfields3D::chargeFromCurrent(Grid* grid, VirtualTopology3D * vct){
+  for (int is=0; is<ns; is++) {
+    for (int i=1; i<nxn-1; i++)
+      for (int j=1; j<nyn-1; j++) 
+        for (int k=1; k<nzn-1; k++) {
+          double mex, mey, mez;
+          productMassE(&mex, &mey, &mez, Exth, Eyth, Ezth, i, j, k);
+          tempX[i][j][k]  = (Jxhs[is][i][j][k] + mex)*grid->getInvVOLn(i,j,k);
+          tempY[i][j][k]  = (Jyhs[is][i][j][k] + mey)*grid->getInvVOLn(i,j,k);
+          tempZ[i][j][k]  = (Jzhs[is][i][j][k] + mez)*grid->getInvVOLn(i,j,k);
+        }
+    if (Cylindrical == 1) grid->divN2C_cyl(tempC, tempX, tempY, tempZ);
+    else grid->divN2C(tempC, tempX, tempY, tempZ);
+
+
+    for (int i=1; i<nxc-1; i++)
+      for (int j=1; j<nyc-1; j++) 
+        for (int k=1; k<nzc-1; k++) {
+          rhocs[is][i][j][k] -= dt* tempC[i][j][k];
+        }
+
+    communicateCenterBC(nxc, nyc, nzc, rhocs[is], 2, 2, 2, 2, 2, 2, vct);
+    grid->interpC2N(rhons[is], rhocs[is]);
+  }
+}
+
+void EMfields3D::divergenceOfE(Grid* grid) {
+  if (Cylindrical == 1) grid->divN2C_cyl(divE, Ex, Ey, Ez);
+  else grid->divN2C(divE, Ex, Ey, Ez);
+}

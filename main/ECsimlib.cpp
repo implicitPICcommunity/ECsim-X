@@ -189,6 +189,17 @@ int c_Solver::Init(int argc, char **argv) {
     EMf->setZeroCurrent(vct);
   }
 
+  
+  EMf->setZeroRho();                  // set to zero the charge density
+  #ifdef _CHARGE_FROM_CURRENT_
+  for (int i = 0; i < ns; i++) {
+    part[i].computeCharge(EMf, grid, vct);      // interpolate Particles to Grid(Nodes)
+  }
+  EMf->communicateGhostP2G_Rho(vct);
+  EMf->interpDensitiesN2C(vct, grid);       // calculate densities on centers from nodes
+  #endif
+
+
 
   clocks->stop(0);
   return 0;
@@ -209,6 +220,8 @@ void c_Solver::GatherMoments(){
     part[i].computeMoments(EMf, grid, vct);      // interpolate Particles to Grid(Nodes)
 
 
+  EMf->sumOverSpecies (vct);
+
   // Communicate everything:
   #ifdef __PROFILING__
   clocks->start(10);
@@ -217,11 +230,16 @@ void c_Solver::GatherMoments(){
   #ifdef __PROFILING__
   clocks->stop(10);
   #endif
+
+
+  // Compute the charge density as the divergence of the current
+  #ifdef _CHARGE_FROM_CURRENT_
+  EMf->chargeFromCurrent(grid, vct);
+  #endif
 }
 
 void c_Solver::CalculateField() {
 
-  EMf->interpDensitiesN2C(vct, grid);       // calculate densities on centers from nodes
   MPI_Barrier(MPI_COMM_WORLD);
 
   // MAXWELL'S SOLVER
@@ -390,8 +408,17 @@ void c_Solver::WriteOutput(int cycle) {
   EMf->setZeroDensities();                  // set to zero the densities
   for (int i = 0; i < ns; i++)
     part[i].computeCurrent(EMf, grid, vct);      // interpolate Particles to Grid(Nodes)
-  EMf->sumOverSpecies (vct);
-  EMf->communicateGhostP2G_spec(vct);
+
+  #ifndef _CHARGE_FROM_CURRENT_
+  EMf->setZeroRho();                  // set to zero the densities
+  for (int i = 0; i < ns; i++)
+    part[i].computeCharge(EMf, grid, vct);      // interpolate Particles to Grid(Nodes)
+
+  EMf->communicateGhostP2G_Rho(vct);
+  #endif
+  
+  EMf->communicateGhostP2G_JP(vct);
+  
 
   if (col->getWriteMethod() == "ascii") {
     if (cycle%(col->getFieldOutputCycle())!=0) return;

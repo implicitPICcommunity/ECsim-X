@@ -32,6 +32,11 @@ if(TEST_JDOTE)
   add_definitions( -D__JDOTE_TEST__)
 endif()
 
+option(CHARGE_FROM_CURRENT "Compute the charge density from the charge conservation continuity equation" ON)
+if(CHARGE_FROM_CURRENT)
+  add_definitions( -D_CHARGE_FROM_CURRENT_)
+endif()
+
 option(IPIC_TESTS "Set up the code tests" OFF)
 
 if(NOT CMAKE_BUILD_TYPE)

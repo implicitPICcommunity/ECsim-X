@@ -105,9 +105,11 @@ class EMfields3D                // :public Field
     /*! communicate ghost for densities and interp rho from node to center */
     void interpDensitiesN2C(VirtualTopology3D * vct, Grid * grid);
     void communicateGhostP2G(VirtualTopology3D * vct);
-    void communicateGhostP2G_spec(VirtualTopology3D * vct);
+    void communicateGhostP2G_JP(VirtualTopology3D * vct);
+    void communicateGhostP2G_Rho(VirtualTopology3D * vct);
     /*! set to 0 all the densities fields */
     void setZeroDensities();
+    void setZeroRho();
     void setZeroMass();
     /*! Sum rhon over species */
     void sumOverSpecies(VirtualTopology3D * vct);
@@ -120,9 +122,9 @@ class EMfields3D                // :public Field
 
     void addMass(double val[3][3], int, int, int, int);
     void addMassXX(double val, int, int, int, int);
-    void addJxh(double weight[][2][2], int X, int Y, int Z);
-    void addJyh(double weight[][2][2], int X, int Y, int Z);
-    void addJzh(double weight[][2][2], int X, int Y, int Z);
+    void addJxh(double weight[][2][2], int X, int Y, int Z, int is);
+    void addJyh(double weight[][2][2], int X, int Y, int Z, int is);
+    void addJzh(double weight[][2][2], int X, int Y, int Z, int is);
     void addJx(double weight[][2][2], int X, int Y, int Z, int ns);
     void addJy(double weight[][2][2], int X, int Y, int Z, int ns);
     void addJz(double weight[][2][2], int X, int Y, int Z, int ns);
@@ -334,6 +336,8 @@ class EMfields3D                // :public Field
     void setLagrangianFrame(VirtualTopology3D* vct, Collective* col, bool mode);
     void setZeroCurrent(VirtualTopology3D * vct);
 
+    void chargeFromCurrent(Grid* grid, VirtualTopology3D * vct);
+
     void SetLambda(Grid *grid);
     double ***GetLambda();
 
@@ -475,6 +479,12 @@ class EMfields3D                // :public Field
     double ***Jyh;
     /*! Implicit current density Z-component, defined on nodes */
     double ***Jzh;
+    /*! SPECIES: Implicit current density X-component, defined on nodes */
+    double ****Jxhs;
+    /*! SPECIES: Implicit current density Y-component, defined on nodes */
+    double ****Jyhs;
+    /*! SPECIES: Implicit current density Z-component, defined on nodes */
+    double ****Jzhs;
    
     /*! SPECIES: current density X-component, defined on nodes */
     double ****Jxs;

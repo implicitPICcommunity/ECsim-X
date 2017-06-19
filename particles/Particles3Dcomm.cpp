@@ -347,21 +347,21 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
         for (int jj = 0; jj < 2; jj++)
           for (int kk = 0; kk < 2; kk++)
             temp[ii][jj][kk] = qau* weight[ii][jj][kk];
-      EMf->addJxh(temp, ix, iy, iz);
+      EMf->addJxh(temp, ix, iy, iz, ns);
 
       // add implicit current density - Y
       for (int ii = 0; ii < 2; ii++)
         for (int jj = 0; jj < 2; jj++)
           for (int kk = 0; kk < 2; kk++)
             temp[ii][jj][kk] = qav* weight[ii][jj][kk];
-      EMf->addJyh(temp, ix, iy, iz);
+      EMf->addJyh(temp, ix, iy, iz, ns);
 
       // add implicit current density - Z
       for (int ii = 0; ii < 2; ii++)
         for (int jj = 0; jj < 2; jj++)
           for (int kk = 0; kk < 2; kk++)
             temp[ii][jj][kk] = qaw* weight[ii][jj][kk];
-      EMf->addJzh(temp, ix, iy, iz);
+      EMf->addJzh(temp, ix, iy, iz, ns);
       #ifdef __PROFILING__
       clocks->stop(8);
       #endif
@@ -459,9 +459,8 @@ void Particles3Dcomm::computeMassMatrices(Field * EMf, Grid * grid, VirtualTopol
     }
   }
 }
-
-/** Compute the currents (for writting the results) */
-void Particles3Dcomm::computeCurrent(Field * EMf, Grid * grid, VirtualTopology3D * vct) {
+/** Compute only the charge density **/
+void Particles3Dcomm::computeCharge(Field * EMf, Grid * grid, VirtualTopology3D * vct) {
 
   const double inv_dx = 1.0 / dx;
   const double inv_dy = 1.0 / dy;
@@ -485,6 +484,28 @@ void Particles3Dcomm::computeCurrent(Field * EMf, Grid * grid, VirtualTopology3D
             temp[ii][jj][kk] = q[ip]*weight[ii][jj][kk];
           }
       EMf->addRho(temp, ix, iy, iz, ns);
+    }
+  }
+}
+
+
+/** Compute the currents (for writting the results) */
+void Particles3Dcomm::computeCurrent(Field * EMf, Grid * grid, VirtualTopology3D * vct) {
+
+  const double inv_dx = 1.0 / dx;
+  const double inv_dy = 1.0 / dy;
+  const double inv_dz = 1.0 / dz;
+ //#pragma omp parallel
+  {
+    //#pragma omp for
+    for (register long long ip = 0; ip < nop; ip++)
+    {
+      const int ix = 2 + int (floor((x[ip] - xstart) * inv_dx));
+      const int iy = 2 + int (floor((y[ip] - ystart) * inv_dy));
+      const int iz = 2 + int (floor((z[ip] - zstart) * inv_dz));
+      double weight[2][2][2];
+      double temp[2][2][2];
+      calculateWeights( weight, x[ip], y[ip], z[ip], ix, iy, iz, grid);
 
       // add current density - X
       for (int ii = 0; ii < 2; ii++)
