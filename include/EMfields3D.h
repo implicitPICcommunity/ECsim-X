@@ -229,6 +229,8 @@ class EMfields3D                // :public Field
     double ***& getRHOcs(int is, int dummy);
     double ***getRhotilde(int is);
 
+    double ***getDivE();
+
     /** get external magnetic Field component X defined on node(indexX,indexY,indexZ) */
     double &getBx_ext(int indexX, int indexY, int indexZ) const;
     /** get external magnetic Field component Y defined on node(indexX,indexY,indexZ) */
@@ -340,6 +342,9 @@ class EMfields3D                // :public Field
 
     void SetLambda(Grid *grid);
     double ***GetLambda();
+
+
+    void divergenceOfE(Grid* grid, VirtualTopology3D * vct);
 
     /* ********************************* // VARIABLES ********************************* */
   private:
@@ -492,6 +497,9 @@ class EMfields3D                // :public Field
     double ****Jys;
     /*! SPECIES: current density Z-component, defined on nodes */
     double ****Jzs;
+
+    /** Divergence of E */
+    double ***divE;
    
     /*! External magnetic field component-X, defined on nodes */
     double***  Bx_ext;

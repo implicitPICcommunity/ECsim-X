@@ -404,6 +404,8 @@ void c_Solver::WriteOutput(int cycle) {
     for (int i = 0; i < ns; i++) part[i].setLagrangianFrame(false);
   }
 
+  EMf->divergenceOfE(grid, vct);
+
   // Compute the charge density and the current of each specie 
   EMf->setZeroDensities();                  // set to zero the densities
   for (int i = 0; i < ns; i++)
@@ -697,3 +699,4 @@ void c_Solver::Finalize() {
   // close MPI
   mpi->finalize_mpi();
 }
+

@@ -143,6 +143,8 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
 
   rhotilde = newArr4(double, ns, nxn, nyn, nzn);
 
+  divE = newArr3(double, nxn, nyn, nzn);
+
   Jxs = newArr4(double, ns, nxn, nyn, nzn);
   Jys = newArr4(double, ns, nxn, nyn, nzn);
   Jzs = newArr4(double, ns, nxn, nyn, nzn);
@@ -255,6 +257,7 @@ void EMfields3D::setAllzero()
    eqValue(0.0, Jyhs, ns, nxn, nyn, nzn);
    eqValue(0.0, Jzhs, ns, nxn, nyn, nzn);
 
+   eqValue(0.0, divE, nxn, nyn, nzn);
    eqValue(0.0, rhotilde, ns, nxn, nyn, nzn);
    eqValue(0.0, Jxs, ns, nxn, nyn, nzn);
    eqValue(0.0, Jys, ns, nxn, nyn, nzn);
@@ -1070,6 +1073,14 @@ void EMfields3D::centers2nodesB(VirtualTopology3D *vct, Grid *grid, Collective *
   communicateNodeBC(nxn, nyn, nzn, Bxn, col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5], vct);
   communicateNodeBC(nxn, nyn, nzn, Byn, col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5], vct);
   communicateNodeBC(nxn, nyn, nzn, Bzn, col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct);
+
+/*
+for (register int j = 0; j < nyn; j++)
+for (register int k = 0; k < nzn; k++) {
+printf("%d %d %13.6e %13.6e %13.6e\n",j,k,Bxn[1][j][k], Byn[1][j][k], Bzn[1][j][k]);
+}
+getchar();
+*/
 
 }
 
@@ -3185,6 +3196,10 @@ double ***&EMfields3D::getBzTot(){
   return arr;
 }
 
+double*** EMfields3D::getDivE() {
+  return divE;
+}
+
 /*! SPECIES: get pressure tensor component XX defined on nodes */
 double ****EMfields3D::getpXXsn() {
   return (pXXsn);
@@ -3472,6 +3487,7 @@ EMfields3D::~EMfields3D() {
   // nodes and species
   delArr4(rhons, ns, nxn, nyn);
   delArr4(rhotilde, ns, nxn, nyn);
+  delArr3(divE, nxn, nyn);
   // central points
   delArr3(Bxc, nxc, nyc);
   delArr3(Byc, nxc, nyc);
@@ -4080,4 +4096,12 @@ void EMfields3D::chargeFromCurrent(Grid* grid, VirtualTopology3D * vct){
     grid->interpC2N(rhons[is], rhocs[is]);
   }
 }
+ 
+// Compute the divergence of E
+void EMfields3D::divergenceOfE(Grid* grid, VirtualTopology3D * vct) {
+  if (Cylindrical == 1) grid->divN2C_cyl(tempC, Ex, Ey, Ez);
+  else grid->divN2C(tempC, Ex, Ey, Ez);
 
+  communicateCenterBC(nxc, nyc, nzc, tempC, 2, 2, 2, 2, 2, 2, vct);
+  grid->interpC2N(divE, tempC); 
+}
