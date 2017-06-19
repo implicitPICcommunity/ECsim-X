@@ -4081,7 +4081,3 @@ void EMfields3D::chargeFromCurrent(Grid* grid, VirtualTopology3D * vct){
   }
 }
 
-void EMfields3D::divergenceOfE(Grid* grid) {
-  if (Cylindrical == 1) grid->divN2C_cyl(divE, Ex, Ey, Ez);
-  else grid->divN2C(divE, Ex, Ey, Ez);
-}
