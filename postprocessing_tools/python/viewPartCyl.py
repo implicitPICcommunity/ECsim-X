@@ -22,43 +22,45 @@ import sys
 mode = 0
 Y0 = 0
 Y1 = 1
-if (len(sys.argv) < 3):
+if (len(sys.argv) < 4):
 	print "Visualizarion of particle position from the results of ECsim in cylindrical coordinates (using H5hut)" 
-	print "Use %s <1> <2> (<3> <4>)" % (sys.argv[0])
+	print "Use %s <1> <2> <3> (<4> <5>)" % (sys.argv[0])
 	print "\t <1>   Name of the particles file (h5hut)"
-	print "\t <2>   Mode: 3D  -> three dimensional visualization in cartesian coordinates"
+	print "\t <2>   Index of the specie"
+	print "\t <3>   Mode: 3D  -> three dimensional visualization in cartesian coordinates"
 	print "\t             2D  -> two dimensional visualization in cartesian and cylindrical coordinates"
 	print "\t             Cut -> 2D visulaization of the particles in a plane between Y0 and Y1."
-	print "\t(<3>)  Y0 only used if Cut mode is selected."
-	print "\t(<4>)  Y1 only used if Cut mode is selected."
+	print "\t(<4>)  Y0 only used if Cut mode is selected."
+	print "\t(<5>)  Y1 only used if Cut mode is selected."
 
 	sys.exit()
 
-elif(len(sys.argv) > 2):
-	if (sys.argv[2] == '3D'):
+elif(len(sys.argv) > 3):
+	if (sys.argv[3] == '3D'):
 		mode = 1
-	elif (sys.argv[2] == '2D'):
+	elif (sys.argv[3] == '2D'):
 		mode = 2
-	elif (sys.argv[2] == 'Cut'):
-		if (len(sys.argv) < 5):
+	elif (sys.argv[3] == 'Cut'):
+		if (len(sys.argv) < 6):
 			print "Mode Cut requires two more arguments (Y0, Y1)"
 			sys.exit()
-		Y0 = float(sys.argv[3])
-		Y1 = float(sys.argv[4])
+		Y0 = float(sys.argv[4])
+		Y1 = float(sys.argv[5])
 		mode = 3
 	else:
 		print "Mode %s is not available" % (sys.argv[2])
 		sys.exit()
 
 filename = sys.argv[1]
+index    = int(sys.argv[2])
 print filename
 
 with h5py.File(filename,'r') as hf:
 	step0 = hf.get('Step#0')
-	Q = step0.get('q_0')
-	R = step0.get('x_0')
-	Z = step0.get('y_0')
-	T = step0.get('z_0')
+	Q = step0.get('q_%d' % (index))
+	R = step0.get('x_%d' % (index))
+	Z = step0.get('y_%d' % (index))
+	T = step0.get('z_%d' % (index))
 
 	n = len(R)
 	theta = 2*np.pi*np.random.rand(n)
