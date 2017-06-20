@@ -117,6 +117,10 @@ public:
   double getKe();
   /** return the maximum kinetic energy */
   double getMaxVelocity();
+  /** return the total charge */
+  double getTotalCharge();
+  /** return the total number of particles */
+  long long getTotalNumPart();
   /** return energy distribution */
   unsigned long *getVelocityDistribution(int nBins, double maxVel);
   /** return the momentum */

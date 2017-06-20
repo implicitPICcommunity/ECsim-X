@@ -361,13 +361,22 @@ void c_Solver::WriteRestart(int cycle) {
 }
 
 void c_Solver::WriteConserved(int cycle) {
-  if (cycle == first_cycle) return;
+  if (cycle == first_cycle) {
+  return;
+  }
 
   if (cycle == first_cycle+1) {
     totEn0 = EMf->getEenergy() + EMf->getBenergy();
     for (int is = 0; is < ns; is++) {
       totEn0 +=  part[is].getKe();
     }
+    if (myrank == 0) {
+      FILE* fd = fopen(cq.c_str(),"a");
+      fprintf(fd,"Cycle  Total energy   |En - En0|   Electric. En. Magnetic. En.  Kinetic En.   Momentum       NOP     Charge         (NOP     Charge   ...))\n"
+                 "-------------------------------------------------------------------------------------------------------------------------------------------\n");
+      fclose(fd);
+    }
+
   }
 
   // write the conserved quantities
@@ -376,19 +385,25 @@ void c_Solver::WriteConserved(int cycle) {
     Benergy = EMf->getBenergy();
     TOTenergy = 0.0;
     TOTmomentum = 0.0;
+    long long nop[ns];
+    double tq[ns];
     for (int is = 0; is < ns; is++) {
       Ke[is] = part[is].getKe();
       TOTenergy += Ke[is];
       momentum[is] = part[is].getP();
       TOTmomentum += momentum[is];
+      nop[is] = part[is].getTotalNumPart();
+      tq[is]  = part[is].getTotalCharge();
     }
     if (myrank == 0) {
       FILE* fd = fopen(cq.c_str(),"a");
-      fprintf(fd,"%4d %13.6e  %13.6e    %13.6e %13.6e %13.6e  %13.6e\n"
+      fprintf(fd,"%5d %13.6e %13.6e %13.6e %13.6e %13.6e %13.6e"
                 ,cycle
                 ,(Eenergy + Benergy + TOTenergy), fabs((Eenergy + Benergy + TOTenergy) - totEn0)
                 ,Eenergy , Benergy, TOTenergy
                 ,TOTmomentum);
+      for (int is = 0; is < ns; is++) fprintf(fd,"  %7ld %13.6e", nop[is], tq[is]);
+      fprintf(fd,"\n");
 
       fclose(fd);
     }

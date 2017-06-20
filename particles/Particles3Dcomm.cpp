@@ -1201,6 +1201,25 @@ unsigned long *Particles3Dcomm::getVelocityDistribution(int nBins, double maxVel
   return f;
 }
 
+/** return the total charge */
+double Particles3Dcomm::getTotalCharge() {
+  double localQ = 0.0;
+  double totalQ = 0.0;
+  for (register long long i = 0; i < nop; i++)
+    localQ += q[i];
+  MPI_Allreduce(&localQ, &totalQ, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+  return (totalQ);
+}
+
+/** return the total number of particles */
+long long Particles3Dcomm::getTotalNumPart() {
+  long long localN = 0.0;
+  long long totalN = 0.0;
+  localN = nop;
+  MPI_Allreduce(&localN, &totalN, 1, MPI_LONG_LONG, MPI_SUM, MPI_COMM_WORLD);
+  return (totalN);
+}
+
 
 /** print particles info */
 void Particles3Dcomm::Print(VirtualTopology3D * ptVCT) const {
