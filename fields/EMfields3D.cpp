@@ -217,6 +217,7 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
 
   if (col->getCase() == "Dipole" ||
       col->getCase() == "TwoCoils" ||
+      col->getCase() == "TwoCoilsINJ" ||
       col->getCase() == "FluxRope") {
     Lambda = newArr3(double, nxn, nyn, nzn);
     damping = 1;

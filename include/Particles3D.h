@@ -53,7 +53,8 @@ class Particles3D:public Particles3Dcomm {
     /** Linear delta f for bi-maxwellian plasma */
     double delta_f(double u, double v, double w, double x, double y, double kx, double ky, double omega_re, double omega_i, double Ex_ampl, double Ex_phase, double Ey_ampl, double Ey_phase, double Ez_ampl, double Ez_phase, double theta, Field * EMf);
          /** particle injector */
-    int injector_rand_box(Grid* grid,VirtualTopology3D* vct, Field* EMf);
+    double interval_overlap(double xd0, double xd1, double xp0, double xp1, double& xstart_interval);
+    int injector_rand_box(Grid* grid,VirtualTopology3D* vct, Field* EMf, double x_center_inject, double y_center_inject, double z_center_inject, double L_inject);
     /** particle injector monoenergetic*/
     int injector_rand_box_mono(Grid* grid,VirtualTopology3D* vct, Field* EMf);
     /** Derivative of f0 wrt vpar */
