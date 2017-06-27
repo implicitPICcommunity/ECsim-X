@@ -332,7 +332,7 @@ void c_Solver::InjectBoundaryParticles(){
     if (col->getRHOinject(i)>0.0){
       if (col->getCase()=="HalfPlanet") 
          part[i].injector_rand_box_mono(grid,vct,EMf);
-      else if (col->getCase()=="Dipole") {
+      else if (col->getCase()=="Dipole" || col->getCase()=="GEM") {
          mem_avail = part[i].particle_repopulator(grid,vct,EMf,i);
       }
     }

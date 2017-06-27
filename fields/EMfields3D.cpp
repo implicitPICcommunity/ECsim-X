@@ -218,7 +218,8 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
   if (col->getCase() == "Dipole" ||
       col->getCase() == "TwoCoils" ||
       col->getCase() == "TwoCoilsINJ" ||
-      col->getCase() == "FluxRope") {
+      col->getCase() == "FluxRope" ||
+      col->getCase() == "GEM" ) {
     Lambda = newArr3(double, nxn, nyn, nzn);
     damping = 1;
   } else damping = 0;
@@ -1537,6 +1538,19 @@ void EMfields3D::initGEM(VirtualTopology3D * vct, Grid * grid, Collective *col) 
   else {
     init(vct, grid, col);            // use the fields from restart file
   }
+ //     	Adds damping region padded near the edge of the y axis.
+        	double external_radius = Ly/20.;
+        	double scale_decay = external_radius/3.0;
+        	for (int i=0; i < nxn; i++)
+        		for (int j=0; j < nyn; j++)
+        			for (int k=0; k < nzn; k++){
+        				Lambda[i][j][k]  = 0.0;
+        				double r = sqrt( pow(grid->getYN(i,j,k)-Ly/2.0,2.0) );
+        				if(r>Ly/2-external_radius){
+        				//	Lambda[i][j][k]  = 1.0* tanh((r-(Ly/2-external_radius))/scale_decay);
+        				}
+        			}
+
 }
 
 
