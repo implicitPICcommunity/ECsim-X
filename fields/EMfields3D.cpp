@@ -1547,7 +1547,7 @@ void EMfields3D::initGEM(VirtualTopology3D * vct, Grid * grid, Collective *col) 
         				Lambda[i][j][k]  = 0.0;
         				double r = sqrt( pow(grid->getYN(i,j,k)-Ly/2.0,2.0) );
         				if(r>Ly/2-external_radius){
-        				//	Lambda[i][j][k]  = 1.0* tanh((r-(Ly/2-external_radius))/scale_decay);
+        					Lambda[i][j][k]  = 1.0* tanh((r-(Ly/2-external_radius))/scale_decay);
         				}
         			}
 
