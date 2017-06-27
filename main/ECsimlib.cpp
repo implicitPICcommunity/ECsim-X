@@ -84,7 +84,7 @@ int c_Solver::Init(int argc, char **argv) {
     else if (col->getCase()=="DoubleGEM")   EMf->initDoubleGEM(vct, grid,col);
     else if (col->getCase()=="DoubleHarris")EMf->initDoublePeriodicHarrisWithGaussianHumpPerturbation(vct,grid,col);
     else if (col->getCase()=="Whistler")    EMf->initDoublePeriodicHarrisWithGaussianHumpPerturbation(vct,grid,col);
-    else if (col->getCase()=="TwoCoils")    EMf->initWB8(vct,grid,col);
+    else if (col->getCase()=="TwoCoils" || col->getCase()=="TwoCoilsINJ")    EMf->initWB8(vct,grid,col);
     else if (col->getCase()=="SixCoils")    EMf->initWB8_6(vct,grid,col);
     else if (col->getCase()=="Dipole")      EMf->initDipole(vct,grid,col);
     else if (col->getCase()=="Bessel1D")    EMf->initBessel1D(vct,grid,col);
