@@ -85,7 +85,7 @@ int c_Solver::Init(int argc, char **argv) {
     else if (col->getCase()=="DoubleHarris")EMf->initDoublePeriodicHarrisWithGaussianHumpPerturbation(vct,grid,col);
     else if (col->getCase()=="Whistler")    EMf->initDoublePeriodicHarrisWithGaussianHumpPerturbation(vct,grid,col);
     else if (col->getCase()=="TwoCoils" || col->getCase()=="TwoCoilsINJ")    EMf->initWB8(vct,grid,col);
-    else if (col->getCase()=="SixCoils")    EMf->initWB8_6(vct,grid,col);
+    else if (col->getCase()=="SixCoils" || col->getCase()=="SixCoilsINJ")    EMf->initWB8_6(vct,grid,col);
     else if (col->getCase()=="Dipole")      EMf->initDipole(vct,grid,col);
     else if (col->getCase()=="Bessel1D")    EMf->initBessel1D(vct,grid,col);
     else if (col->getCase()=="Bessel2D")    EMf->initBessel2D(vct,grid,col);
@@ -117,7 +117,7 @@ int c_Solver::Init(int argc, char **argv) {
     if (col->getCase()=="DoubleGEM")      part[i].MaxwellianDoubleGEM(grid, EMf, vct);
     else if (col->getCase()=="Dipole")    part[i].maxwellian(grid, EMf, vct);
     else if (col->getCase()=="FluxRope")  part[i].maxwellian(grid, EMf, vct);
-    else if (col->getCase()=="TwoCoils" || col->getCase()=="SixCoils" || col->getCase()=="TwoCoilsINJ"){
+    else if (col->getCase()=="TwoCoils" || col->getCase()=="SixCoils" || col->getCase()=="TwoCoilsINJ" || col->getCase()=="SixCoilsINJ"){
       if (col->getRHOinit(i) > 0.0) 
         part[i].maxwell_sphere(grid,EMf,vct,L_square,x_center,y_center,z_center, 1.0);  // generated maxwellian in a box
       else 
@@ -339,7 +339,7 @@ void c_Solver::InjectBoundaryParticles(){
 
     if (col->getCase()=="TwoCoils" || col->getCase()=="SixCoils") {
         Qremoved[i] = part[i].ReturnToCenterCircle(col->getDelta());
-    } else if (col->getCase()=="TwoCoilsINJ") {
+    } else if (col->getCase()=="TwoCoilsINJ" || col->getCase()=="SixCoilsINJ") {
       Qremoved[i] = part[i].deleteParticlesOutsideSphere(col->getDelta(),col->getx_center(),col->gety_center(),col->getz_center());
       if (col->getRHOinject(i)>0.0)
         part[i].injector_rand_box(grid, vct, EMf, col->getx_center(),col->gety_center(),col->getz_center(), col->getL_square());
