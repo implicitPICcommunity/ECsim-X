@@ -364,6 +364,58 @@ int Particles3D::maxwell_sphere(Grid* grid,Field* EMf,VirtualTopology3D* vct, do
 	return nop;
 }
 
+/** Maxellian random velocity and uniform spatial distribution */
+int Particles3D::monoenergetic_sphere(Grid* grid,Field* EMf,VirtualTopology3D* vct, double L_square, double x_center, double y_center, double z_center, double multiple){
+
+/* initialize random generator with different seed on different processor */
+ 
+  int rank = vct->getCartesian_rank()+1;
+  long long seed = rank*20+ ns;
+  srand(seed);
+
+	double harvest;
+	double prob, theta, sign;
+	long long counter=0;
+	for (int i=1; i< grid->getNXC()-1;i++)
+		for (int j=1; j< grid->getNYC()-1;j++)
+			for (int k=1; k< grid->getNZC()-1;k++)
+				for (int ii=0; ii < npcelx; ii++)
+					for (int jj=0; jj < npcely; jj++)
+						for (int kk=0; kk < npcelz; kk++){
+							x[counter] = (ii + .5)*(dx/npcelx) + grid->getXN(i,j,k);   // x[i] = xstart + (xend-xstart)/2.0 + harvest1*((xend-xstart)/4.0)*cos(harvest2*2.0*M_PI);
+							y[counter] = (jj + .5)*(dy/npcely) + grid->getYN(i,j,k);
+							z[counter] = (kk + .5)*(dz/npcelz) + grid->getZN(i,j,k);
+              double dstx = x[counter] - x_center;
+              double dsty = y[counter] - y_center;
+              double dstz = z[counter] - z_center;
+              double dst = sqrt(dstx*dstx + dsty*dsty + dstz*dstz);
+              if (dst < L_square/2) {
+							  // q = charg
+							  q[counter] =  (qom/fabs(qom))*(EMf->getRHOcs(i,j,k,ns)/npcel)*(1.0/grid->getInvVOLc(i,j,k));
+							  if (ii == 0 && jj == 0 && kk == 0 && i == 1 && j == 1 && k == 1)
+								  cout << "Q at ("<< i<<","<<j<<","<<k<<") = "<<q[counter]<<endl;
+							  // u
+							  harvest =   rand()/(double)RAND_MAX;
+							  theta = 2.0*M_PI*harvest;
+							  u[counter] = multiple*u0 + uth*cos(theta);
+							  // v
+							  v[counter] = multiple*v0 + vth*sin(theta);
+							  // w
+							  harvest =   rand()/(double)RAND_MAX;
+							  theta = 2.0*M_PI*harvest;
+							  w[counter] = multiple*w0 + wth*cos(theta);
+							  if (TrackParticleID)
+								  ParticleID[counter]= counter*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
+
+
+							  counter++ ;
+							}
+						}
+
+	nop = counter;
+	return nop;
+}
+
 
 
 
@@ -1762,7 +1814,107 @@ int Particles3D::injector_rand_box(Grid* grid,VirtualTopology3D* vct, Field* EMf
 }
 
 
+/* Inject from a box, checking overal with the local processor */
+int Particles3D::injector_rand_box_mono(Grid* grid,VirtualTopology3D* vct, Field* EMf, double x_center_inject, double y_center_inject, double z_center_inject, double L_inject)
+{
+	double harvest;
+	double prob, theta, sign;
+	double r;
+	int avail;
+	long long store_nop=nop;
+	long long counter=nop;
 
+	//Vinj from the input file has hte number of particles to be injected
+	//Ninj is the RHOinject from the input file
+	double Iinj=Vinj;
+	long long npinject=1;
+	if (Iinj > 1)
+		npinject = (int)floor(Iinj);
+
+	double xstart_inject;
+	double dx_inject = interval_overlap(x_center_inject-L_inject,x_center_inject+L_inject, xstart, xend, xstart_inject);
+	double ystart_inject;
+	double dy_inject = interval_overlap(y_center_inject-L_inject,y_center_inject+L_inject, ystart, yend, ystart_inject);
+	double zstart_inject;
+	double dz_inject = interval_overlap(z_center_inject-L_inject,z_center_inject+L_inject, zstart, zend, zstart_inject);
+
+//	cout << xstart_inject  << "  " << ystart_inject << "   " << zstart_inject << endl;
+	if (dx_inject * dy_inject * dz_inject > 0.0)
+	{
+
+//cout << dx_inject * dy_inject * dz_inject  << "  " << npinject << endl;
+
+		for (int inject = 0; inject < npinject; inject++)
+		{
+			harvest =   rand()/(double)RAND_MAX ;
+			x[nop] = xstart_inject+(harvest) * dx_inject;
+			harvest =   rand()/(double)RAND_MAX ;
+			y[nop] = ystart_inject+(harvest) * dy_inject;
+			harvest =   rand()/(double)RAND_MAX ;
+			z[nop] = zstart_inject+(harvest) * dz_inject;
+			r = 1e-10+sqrt((x[nop]-Lx/2.0)*(x[nop]-Lx/2.0) +
+					(y[nop]-Ly/2.0)*(y[nop]-Ly/2.0) +
+					(z[nop]-Lz/2.0)*(z[nop]-Lz/2.0));
+
+			q[nop] =  (qom/fabs(qom)) * rhoINJECT * dx_inject * dy_inject * dz_inject / npinject;
+			// u
+			harvest =   rand()/(double)RAND_MAX;
+			theta = 2.0*M_PI*harvest;
+
+			u[nop] = - v0 * (x[nop]-Lx/2.0)/r + uth*cos(theta);
+			v[nop] = - v0 * (y[nop]-Ly/2.0)/r + vth*sin(theta);
+			harvest =   rand()/(double)RAND_MAX;
+			theta = 2.0*M_PI*harvest;
+			w[nop] = - v0 * (z[nop]-Lz/2.0)/r + wth*cos(theta);;
+
+
+			if (TrackParticleID)
+				ParticleID[nop]= nop*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
+
+			//printf("*** DEBUG: Added a particle at (x,y,z) = (%f,%f,%f) with (vx,vy,vz) = (%f,%f,%f)\n", x[nop], y[nop], z[nop], u[nop], v[nop], w[nop]);
+
+			nop++;
+//			cout << nop << endl;
+		}
+
+	}
+		// move particles inside the sim box
+		for (int i=store_nop; i < nop; i++){
+			x[i] += u[i]*dt;
+			y[i] += v[i]*dt;
+			z[i] += w[i]*dt;
+		}
+
+
+		// ******************** //
+		// COMMUNICATION
+		// ******************* //
+	    avail = communicate(vct);
+	    if (avail < 0){
+		cout <<"Cannot communicate! Failing!!!!\n";
+		return(-1);
+	    }
+	    MPI_Barrier(MPI_COMM_WORLD);
+//	    cout << "Past barrier...\n";
+	    // communicate again if particles are not in the correct domain
+	    while(isMessagingDone(vct) >0){
+			// COMMUNICATION
+			avail = communicate(vct);
+
+			if (avail < 0)
+		        return(-1);
+			MPI_Barrier(MPI_COMM_WORLD);
+		}
+
+
+//	cout << "Communicated!!\n";
+
+	return(0); // exit succcesfully (hopefully)
+
+}
+
+
+/*
 int Particles3D::injector_rand_box_mono(Grid* grid,VirtualTopology3D* vct, Field* EMf)
 {
 	double harvest;
@@ -1821,6 +1973,7 @@ int Particles3D::injector_rand_box_mono(Grid* grid,VirtualTopology3D* vct, Field
 	return(0); // exit succcesfully (hopefully)
 
 }
+*/
 
 /*! Set the z coordintaes equal zero for cylindrical coordinates */
 void Particles3D::fixZcylindrical()

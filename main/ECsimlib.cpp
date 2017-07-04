@@ -119,7 +119,11 @@ int c_Solver::Init(int argc, char **argv) {
     else if (col->getCase()=="FluxRope")  part[i].maxwellian(grid, EMf, vct);
     else if (col->getCase()=="TwoCoils" || col->getCase()=="SixCoils" || col->getCase()=="TwoCoilsINJ" || col->getCase()=="SixCoilsINJ"){
       if (col->getRHOinit(i) > 0.0) 
-        part[i].maxwell_sphere(grid,EMf,vct,L_square,x_center,y_center,z_center, 1.0);  // generated maxwellian in a box
+        if (col->getPartInit() == "mono") {
+          part[i].monoenergetic_sphere(grid,EMf,vct,L_square,x_center,y_center,z_center, 1.0);  // generated maxwellian in a box
+        } else {
+          part[i].maxwell_sphere(grid,EMf,vct,L_square,x_center,y_center,z_center, 1.0);  // generated maxwellian in a box
+        }
       else 
         part[i].empty(grid, EMf, vct);
 
@@ -331,7 +335,7 @@ void c_Solver::InjectBoundaryParticles(){
   for (int i=0; i < ns; i++) {
     if (col->getRHOinject(i)>0.0){
       if (col->getCase()=="HalfPlanet") 
-         part[i].injector_rand_box_mono(grid,vct,EMf);
+         part[i].injector_rand_box_mono(grid,vct,EMf, col->getx_center(),col->gety_center(),col->getz_center(), col->getL_square());
       else if (col->getCase()=="Dipole" || col->getCase()=="GEM") {
          mem_avail = part[i].particle_repopulator(grid,vct,EMf,i);
       }
@@ -342,7 +346,10 @@ void c_Solver::InjectBoundaryParticles(){
     } else if (col->getCase()=="TwoCoilsINJ" || col->getCase()=="SixCoilsINJ") {
       Qremoved[i] = part[i].deleteParticlesOutsideSphere(col->getDelta(),col->getx_center(),col->gety_center(),col->getz_center());
       if (col->getRHOinject(i)>0.0)
-        part[i].injector_rand_box(grid, vct, EMf, col->getx_center(),col->gety_center(),col->getz_center(), col->getL_square());
+        if (col->getPartInit() == "mono") 
+          part[i].injector_rand_box_mono(grid, vct, EMf, col->getx_center(),col->gety_center(),col->getz_center(), col->getL_square());
+        else
+          part[i].injector_rand_box(grid, vct, EMf, col->getx_center(),col->gety_center(),col->getz_center(), col->getL_square());
     } else if (col->getCase()=="Dipole") {
        Qremoved[i] = part[i].deleteParticlesInsideSphere(col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
        //Qremoved[i] = part[i].deleteParticlesOuterFrame(2.0, 2.0, 0.0);

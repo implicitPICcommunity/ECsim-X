@@ -41,6 +41,7 @@ class Particles3D:public Particles3Dcomm {
     int monoenergetic_box(Grid* grid,Field* EMf, VirtualTopology3D* vct, double L_square, double x_center, double y_center, double z_center, double multiple=1.0);
     int maxwell_box(Grid* grid,Field* EMf,VirtualTopology3D* vct, double L_square, double x_center, double y_center, double z_center, double multiple);
     int maxwell_sphere(Grid* grid,Field* EMf,VirtualTopology3D* vct, double L_square, double x_center, double y_center, double z_center, double multiple);
+    int monoenergetic_sphere(Grid* grid,Field* EMf,VirtualTopology3D* vct, double L_square, double x_center, double y_center, double z_center, double multiple);
     /** Initial condition: empty system */
     void empty(Grid* grid,Field* EMf, VirtualTopology3D* vct);
        
@@ -56,7 +57,7 @@ class Particles3D:public Particles3Dcomm {
     double interval_overlap(double xd0, double xd1, double xp0, double xp1, double& xstart_interval);
     int injector_rand_box(Grid* grid,VirtualTopology3D* vct, Field* EMf, double x_center_inject, double y_center_inject, double z_center_inject, double L_inject);
     /** particle injector monoenergetic*/
-    int injector_rand_box_mono(Grid* grid,VirtualTopology3D* vct, Field* EMf);
+    int injector_rand_box_mono(Grid* grid,VirtualTopology3D* vct, Field* EMf, double x_center_inject, double y_center_inject, double z_center_inject, double L_inject);
     /** Derivative of f0 wrt vpar */
     double df0_dvpar(double vpar, double vperp);
     /** Derivative of f0 wrt vperp */
