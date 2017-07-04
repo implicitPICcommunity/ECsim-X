@@ -1,0 +1,48 @@
+Summary of the magnitudes saved in "ConservedQuantities.txt"
+ (Tue Jul  4 11:37:37 CEST 2017)
+
+
+1st column:
+  Number of iterations
+
+2nd column:
+  Total energy of the system computed as the sum of the electric energy (using 
+  the electric field on the nodes), the magnetic energy (using the magnetic 
+  field on the nodes) and the kinetic energy from the particles. For more 
+  details see columns 4,5,6.
+
+3rd column:
+  Variation of the total energy (using as a reference the energy of the system 
+  after the first iteration).
+
+4th column:
+  Electric energy of the system. This value is computed as the sum over all 
+  the nodes (except from the last face of nodes in each directions) of the 
+  square of the electric field  divided by 8 pi and multiply by the volume of 
+  the nodes.
+         1/2 1/(4 pi) E E vol
+  The electric field defined on the nodes is used. 
+
+5th column: 
+  Magnetic energy of the system. This value is computed as the sum over all
+  the cells of the square of the magnetic field divided by 8 pi and multiply by 
+  the volume of the cells. 
+         1/2 1/(4 pi vol) B B 
+  The magnetic field defined on the centers is used. It only uses the magnetic 
+  field created by the particles (the external field is not included).
+
+6th column:
+  Kinetic energy of the particles. It is the sum over all the particles of 
+  one half of the velocity square multiply by its mass.
+         1/2 m v v 
+ 
+7th and 8th column:
+  Total number of particles of and total charge of particles of the first
+  specie defined in the input file
+
+(9th and 10th column ...):
+  Total number of particles of and total charge of particles of the nth
+  specie defined in the input file
+
+
+################################################################################
