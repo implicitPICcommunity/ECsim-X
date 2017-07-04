@@ -373,8 +373,8 @@ void c_Solver::WriteConserved(int cycle) {
     }
     if (myrank == 0) {
       FILE* fd = fopen(cq.c_str(),"a");
-      fprintf(fd,"Cycle  Total energy   |En - En0|   Electric. En. Magnetic. En.  Kinetic En.   Momentum       NOP     Charge         (NOP     Charge   ...))\n"
-                 "-------------------------------------------------------------------------------------------------------------------------------------------\n");
+      fprintf(fd,"Cycle  Total energy   |En - En0|   Electric. En. Magnetic. En.  Kinetic En.   Momentum     Ext.Mag.En.    NOP     Charge         (NOP     Charge   ...))\n"
+                 "--------------------------------------------------------------------------------------------------------------------------------------------------------\n");
       fclose(fd);
     }
 
@@ -384,6 +384,7 @@ void c_Solver::WriteConserved(int cycle) {
   if (cycle % col->getDiagnosticsOutputCycle() == 0) {
     Eenergy = EMf->getEenergy();
     Benergy = EMf->getBenergy();
+    double ExtBenergy = EMf->getBextenergy();
     TOTenergy = 0.0;
     TOTmomentum = 0.0;
     long long nop[ns];
@@ -398,11 +399,13 @@ void c_Solver::WriteConserved(int cycle) {
     }
     if (myrank == 0) {
       FILE* fd = fopen(cq.c_str(),"a");
-      fprintf(fd,"%5d %13.6e %13.6e %13.6e %13.6e %13.6e %13.6e"
+      fprintf(fd,"%5d %13.6e %13.6e %13.6e %13.6e %13.6e %13.6e %13.6e"
                 ,cycle
                 ,(Eenergy + Benergy + TOTenergy), fabs((Eenergy + Benergy + TOTenergy) - totEn0)
                 ,Eenergy , Benergy, TOTenergy
-                ,TOTmomentum);
+                ,TOTmomentum
+                ,ExtBenergy
+                );
       for (int is = 0; is < ns; is++) fprintf(fd,"  %7ld %13.6e", nop[is], tq[is]);
       fprintf(fd,"\n");
 

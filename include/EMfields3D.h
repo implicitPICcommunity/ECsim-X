@@ -320,6 +320,7 @@ class EMfields3D                // :public Field
     double getEenergy();
     /*! get the magnetic field energy */
     double getBenergy();
+    double getBextenergy();
 
 
     /*! print electromagnetic fields info */

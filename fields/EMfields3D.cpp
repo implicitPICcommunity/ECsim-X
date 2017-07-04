@@ -3399,6 +3399,29 @@ double EMfields3D::getBenergy(void) {
   return (totalBenergy);
 }
 
+/*! get the external magnetic field energy */
+double EMfields3D::getBextenergy(void) {
+  double localBenergy = 0.0;
+  double totalBenergy = 0.0;
+  double Bxt = 0.0;
+  double Byt = 0.0;
+  double Bzt = 0.0;
+
+  for (int i = 1; i < nxn-2; i++)
+    for (int j = 1; j < nyn-2; j++)
+      for (int k = 1; k < nzn-2; k++){
+        Bxt = Bx_ext[i][j][k];
+        Byt = By_ext[i][j][k];
+        Bzt = Bz_ext[i][j][k];
+        localBenergy += .5*(Bxt*Bxt + Byt*Byt + Bzt*Bzt)/(FourPI*invVOLn[i][j][k]);
+      }
+
+
+
+  MPI_Allreduce(&localBenergy, &totalBenergy, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+  return (totalBenergy);
+}
+
 
 void EMfields3D::computeRhotilde(VirtualTopology3D * vct, Collective *col, Grid* grid, int is)
 {

@@ -1,6 +1,5 @@
 Summary of the magnitudes saved in "ConservedQuantities.txt"
- (Tue Jul  4 11:37:37 CEST 2017)
-
+  (Tue Jul  4 12:07:32 CEST 2017)
 
 1st column:
   Number of iterations
@@ -36,11 +35,19 @@ Summary of the magnitudes saved in "ConservedQuantities.txt"
   one half of the velocity square multiply by its mass.
          1/2 m v v 
  
-7th and 8th column:
+7th column:
+  Total momentum of the particles. It is the sum over all particles 
+  of the module of the velocity multiplied by the mass.
+ 
+8th column:
+  External magnetic energy of the system. Magnetic energy computed only
+  using the external field defined on the nodes.
+ 
+9th and 10th column:
   Total number of particles of and total charge of particles of the first
   specie defined in the input file
 
-(9th and 10th column ...):
+(11th and 12th column ...):
   Total number of particles of and total charge of particles of the nth
   specie defined in the input file
 
