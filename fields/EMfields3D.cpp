@@ -371,8 +371,8 @@ void EMfields3D::endEcalc(double* xkrylov, VirtualTopology3D * vct, Collective *
   // move from krylov space to physical space
   solver2phys(Exth, Eyth, Ezth, tempXC, tempYC, tempZC, xkrylov, nxn, nyn, nzn);
   smoothEth(Smooth, vct, col);
-  smoothEth(Smooth, vct, col);
-  smoothEth(Smooth, vct, col);
+  //smoothEth(Smooth, vct, col);
+  //smoothEth(Smooth, vct, col);
   //smoothBth(Smooth, tempXC, tempYC, tempZC, vct, col);
   //smoothBth(Smooth, tempXC, tempYC, tempZC, vct, col);
   //smoothBth(Smooth, tempXC, tempYC, tempZC, vct, col);
