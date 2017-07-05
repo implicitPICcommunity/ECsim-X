@@ -58,6 +58,8 @@ class Particles3D:public Particles3Dcomm {
     int injector_rand_box(Grid* grid,VirtualTopology3D* vct, Field* EMf, double x_center_inject, double y_center_inject, double z_center_inject, double L_inject);
     /** particle injector monoenergetic*/
     int injector_rand_box_mono(Grid* grid,VirtualTopology3D* vct, Field* EMf, double x_center_inject, double y_center_inject, double z_center_inject, double L_inject);
+    /** Injector designed to work for cartesian and cylindrical base don initial setup */
+    int inject_maxwell_sphere(Grid* grid,Field* EMf,VirtualTopology3D* vct, double L_square, double x_center, double y_center, double z_center, double multiple);
     /** Derivative of f0 wrt vpar */
     double df0_dvpar(double vpar, double vperp);
     /** Derivative of f0 wrt vperp */
