@@ -162,6 +162,8 @@ class Collective
 
     /*! get initial solution flag */
     bool getSolInit();
+    /*! get static fields flag */
+    bool getStaticField();
 
     /*! get Boundary Condition Particles: FaceXright */
     int getBcPfaceXright();
@@ -361,6 +363,8 @@ class Collective
 
     /*! HDF5 initial solution flag */
     bool SolInit;
+    /*! Static field flag */
+    bool StaticField;
 
     /*! TrackParticleID */
     bool *TrackParticleID;

@@ -650,8 +650,9 @@ int Collective::ReadRestart(string inputfile) {
 }
 /*! constructor */
 Collective::Collective(int argc, char **argv) {
-  SOLINIT1 = false;
-  RESTART1 = false;
+  SOLINIT1     = false;
+  RESTART1     = false;
+  StaticField  = false;
   initfile  = "dummy-Fields_00000.h5";
   if (argc < 2) {
     inputfile = "inputfile";
@@ -668,6 +669,11 @@ Collective::Collective(int argc, char **argv) {
     else if (strcmp(argv[1], "solinit") == 0) {
       inputfile = argv[2];
       SOLINIT1 = true;
+    }
+    else if (strcmp(argv[1], "staticfield") == 0) {
+      inputfile = argv[2];
+      SOLINIT1    = true;
+      StaticField = true;
     }
 
   }
@@ -1122,6 +1128,10 @@ string Collective::getPoissonCorrection() {
 /*! get initial solution flag */
 bool Collective::getSolInit() {
   return (SolInit);
+}
+/*! get static field flag */
+bool Collective::getStaticField() {
+  return (StaticField);
 }
 /*! get last_cycle */
 int Collective::getLast_cycle() {

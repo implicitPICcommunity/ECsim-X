@@ -151,9 +151,12 @@ void WriteFieldsH5hut(int nspec, Grid3DCU *grid, EMfields3D *EMf, Collective *co
   file.WriteFields(EMf->getBx(),    "Bx",    grid->getNXN(), grid->getNYN(), grid->getNZN());
   file.WriteFields(EMf->getBy(),    "By",    grid->getNXN(), grid->getNYN(), grid->getNZN());
   file.WriteFields(EMf->getBz(),    "Bz",    grid->getNXN(), grid->getNYN(), grid->getNZN());
-  file.WriteFields(EMf->getBxTot(), "Btx",   grid->getNXN(), grid->getNYN(), grid->getNZN());
-  file.WriteFields(EMf->getByTot(), "Bty",   grid->getNXN(), grid->getNYN(), grid->getNZN());
-  file.WriteFields(EMf->getBzTot(), "Btz",   grid->getNXN(), grid->getNYN(), grid->getNZN());
+  //file.WriteFields(EMf->getBxTot(), "Btx",   grid->getNXN(), grid->getNYN(), grid->getNZN());
+  //file.WriteFields(EMf->getByTot(), "Bty",   grid->getNXN(), grid->getNYN(), grid->getNZN());
+  //file.WriteFields(EMf->getBzTot(), "Btz",   grid->getNXN(), grid->getNYN(), grid->getNZN());
+  file.WriteFields(EMf->getBx_ext(), "Bx_ext",   grid->getNXN(), grid->getNYN(), grid->getNZN());
+  file.WriteFields(EMf->getBy_ext(), "By_ext",   grid->getNXN(), grid->getNYN(), grid->getNZN());
+  file.WriteFields(EMf->getBz_ext(), "Bz_ext",   grid->getNXN(), grid->getNYN(), grid->getNZN());
   //file.WriteFields(EMf->GetLambda(), "Lambda", grid->getNXN(), grid->getNYN(), grid->getNZN());
 
   for (int is=0; is<nspec; is++) {
@@ -317,9 +320,9 @@ void ReadFieldsH5hut(int nspec, bool readext, EMfields3D *EMf, Collective *col, 
   infile.ReadFields(EMf->getBz(), "Bz", grid->getNXN(), grid->getNYN(), grid->getNZN());
 
   if (readext) {
-    infile.ReadFields(EMf->getBx_ext(), "Btx", grid->getNXN(), grid->getNYN(), grid->getNZN());
-    infile.ReadFields(EMf->getBy_ext(), "Bty", grid->getNXN(), grid->getNYN(), grid->getNZN());
-    infile.ReadFields(EMf->getBz_ext(), "Btz", grid->getNXN(), grid->getNYN(), grid->getNZN());
+    infile.ReadFields(EMf->getBx_ext(), "Bx_ext", grid->getNXN(), grid->getNYN(), grid->getNZN());
+    infile.ReadFields(EMf->getBy_ext(), "By_ext", grid->getNXN(), grid->getNYN(), grid->getNZN());
+    infile.ReadFields(EMf->getBz_ext(), "Bz_ext", grid->getNXN(), grid->getNYN(), grid->getNZN());
   }
 
   for (int is = 0; is < nspec; is++){

@@ -73,7 +73,8 @@ int c_Solver::Init(int argc, char **argv) {
     /* -------------------------------------------- */
     if (myrank==0) 
       cout << "INIT FIELDS FROM FILE" << endl;
-    ReadFieldsH5hut(ns, false, EMf, col, vct, grid);
+    ReadFieldsH5hut(ns, true, EMf, col, vct, grid);
+    //ReadFieldsH5hut(ns, false, EMf, col, vct, grid);
 
   }
   else {
@@ -211,6 +212,8 @@ int c_Solver::Init(int argc, char **argv) {
 
 void c_Solver::GatherMoments(){
 
+  if (col->getStaticField()) return;
+
 
   #ifdef __PROFILING__
   clocks->start(5);
@@ -243,6 +246,8 @@ void c_Solver::GatherMoments(){
 }
 
 void c_Solver::CalculateField() {
+
+  if (col->getStaticField()) return;
 
   MPI_Barrier(MPI_COMM_WORLD);
 
