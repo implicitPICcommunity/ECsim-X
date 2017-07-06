@@ -365,6 +365,69 @@ int Particles3D::maxwell_sphere(Grid* grid,Field* EMf,VirtualTopology3D* vct, do
 }
 
 /** Maxellian random velocity and uniform spatial distribution */
+int Particles3D::inject_maxwell_sphere(Grid* grid,Field* EMf,VirtualTopology3D* vct, double L_square, double x_center, double y_center, double z_center, double multiple){
+
+/* initialize random generator with different seed on different processor */
+
+  int rank = vct->getCartesian_rank()+1;
+  long long seed = rank*20+ ns;
+  srand(seed);
+
+    long long counter=nop;
+
+	double harvest;
+	double prob, theta, sign;
+	double inject_probability;
+	inject_probability = Vinj;
+	inject_probability /= npcelx*npcely*npcelz ;
+	for (int i=1; i< grid->getNXC()-1;i++)
+		for (int j=1; j< grid->getNYC()-1;j++)
+			for (int k=1; k< grid->getNZC()-1;k++)
+				for (int ii=0; ii < npcelx; ii++)
+					for (int jj=0; jj < npcely; jj++)
+						for (int kk=0; kk < npcelz; kk++){
+							x[counter] = (ii + .5)*(dx/npcelx) + grid->getXN(i,j,k);   // x[i] = xstart + (xend-xstart)/2.0 + harvest1*((xend-xstart)/4.0)*cos(harvest2*2.0*M_PI);
+							y[counter] = (jj + .5)*(dy/npcely) + grid->getYN(i,j,k);
+							z[counter] = (kk + .5)*(dz/npcelz) + grid->getZN(i,j,k);
+							double dstx = x[counter] - x_center;
+							double dsty = y[counter] - y_center;
+							double dstz = z[counter] - z_center;
+							double dst = sqrt(dstx*dstx + dsty*dsty + dstz*dstz);
+							if (dst < L_square/2) {
+								harvest =   rand()/(double)RAND_MAX;
+								//cout << harvest << "   " << inject_probability << endl;
+								if(harvest < inject_probability){
+							  // q = charg
+							  q[counter] =  (qom/fabs(qom))* rhoINJECT *(1.0/grid->getInvVOLc(i,j,k));
+							  if (ii == 0 && jj == 0 && kk == 0 && i == 1 && j == 1 && k == 1)
+								  cout << "Q at ("<< i<<","<<j<<","<<k<<") = "<<q[counter]<<endl;
+							  // u
+							  harvest =   rand()/(double)RAND_MAX;
+							  prob  = sqrt(-2.0*log(1.0-.999999*harvest));
+							  harvest =   rand()/(double)RAND_MAX;
+							  theta = 2.0*M_PI*harvest;
+							  u[counter] = multiple*u0 + uth*prob*cos(theta);
+							  // v
+							  v[counter] = multiple*v0 + vth*prob*sin(theta);
+							  // w
+							  harvest =   rand()/(double)RAND_MAX;
+							  prob  = sqrt(-2.0*log(1.0-.999999*harvest));
+							  harvest =   rand()/(double)RAND_MAX;
+							  theta = 2.0*M_PI*harvest;
+							  w[counter] = multiple*w0 + wth*prob*cos(theta);
+							  if (TrackParticleID)
+								  ParticleID[counter]= counter*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
+
+
+							  counter++ ;
+							}
+							}
+						}
+
+	nop = counter;
+	return nop;
+}
+/** Maxellian random velocity and uniform spatial distribution */
 int Particles3D::monoenergetic_sphere(Grid* grid,Field* EMf,VirtualTopology3D* vct, double L_square, double x_center, double y_center, double z_center, double multiple){
 
 /* initialize random generator with different seed on different processor */
