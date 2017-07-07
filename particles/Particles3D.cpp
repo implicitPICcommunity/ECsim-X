@@ -61,6 +61,12 @@ Particles3D::Particles3D() {
   // see allocate(int species, Collective* col, VirtualTopology3D* vct, Grid* grid)
   //
 
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  long long seed = time(NULL) + (rank+1)*20 + ns;
+  srand(seed);
+  srand48(seed);
+
 }
 /** deallocate particles */
 Particles3D::~Particles3D() {
@@ -126,8 +132,6 @@ void Particles3D::constantVelocity(double vel, int dim, Grid * grid, Field * EMf
 
 /** Maxellian random velocity and uniform spatial distribution */
 void Particles3D::maxwellian(Grid * grid, Field * EMf, VirtualTopology3D * vct) {
-
-  srand((vct->getCartesian_rank()+1)*20 + ns);
 
   double harvest;
   double prob, theta, sign;
@@ -218,8 +222,6 @@ void Particles3D::MaxwellianDoubleGEM(Grid * grid, Field * EMf, VirtualTopology3
 int Particles3D::monoenergetic_box(Grid* grid,Field* EMf,VirtualTopology3D* vct, double L_square, double x_center, double y_center, double z_center, double multiple){
 
   /* initialize random generator with different seed on different processor */
-  srand(vct->getCartesian_rank()*20 + ns);
-
   double harvest;
   double prob, theta, sign;
   long long counter=0;
@@ -262,9 +264,6 @@ int Particles3D::maxwell_box(Grid* grid,Field* EMf,VirtualTopology3D* vct, doubl
 
 /* initialize random generator with different seed on different processor */
  
-  int rank = vct->getCartesian_rank()+1;
-  long long seed = rank*20+ ns;
-  srand(seed);
 
 	double harvest;
 	double prob, theta, sign;
@@ -314,10 +313,6 @@ int Particles3D::maxwell_sphere(Grid* grid,Field* EMf,VirtualTopology3D* vct, do
 
 /* initialize random generator with different seed on different processor */
  
-  int rank = vct->getCartesian_rank()+1;
-  long long seed = rank*20+ ns;
-  srand(seed);
-
 	double harvest;
 	double prob, theta, sign;
 	long long counter=0;
@@ -370,13 +365,7 @@ int Particles3D::inject_maxwell_sphere(Grid* grid,Field* EMf,VirtualTopology3D* 
 
 /* initialize random generator with different seed on different processor */
 
-  int rank = vct->getCartesian_rank()+1;
-  long long seed = rank*20+ ns;
-  //srand(seed);
-  srand(time(NULL));
-
-
-    long long counter=nop;
+  long long counter=nop;
 
 	double harvest;
 	double prob, theta, sign;
@@ -435,10 +424,6 @@ int Particles3D::monoenergetic_sphere(Grid* grid,Field* EMf,VirtualTopology3D* v
 
 /* initialize random generator with different seed on different processor */
  
-  int rank = vct->getCartesian_rank()+1;
-  long long seed = rank*20+ ns;
-  srand(seed);
-
 	double harvest;
 	double prob, theta, sign;
 	long long counter=0;
@@ -525,8 +510,6 @@ void Particles3D::MaxwellianFromFieldFile(Grid* grid,Field* EMf,VirtualTopology3
   if (vct->getCartesian_rank() == 0) {
     cout << "PARTICLES INITIAZLIZED FROM FIELDS WITH MAXWELLIAN DISTRIBUTION" << endl;
   }
-  /* initialize random generator with different seed on different processor */
-  srand(vct->getCartesian_rank() + 2);
   /*cout << "Maxwellian From Field File" << endl;*/
   double harvest;
   double prob, theta, sign;
@@ -1528,7 +1511,6 @@ void Particles3D::linear_perturbation(double deltaBoB, double kx, double ky, dou
   cout << "max-value=" << max_value << " min-value=" << min_value << endl;
 
   /* initialize random generator */
-  srand(vct->getCartesian_rank() + 2);
 
   for (int i = 1; i < grid->getNXC() - 1; i++)
     for (int j = 1; j < grid->getNYC() - 1; j++)
