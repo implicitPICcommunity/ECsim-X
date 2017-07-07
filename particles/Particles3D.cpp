@@ -17,6 +17,7 @@ developers: Stefano Markidis, Giovanni Lapenta
 #include "Grid3DCU.h"
 #include "EMfields3D.h"
 #include "MPIdata.h"
+#include <time.h>       /* time */
 
 #include "Particles3D.h"
 
@@ -371,7 +372,9 @@ int Particles3D::inject_maxwell_sphere(Grid* grid,Field* EMf,VirtualTopology3D* 
 
   int rank = vct->getCartesian_rank()+1;
   long long seed = rank*20+ ns;
-  srand(seed);
+  //srand(seed);
+  srand(time(NULL));
+
 
     long long counter=nop;
 
