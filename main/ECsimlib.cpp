@@ -352,7 +352,8 @@ void c_Solver::InjectBoundaryParticles(){
       Qremoved[i] = part[i].deleteParticlesOutsideSphere(col->getDelta(),col->getx_center(),col->gety_center(),col->getz_center());
       if (col->getRHOinject(i)>0.0)
         if (col->getPartInit() == "mono") 
-          part[i].injector_rand_box_mono(grid, vct, EMf, col->getx_center(),col->gety_center(),col->getz_center(), col->getL_square());
+          part[i].inject_mono_sphere(grid,EMf,vct,L_square,x_center,y_center,z_center, 1.0);
+          //part[i].injector_rand_box_mono(grid, vct, EMf, col->getx_center(),col->gety_center(),col->getz_center(), col->getL_square());
         else
           part[i].inject_maxwell_sphere(grid,EMf,vct,L_square,x_center,y_center,z_center, 1.0);  // generated maxwellian in a box
           //part[i].injector_rand_box(grid, vct, EMf, col->getx_center(),col->gety_center(),col->getz_center(), col->getL_square());
