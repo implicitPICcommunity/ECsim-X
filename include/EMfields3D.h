@@ -94,6 +94,7 @@ class EMfields3D                // :public Field
     void productMassE(double*, double*, double*, double***, double***, double***, int, int, int);
     double productMassEV(double ***vX, int i, int j, int k, Grid* grid);
     void smoothEth(double value, VirtualTopology3D * vct, Collective *col);
+    void smoothE(double value, VirtualTopology3D * vct, Collective *col);
     void smooth(double value, double ***Vx,double ***Vy,double ***Vz,VirtualTopology3D * vct, Collective *col);
     
     void smoothBth(double value, double ***Bxth, double ***Byth, double ***Bzth, VirtualTopology3D * vct, Collective *col);

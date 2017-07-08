@@ -370,7 +370,7 @@ void EMfields3D::endEcalc(double* xkrylov, VirtualTopology3D * vct, Collective *
 
   // move from krylov space to physical space
   solver2phys(Exth, Eyth, Ezth, tempXC, tempYC, tempZC, xkrylov, nxn, nyn, nzn);
-  smoothEth(Smooth, vct, col);
+  //smoothEth(Smooth, vct, col);
   //smoothEth(Smooth, vct, col);
   //smoothEth(Smooth, vct, col);
   //smoothBth(Smooth, tempXC, tempYC, tempZC, vct, col);
@@ -383,6 +383,8 @@ void EMfields3D::endEcalc(double* xkrylov, VirtualTopology3D * vct, Collective *
   addscale(1 / th, -(1.0 - th) / th, Ex, Exth, nxn, nyn, nzn);
   addscale(1 / th, -(1.0 - th) / th, Ey, Eyth, nxn, nyn, nzn);
   addscale(1 / th, -(1.0 - th) / th, Ez, Ezth, nxn, nyn, nzn);
+  smoothE(Smooth, vct, col);
+
 
 
   // communicate so the interpolation can have good values
@@ -666,6 +668,77 @@ void EMfields3D::smoothEth(double value, VirtualTopology3D * vct, Collective *co
         for (int j = 1; j < nyn - 1; j++)
           for (int k = 1; k < nzn - 1; k++)
             Ezth[i][j][k] = temp[i][j][k];
+
+
+      delArr3(temp, nxn, nyn);
+    }
+  }
+}
+
+/* Interpolation smoothing: Smoothing (vector must already have ghost cells) TO MAKE SMOOTH value as to be different from 1.0 type = 0 --> center based vector ; type = 1 --> node based vector ; */
+void EMfields3D::smoothE(double value, VirtualTopology3D * vct, Collective *col) {
+
+  int nvolte = 6;
+  if (value != 1.0) {
+    for (int icount = 1; icount < nvolte + 1; icount++) {
+      double alpha;
+      communicateNodeBoxStencilBC(nxn, nyn, nzn, Ex, col->bcEx[0],col->bcEx[1],col->bcEx[2],col->bcEx[3],col->bcEx[4],col->bcEx[5], vct);
+      communicateNodeBoxStencilBC(nxn, nyn, nzn, Ey, col->bcEy[0],col->bcEy[1],col->bcEy[2],col->bcEy[3],col->bcEy[4],col->bcEy[5], vct);
+      communicateNodeBoxStencilBC(nxn, nyn, nzn, Ez, col->bcEz[0],col->bcEz[1],col->bcEz[2],col->bcEz[3],col->bcEz[4],col->bcEz[5], vct);
+
+      if (Cylindrical == 1) {
+        if (xStart == 0) {
+          for (int j = 0; j < nyn ; j++)
+            for (int k = 0; k < nzn ; k++) {
+              Ex[0][j][k] = -Ex[2][j][k];
+              Ey[0][j][k] = Ey[2][j][k];
+              Ez[0][j][k] = -Ez[2][j][k];
+            }
+          }
+
+      }
+
+      double ***temp = newArr3(double, nxn, nyn, nzn);
+      if (icount % 2 == 1) {
+        value = 0.;
+      }
+      else {
+        value = 0.5;
+      }
+      alpha = (1.0 - value) / 6;
+      // Exth
+      for (int i = 1; i < nxn - 1; i++)
+        for (int j = 1; j < nyn - 1; j++)
+          for (int k = 1; k < nzn - 1; k++)
+            temp[i][j][k] = value * Ex[i][j][k] + alpha * (Ex[i - 1][j][k] + Ex[i + 1][j][k] +
+                                                             Ex[i][j - 1][k] + Ex[i][j + 1][k] +
+                                                             Ex[i][j][k - 1] + Ex[i][j][k + 1]);
+      for (int i = 1; i < nxn - 1; i++)
+        for (int j = 1; j < nyn - 1; j++)
+          for (int k = 1; k < nzn - 1; k++)
+            Ex[i][j][k] = temp[i][j][k];
+      // Eyth
+      for (int i = 1; i < nxn - 1; i++)
+        for (int j = 1; j < nyn - 1; j++)
+          for (int k = 1; k < nzn - 1; k++)
+            temp[i][j][k] = value * Ey[i][j][k] + alpha * (Ey[i - 1][j][k] + Ey[i + 1][j][k] +
+                                                             Ey[i][j - 1][k] + Ey[i][j + 1][k] +
+                                                             Ey[i][j][k - 1] + Ey[i][j][k + 1]);
+      for (int i = 1; i < nxn - 1; i++)
+        for (int j = 1; j < nyn - 1; j++)
+          for (int k = 1; k < nzn - 1; k++)
+            Ey[i][j][k] = temp[i][j][k];
+      // Ezth
+      for (int i = 1; i < nxn - 1; i++)
+        for (int j = 1; j < nyn - 1; j++)
+          for (int k = 1; k < nzn - 1; k++)
+            temp[i][j][k] = value * Ez[i][j][k] + alpha * (Ez[i - 1][j][k] + Ez[i + 1][j][k] +
+                                                             Ez[i][j - 1][k] + Ez[i][j + 1][k] +
+                                                             Ez[i][j][k - 1] + Ez[i][j][k + 1]);
+      for (int i = 1; i < nxn - 1; i++)
+        for (int j = 1; j < nyn - 1; j++)
+          for (int k = 1; k < nzn - 1; k++)
+            Ez[i][j][k] = temp[i][j][k];
 
 
       delArr3(temp, nxn, nyn);
