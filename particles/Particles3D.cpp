@@ -466,7 +466,7 @@ int Particles3D::inject_mono_sphere(Grid* grid,Field* EMf,VirtualTopology3D* vct
 							  // u
 							  u[counter] = multiple*u0 + uth*sqrt(1.0-mu*mu)*cos(theta);
 							  // v
-							  v[counter] = multiple*v0 + vth*sqrt(1.0-mu*mu)*cos(theta);
+							  v[counter] = multiple*v0 + vth*sqrt(1.0-mu*mu)*sin(theta);
 							  // w
 							  w[counter] = multiple*w0 + wth*mu;
 
