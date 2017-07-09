@@ -449,7 +449,7 @@ void EMfields3D::MaxwellSource(double *bkrylov, Grid * grid, VirtualTopology3D *
   scale(tempZC, Bzc, 1, nxc, nyc, nzc);
   #endif
 
-  //smoothJh(Smooth, vct, col);
+  smoothJh(Smooth, vct, col);
 
   for (int i=0; i<nxn-0; i++)
     for (int j=0; j<nyn-0; j++) 
