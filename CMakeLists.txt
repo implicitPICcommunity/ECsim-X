@@ -37,6 +37,11 @@ if(CHARGE_FROM_CURRENT)
   add_definitions( -D_CHARGE_FROM_CURRENT_)
 endif()
 
+option(SAME_CHARGE "All particles have the same charge. The number of particles per cell might no be the same in all cells" ON)
+if(SAME_CHARGE)
+  add_definitions( -D_WITH_SAME_CHARGE_)
+endif()
+
 option(IPIC_TESTS "Set up the code tests" OFF)
 
 if(NOT CMAKE_BUILD_TYPE)

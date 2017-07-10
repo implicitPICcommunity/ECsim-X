@@ -129,7 +129,60 @@ void Particles3D::constantVelocity(double vel, int dim, Grid * grid, Field * EMf
   }
 
 }
+#ifdef _WITH_SAME_CHARGE_
+/** Maxellian random velocity and uniform spatial distribution */
+void Particles3D::maxwellian(Grid * grid, Field * EMf, VirtualTopology3D * vct) {
 
+  double harvest;
+  double prob, theta, sign;
+  long long counter = 0;
+
+
+  double volref = 2*M_PI*dx*dy;
+
+  for (int i = 1; i < grid->getNXC() - 1; i++)
+    for (int j = 1; j < grid->getNYC() - 1; j++)
+      for (int k = 1; k < grid->getNZC() - 1; k++) {
+          double Qref = (qom / fabs(qom)) * (fabs(EMf->getRHOcs(i, j, k, ns)) / npcel) * volref;
+          double vol = 1./grid->getInvVOLc(i,j,k);
+          double facV = vol/volref;
+          int npl = (int)(npcel*facV);
+          //if (j==1 && k==1) printf("Vol=%g (%g): np=%d  (%d)\n",vol, facV, npcel, (int)(npcel*facV));
+          if (npl == 0) {
+           fprintf(stderr,"ERROR: to few particles, zero particles in the first cell\n");
+           MPI_Abort(MPI_COMM_WORLD, 0);
+          }
+
+        for (int ii = 0; ii < npl; ii++) {
+              x[counter] = drand48() * dx  + grid->getXN(i, j, k);  
+              y[counter] = drand48() * dy  + grid->getYN(i, j, k);
+              z[counter] = drand48() * dz  + grid->getZN(i, j, k);
+              // q = charge
+              q[counter] = Qref;
+              //q[counter] = (qom / fabs(qom)) * (fabs(EMf->getRHOcs(i, j, k, ns)) / npcel) * (1.0 / grid->getInvVOLc(i,j,k));
+
+              harvest = rand() / (double) RAND_MAX;
+              prob = sqrt(-2.0 * log(1.0 - .999999 * harvest));
+              harvest = rand() / (double) RAND_MAX;
+              theta = 2.0 * M_PI * harvest;
+              u[counter] = u0 + uth * prob * cos(theta);
+              v[counter] = v0 + vth * prob * sin(theta);
+              harvest = rand() / (double) RAND_MAX;
+              prob = sqrt(-2.0 * log(1.0 - .999999 * harvest));
+              harvest = rand() / (double) RAND_MAX;
+              theta = 2.0 * M_PI * harvest;
+              w[counter] = w0 + wth * prob * cos(theta);
+
+              if (TrackParticleID)
+                ParticleID[counter] = counter * (unsigned long) pow(10.0, BirthRank[1]) + BirthRank[0];
+
+              counter++;
+            }
+      }
+   nop = counter;
+}
+
+#else
 /** Maxellian random velocity and uniform spatial distribution */
 void Particles3D::maxwellian(Grid * grid, Field * EMf, VirtualTopology3D * vct) {
 
@@ -172,6 +225,7 @@ void Particles3D::maxwellian(Grid * grid, Field * EMf, VirtualTopology3D * vct) 
               counter++;
             }
 }
+#endif
 
 
 /** Maxellian random velocity and uniform spatial distribution, goes with Double GEM */
@@ -308,6 +362,71 @@ int Particles3D::maxwell_box(Grid* grid,Field* EMf,VirtualTopology3D* vct, doubl
 	return nop;
 }
 
+#ifdef _WITH_SAME_CHARGE_
+/** Maxellian random velocity and uniform spatial distribution */
+int Particles3D::maxwell_sphere(Grid* grid,Field* EMf,VirtualTopology3D* vct, double L_square, double x_center, double y_center, double z_center, double multiple){
+
+	double harvest;
+	double prob, theta, sign;
+	long long counter=0;
+  double volref = 2*M_PI*dx*dy;
+
+  for (int i = 1; i < grid->getNXC() - 1; i++)
+    for (int j = 1; j < grid->getNYC() - 1; j++)
+      for (int k = 1; k < grid->getNZC() - 1; k++) {
+          double Qref = (qom / fabs(qom)) * (fabs(EMf->getRHOcs(i, j, k, ns)) / npcel) * volref;
+          double vol = 1./grid->getInvVOLc(i,j,k);
+          double facV = vol/volref;
+          int npl = (int)(npcel*facV);
+          //if (j==1 && k==1) printf("Vol=%g (%g): np=%d  (%d)\n",vol, facV, npcel, (int)(npcel*facV));
+          if (npl == 0) {
+           fprintf(stderr,"ERROR: to few particles, zero particles in the first cell\n");
+           MPI_Abort(MPI_COMM_WORLD, 0);
+          }
+
+        for (int ii = 0; ii < npl; ii++) {
+              x[counter] = drand48() * dx  + grid->getXN(i, j, k);  
+              y[counter] = drand48() * dy  + grid->getYN(i, j, k);
+              z[counter] = drand48() * dz  + grid->getZN(i, j, k);
+ 
+              double dstx = x[counter] - x_center;
+              double dsty = y[counter] - y_center;
+              double dstz = z[counter] - z_center;
+              double dst = sqrt(dstx*dstx + dsty*dsty + dstz*dstz);
+              if (dst < L_square/2) {
+							  // q = charg
+							  q[counter] =  Qref;
+							  if (ii == 0 && i == 1 && j == 1 && k == 1)
+								  cout << "Q at ("<< i<<","<<j<<","<<k<<") = "<<q[counter]<<endl;
+							  // u
+							  harvest =   rand()/(double)RAND_MAX;
+							  prob  = sqrt(-2.0*log(1.0-.999999*harvest));
+							  harvest =   rand()/(double)RAND_MAX;
+							  theta = 2.0*M_PI*harvest;
+							  u[counter] = multiple*u0 + uth*prob*cos(theta);
+							  // v
+							  v[counter] = multiple*v0 + vth*prob*sin(theta);
+							  // w
+							  harvest =   rand()/(double)RAND_MAX;
+							  prob  = sqrt(-2.0*log(1.0-.999999*harvest));
+							  harvest =   rand()/(double)RAND_MAX;
+							  theta = 2.0*M_PI*harvest;
+							  w[counter] = multiple*w0 + wth*prob*cos(theta);
+							  if (TrackParticleID)
+								  ParticleID[counter]= counter*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
+
+
+							  counter++ ;
+							}
+						}
+      }
+
+	nop = counter;
+	return nop;
+}
+
+#else
+
 /** Maxellian random velocity and uniform spatial distribution */
 int Particles3D::maxwell_sphere(Grid* grid,Field* EMf,VirtualTopology3D* vct, double L_square, double x_center, double y_center, double z_center, double multiple){
 
@@ -359,7 +478,82 @@ int Particles3D::maxwell_sphere(Grid* grid,Field* EMf,VirtualTopology3D* vct, do
 	nop = counter;
 	return nop;
 }
+#endif
 
+
+#ifdef _WITH_SAME_CHARGE_
+/** Maxellian random velocity and uniform spatial injection */
+int Particles3D::inject_maxwell_sphere(Grid* grid,Field* EMf,VirtualTopology3D* vct, double L_square, double x_center, double y_center, double z_center, double multiple){
+
+/* initialize random generator with different seed on different processor */
+
+  long long counter=nop;
+
+	double harvest;
+	double prob, theta, sign;
+	double inject_probability;
+	inject_probability = Vinj;
+	inject_probability /= npcelx*npcely*npcelz ;
+
+  double volref = 2*M_PI*dx*dy;
+
+  for (int i = 1; i < grid->getNXC() - 1; i++)
+    for (int j = 1; j < grid->getNYC() - 1; j++)
+      for (int k = 1; k < grid->getNZC() - 1; k++) {
+          double Qref = (qom / fabs(qom)) * fabs(rhoINJECT) * volref;
+          double vol = 1./grid->getInvVOLc(i,j,k);
+          double facV = vol/volref;
+          int npl = (int)(npcel*facV);
+          //if (j==1 && k==1) printf("Vol=%g (%g): np=%d  (%d)\n",vol, facV, npcel, (int)(npcel*facV));
+          if (npl == 0) {
+           fprintf(stderr,"ERROR: to few particles, zero particles in the first cell\n");
+           MPI_Abort(MPI_COMM_WORLD, 0);
+          }
+
+        for (int ii = 0; ii < npl; ii++) {
+              x[counter] = drand48() * dx  + grid->getXN(i, j, k);
+              y[counter] = drand48() * dy  + grid->getYN(i, j, k);
+              z[counter] = drand48() * dz  + grid->getZN(i, j, k);
+							double dstx = x[counter] - x_center;
+							double dsty = y[counter] - y_center;
+							double dstz = z[counter] - z_center;
+							double dst = sqrt(dstx*dstx + dsty*dsty + dstz*dstz);
+							if (dst < L_square/2) {
+								harvest =   rand()/(double)RAND_MAX;
+								//cout << harvest << "   " << inject_probability << endl;
+								if(harvest < inject_probability){
+							  // q = charg
+							  q[counter] =  Qref;
+							  if (ii == 0 && i == 1 && j == 1 && k == 1)
+								  cout << "Q at ("<< i<<","<<j<<","<<k<<") = "<<q[counter]<<endl;
+							  // u
+							  harvest =   rand()/(double)RAND_MAX;
+							  prob  = sqrt(-2.0*log(1.0-.999999*harvest));
+							  harvest =   rand()/(double)RAND_MAX;
+							  theta = 2.0*M_PI*harvest;
+							  u[counter] = multiple*u0 + uth*prob*cos(theta);
+							  // v
+							  v[counter] = multiple*v0 + vth*prob*sin(theta);
+							  // w
+							  harvest =   rand()/(double)RAND_MAX;
+							  prob  = sqrt(-2.0*log(1.0-.999999*harvest));
+							  harvest =   rand()/(double)RAND_MAX;
+							  theta = 2.0*M_PI*harvest;
+							  w[counter] = multiple*w0 + wth*prob*cos(theta);
+							  if (TrackParticleID)
+								  ParticleID[counter]= counter*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
+
+
+							  counter++ ;
+							}
+							}
+						}
+      }
+
+	nop = counter;
+	return nop;
+}
+#else
 /** Maxellian random velocity and uniform spatial injection */
 int Particles3D::inject_maxwell_sphere(Grid* grid,Field* EMf,VirtualTopology3D* vct, double L_square, double x_center, double y_center, double z_center, double multiple){
 
@@ -419,6 +613,7 @@ int Particles3D::inject_maxwell_sphere(Grid* grid,Field* EMf,VirtualTopology3D* 
 	nop = counter;
 	return nop;
 }
+#endif
 /** Maxellian random velocity and uniform spatial injection */
 int Particles3D::inject_mono_sphere(Grid* grid,Field* EMf,VirtualTopology3D* vct, double L_square, double x_center, double y_center, double z_center, double multiple){
 
@@ -623,7 +818,6 @@ void Particles3D::MaxwellianFromFieldFile(Grid* grid,Field* EMf,VirtualTopology3
 
 void Particles3D::empty(Grid* grid,Field* EMf,VirtualTopology3D* vct){
         nop = 0;
-printf("EMPTY\n");
 }
 
 /* Fix the charge of each particles by using the mass matrices */
