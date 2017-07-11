@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
 
   KCode.Init(argc, argv);
   KCode.InjectBoundaryParticles();
-  KCode.WriteOutput(0);
+  KCode.WriteOutput(KCode.FirstCycle());
 
   /* ------------ */
   /* 1- Main loop */

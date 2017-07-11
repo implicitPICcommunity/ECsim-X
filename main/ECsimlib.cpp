@@ -113,11 +113,14 @@ int c_Solver::Init(int argc, char **argv) {
 
   // Allocation of particles
   part = new Particles3D[ns];
+
   for (int i = 0; i < ns; i++) {
     part[i].allocate(i, 0, col, vct, grid);
-    if (col->getCase()=="DoubleGEM")      part[i].MaxwellianDoubleGEM(grid, EMf, vct);
-    else if (col->getCase()=="Dipole")    part[i].maxwellian(grid, EMf, vct);
-    else if (col->getCase()=="FluxRope")  part[i].maxwellian(grid, EMf, vct);
+    if      (col->getSolInit() && col->getPartInit()=="File") ReadPartclH5hut(ns, part, col, vct, grid);
+    else if (col->getSolInit() && col->getPartInit() == "FromFieldFile") part[i].MaxwellianFromFieldFile(grid, EMf, vct);
+    else if (col->getCase()=="DoubleGEM")      part[i].MaxwellianDoubleGEM(grid, EMf, vct);
+    else if (col->getCase()=="Dipole")         part[i].maxwellian(grid, EMf, vct);
+    else if (col->getCase()=="FluxRope")       part[i].maxwellian(grid, EMf, vct);
     else if (col->getCase()=="TwoCoils" || col->getCase()=="SixCoils" || col->getCase()=="TwoCoilsINJ" || col->getCase()=="SixCoilsINJ"){
       if (col->getRHOinit(i) > 0.0) 
         if (col->getPartInit() == "mono") {
@@ -128,13 +131,7 @@ int c_Solver::Init(int argc, char **argv) {
       else 
         part[i].empty(grid, EMf, vct);
 
-    } else {
-      if (col->getPartInit() == "FromFieldFile") {
-        part[i].MaxwellianFromFieldFile(grid, EMf, vct);
-      } else {
-        part[i].maxwellian(grid, EMf, vct);
-      }
-    }
+    } else part[i].maxwellian(grid, EMf, vct);
     
     // Compute the charge of the particles using the mass matrices
     //part[i].fixCharge(grid, EMf, vct, col);
@@ -691,8 +688,8 @@ void c_Solver::WriteOutput(int cycle) {
     /* -------------------------------------------- */
     /* Parallel HDF5 output using the H5hut library */
     /* -------------------------------------------- */
-    if (cycle%(col->getFieldOutputCycle())==0)        WriteFieldsH5hut(ns, grid, EMf,  col, vct, cycle);
-    if (cycle%(col->getParticlesOutputCycle())==0)    WritePartclH5hut(ns, grid, part, col, vct, cycle);
+    if (cycle == first_cycle || cycle%(col->getFieldOutputCycle())==0)        WriteFieldsH5hut(ns, grid, EMf,  col, vct, cycle);
+    if (cycle == first_cycle || cycle%(col->getParticlesOutputCycle())==0)    WritePartclH5hut(ns, grid, part, col, vct, cycle);
     //if (cycle%(col->getParticlesOutputCycle())==0 &&
         //cycle!=col->getLast_cycle() && cycle!=0)      WritePartclH5hut(ns, grid, part, col, vct, cycle);
 
