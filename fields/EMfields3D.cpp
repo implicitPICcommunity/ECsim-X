@@ -1965,19 +1965,8 @@ void EMfields3D::initWB8(VirtualTopology3D *vct, Grid *grid, Collective *col){
     init(vct,grid,col);  // use the fields from restart file
   }
 
-  double dst = col->getDelta()+dx;
-	double scale_decay = dst/10.0;
-  for (int i=0; i < nxn; i++)
-  	for (int j=0; j < nyn; j++)
-  		for (int k=0; k < nzn; k++){
-  			Lambda[i][j][k]  = 0.0;
-        double r;
-        if (Cylindrical == 1) r = sqrt(pow(grid->getXN(i,j,k),2.0) + pow(grid->getYN(i,j,k)-Ly/2.0,2.0));
-        else r = sqrt(pow(grid->getXN(i,j,k)-Lx/2.0,2.0) + pow(grid->getYN(i,j,k)-Ly/2.0,2.0) + pow(grid->getZN(i,j,k)-Lz/2.0,2.0));
-  			if(r>dst){
-  				Lambda[i][j][k]  = 1.0* tanh((r-dst)/scale_decay);
-  			}
-  		}
+  SetLambda(grid, col);
+
 }
 
 //Initializes the vacuum fields for EMC2. 6 coils
@@ -2216,7 +2205,7 @@ void EMfields3D::initDipole(VirtualTopology3D *vct, Grid *grid, Collective *col)
   Fext = 1;
   double distance;
 
-  SetLambda(grid);
+  SetLambda(grid, col);
 
   double ebc[3];
   cross_product(ue0,ve0,we0,B0x,B0y,B0z,ebc);
@@ -4151,8 +4140,22 @@ void EMfields3D::setZeroCurrent(VirtualTopology3D * vct)
   */
 }
 
-void EMfields3D::SetLambda(Grid *grid){
+void EMfields3D::SetLambda(Grid *grid, Collective* col){
 
+  double dst = col->getDelta()+dx;
+	double scale_decay = dst/10.0;
+  for (int i=0; i < nxn; i++)
+  	for (int j=0; j < nyn; j++)
+  		for (int k=0; k < nzn; k++){
+  			Lambda[i][j][k]  = 0.0;
+        double r;
+        if (Cylindrical == 1) r = sqrt(pow(grid->getXN(i,j,k),2.0) + pow(grid->getYN(i,j,k)-Ly/2.0,2.0));
+        else r = sqrt(pow(grid->getXN(i,j,k)-Lx/2.0,2.0) + pow(grid->getYN(i,j,k)-Ly/2.0,2.0) + pow(grid->getZN(i,j,k)-Lz/2.0,2.0));
+  			if(r>dst){
+  				Lambda[i][j][k]  = 1.0* tanh((r-dst)/scale_decay);
+  			}
+  		}
+/*
   for (int i=0; i < nxn; i++){
     for (int j=0; j < nyn; j++){
       for (int k=0; k < nzn; k++){
@@ -4174,6 +4177,7 @@ void EMfields3D::SetLambda(Grid *grid){
       }
     }
   }
+*/
 
 }
 

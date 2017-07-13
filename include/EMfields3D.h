@@ -342,9 +342,10 @@ class EMfields3D                // :public Field
 
     void chargeFromCurrent(Grid* grid, VirtualTopology3D * vct);
 
-    void SetLambda(Grid *grid);
+    void SetLambda(Grid *grid, Collective *col);
     double ***GetLambda();
 
+    void setFext(int v) { Fext = v; };
 
     void divergenceOfE(Grid* grid, VirtualTopology3D * vct);
 
