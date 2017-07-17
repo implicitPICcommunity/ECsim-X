@@ -218,6 +218,8 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
   if (col->getCase() == "Dipole" ||
       col->getCase() == "TwoCoils" ||
       col->getCase() == "TwoCoilsINJ" ||
+      col->getCase() == "SixCoils" ||
+      col->getCase() == "SixCoilsINJ" ||
       col->getCase() == "FluxRope" ||
       col->getCase() == "GEM" ) {
     Lambda = newArr3(double, nxn, nyn, nzn);
