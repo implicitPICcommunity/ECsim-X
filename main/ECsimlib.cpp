@@ -77,6 +77,7 @@ int c_Solver::Init(int argc, char **argv) {
     //ReadFieldsH5hut(ns, false, EMf, col, vct, grid);
 
     if (col->getCase()=="TwoCoils" || col->getCase()=="SixCoils" || col->getCase()=="TwoCoilsINJ" || col->getCase()=="SixCoilsINJ"){
+      EMf->setRhoInit(grid, col);
       EMf->SetLambda(grid, col);
       EMf->setFext(1);
     }

@@ -345,6 +345,8 @@ class EMfields3D                // :public Field
     void SetLambda(Grid *grid, Collective *col);
     double ***GetLambda();
 
+    void setRhoInit(Grid* grid,Collective* col);
+
     void setFext(int v) { Fext = v; };
 
     void divergenceOfE(Grid* grid, VirtualTopology3D * vct);

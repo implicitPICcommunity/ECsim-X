@@ -4187,6 +4187,17 @@ double*** EMfields3D::GetLambda(){
   return(Lambda);
 }
 
+void EMfields3D::setRhoInit(Grid* grid, Collective* col) {
+
+  for (int is=0; is<ns; is++) 
+    for (int i=0; i<nxc; i++)
+      for (int j=0; j<nyc; j++) 
+        for (int k=0; k<nzc; k++) {
+          rhocs[is][i][j][k] = col->getRHOinit(is);
+        }
+
+}
+
 // Compute the charge density from the 
 void EMfields3D::chargeFromCurrent(Grid* grid, VirtualTopology3D * vct){
   for (int is=0; is<ns; is++) {
