@@ -179,25 +179,11 @@ void WriteFieldsH5hut(int nspec, Grid3DCU *grid, EMfields3D *EMf, Collective *co
   file.CloseFieldsFile();
 
 //--- SAVE FIELDS IN THE CELLS:
-//
-//  file.OpenFieldsFile("Cell", nspec, col->getNxc(), col->getNyc(), col->getNzc(), vct->getCoordinates(), vct->getDivisions(), vct->getComm());
-//
-//  file.WriteFields(EMf->getExc(), "Exc", grid->getNXC(), grid->getNYC(), grid->getNZC());
-//  file.WriteFields(EMf->getEyc(), "Eyc", grid->getNXC(), grid->getNYC(), grid->getNZC());
-//  file.WriteFields(EMf->getEzc(), "Ezc", grid->getNXC(), grid->getNYC(), grid->getNZC());
-//  file.WriteFields(EMf->getBxc(), "Bxc", grid->getNXC(), grid->getNYC(), grid->getNZC());
-//  file.WriteFields(EMf->getByc(), "Byc", grid->getNXC(), grid->getNYC(), grid->getNZC());
-//  file.WriteFields(EMf->getBzc(), "Bzc", grid->getNXC(), grid->getNYC(), grid->getNZC());
-//
-//  for (int is=0; is<nspec; is++) {
-//    stringstream  ss;
-//    ss << is;
-//    string s_is = ss.str();
-//    file.WriteFields(EMf->getRHOcs(is), "rhoc_"+ s_is, grid->getNXC(), grid->getNYC(), grid->getNZC());
-//  }
-//
-//  file.CloseFieldsFile();
-//
+  file.OpenFieldsFile("Cell", nspec, col->getNxc(), col->getNyc(), col->getNzc(), vct->getCoordinates(), vct->getDivisions(), vct->getComm());
+  file.WriteFields(EMf->getBxc(), "Bxc", grid->getNXC(), grid->getNYC(), grid->getNZC());
+  file.WriteFields(EMf->getByc(), "Byc", grid->getNXC(), grid->getNYC(), grid->getNZC());
+  file.WriteFields(EMf->getBzc(), "Bzc", grid->getNXC(), grid->getNYC(), grid->getNZC());
+  file.CloseFieldsFile();
 //--- END SAVE FIELDS IN THE CELLS.
 
 #else  
@@ -298,7 +284,7 @@ void ReadPartclH5hut(int nspec, Particles3Dcomm *part, Collective *col, VCtopolo
 #endif
 }
 
-void ReadFieldsH5hut(int nspec, bool readext, EMfields3D *EMf, Collective *col, VCtopology3D *vct, Grid3DCU *grid){
+void ReadFieldsH5hut(int nspec, bool readext, bool readBc, EMfields3D *EMf, Collective *col, VCtopology3D *vct, Grid3DCU *grid){
 #ifdef USEH5HUT
 
   H5input infile;
@@ -335,24 +321,10 @@ void ReadFieldsH5hut(int nspec, bool readext, EMfields3D *EMf, Collective *col, 
     infile.ReadFields(EMf->getJzs(is), "Jz_"+s_is, grid->getNXN(), grid->getNYN(), grid->getNZN());
   }
 
-  infile.CloseFieldsFile();
-
-  // initialize B on centers
-  MPI_Barrier(MPI_COMM_WORLD);
-
   // Comm ghost nodes for B-field
   communicateNodeBC(grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBx(), col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5], vct);
   communicateNodeBC(grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBy(), col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5], vct);
   communicateNodeBC(grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBz(), col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct);
-
-  grid->interpN2C(EMf->getBxc(), EMf->getBx());
-  grid->interpN2C(EMf->getByc(), EMf->getBy());
-  grid->interpN2C(EMf->getBzc(), EMf->getBz());
-
-  communicateCenterBC(grid->getNXC(), grid->getNYC(), grid->getNZC(), EMf->getBxc(), col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5], vct);
-  communicateCenterBC(grid->getNXC(), grid->getNYC(), grid->getNZC(), EMf->getByc(), col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5], vct);
-  communicateCenterBC(grid->getNXC(), grid->getNYC(), grid->getNZC(), EMf->getBzc(), col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct);
-
 
   // communicate E
   communicateNodeBC(grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getEx(), col->bcEx[0],col->bcEx[1],col->bcEx[2],col->bcEx[3],col->bcEx[4],col->bcEx[5], vct);
@@ -362,40 +334,43 @@ void ReadFieldsH5hut(int nspec, bool readext, EMfields3D *EMf, Collective *col, 
   for (int is = 0; is < nspec; is++)
     grid->interpN2C(EMf->getRHOcs(), is, EMf->getRHOns());
 
-//---READ FROM THE CELLS:
-//
-//  infile.OpenFieldsFile("Cell", nspec, col->getNxc(),
-//                                       col->getNyc(),
-//                                       col->getNzc(),
-//                                       vct->getCoordinates(),
-//                                       vct->getDivisions(),
-//                                       vct->getComm());
-//
-//  infile.ReadFields(EMf->getExc(), "Exc", grid->getNXC(), grid->getNYC(), grid->getNZC());
-//  infile.ReadFields(EMf->getEyc(), "Eyc", grid->getNXC(), grid->getNYC(), grid->getNZC());
-//  infile.ReadFields(EMf->getEzc(), "Ezc", grid->getNXC(), grid->getNYC(), grid->getNZC());
-//  infile.ReadFields(EMf->getBxc(), "Bxc", grid->getNXC(), grid->getNYC(), grid->getNZC());
-//  infile.ReadFields(EMf->getByc(), "Byc", grid->getNXC(), grid->getNYC(), grid->getNZC());
-//  infile.ReadFields(EMf->getBzc(), "Bzc", grid->getNXC(), grid->getNYC(), grid->getNZC());
-//
-//  for (int is = 0; is < nspec; is++){
-//    std::stringstream  ss;
-//    ss << is;
-//    std::string s_is = ss.str();
-//    infile.ReadFields(EMf->getRHOcs(is, 0), "rhoc_"+s_is, grid->getNXC(), grid->getNYC(), grid->getNZC());
-//  }
-//
-//  infile.CloseFieldsFile();
-//
-//  // initialize B on nodes
-//  grid->interpC2N(EMf->getBx(), EMf->getBxc());
-//  grid->interpC2N(EMf->getBy(), EMf->getByc());
-//  grid->interpC2N(EMf->getBz(), EMf->getBzc());
-//
-//  for (int is = 0; is < nspec; is++)
-//    grid->interpC2N(EMf->getRHOns(), is, EMf->getRHOcs());
-//
-//---END READ FROM THE CELLS
+  infile.CloseFieldsFile();
+
+    //---READ FROM THE CELLS:
+  int err = infile.OpenFieldsFile("Cell", nspec, col->getNxc(),
+                                  col->getNyc(),
+                                  col->getNzc(),
+                                  vct->getCoordinates(),
+                                  vct->getDivisions(),
+                                  vct->getComm());
+
+  if (err == 0) {
+    infile.ReadFields(EMf->getBxc(), "Bxc", grid->getNXC(), grid->getNYC(), grid->getNZC());
+    infile.ReadFields(EMf->getByc(), "Byc", grid->getNXC(), grid->getNYC(), grid->getNZC());
+    infile.ReadFields(EMf->getBzc(), "Bzc", grid->getNXC(), grid->getNYC(), grid->getNZC());
+    infile.CloseFieldsFile();
+    //---END READ FROM THE CELLS
+  } else {
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    if (rank == 0) {
+      fprintf(stderr,"\n"
+                     "=======================================================================\n"
+                     " WARNING: Field file on the cells has not been found. The value on the \n"
+                     " cells will be computed by interpolation from the nodes\n" 
+                     "=======================================================================\n"
+           );
+    }
+    grid->interpN2C(EMf->getBxc(), EMf->getBx());
+    grid->interpN2C(EMf->getByc(), EMf->getBy());
+    grid->interpN2C(EMf->getBzc(), EMf->getBz());
+  }
+
+  communicateCenterBC(grid->getNXC(), grid->getNYC(), grid->getNZC(), EMf->getBxc(), col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5], vct);
+  communicateCenterBC(grid->getNXC(), grid->getNYC(), grid->getNZC(), EMf->getByc(), col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5], vct);
+  communicateCenterBC(grid->getNXC(), grid->getNYC(), grid->getNZC(), EMf->getBzc(), col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct);
+
+
 
 #endif
 }

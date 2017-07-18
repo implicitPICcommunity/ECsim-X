@@ -143,7 +143,7 @@ void Collective::ReadInput(string inputfile) {
     }
     else {
       cout << " ERROR: The name of the initial file is incorrect, please verify that you are " << endl;
-      cout << "        using an iPic3D file with the correct name: FileName-Fields_000000.h5" << endl;
+      cout << "        using an Ecsim file with the correct name: FileName-Fields_000000.h5" << endl;
     }
 
 #else

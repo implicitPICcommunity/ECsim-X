@@ -73,8 +73,7 @@ int c_Solver::Init(int argc, char **argv) {
     /* -------------------------------------------- */
     if (myrank==0) 
       cout << "INIT FIELDS FROM FILE" << endl;
-    ReadFieldsH5hut(ns, true, EMf, col, vct, grid);
-    //ReadFieldsH5hut(ns, false, EMf, col, vct, grid);
+    ReadFieldsH5hut(ns, true, true, EMf, col, vct, grid);
 
     if (col->getCase()=="TwoCoils" || col->getCase()=="SixCoils" || col->getCase()=="TwoCoilsINJ" || col->getCase()=="SixCoilsINJ"){
       EMf->setRhoInit(grid, col);

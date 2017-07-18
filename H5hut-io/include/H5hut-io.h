@@ -35,7 +35,7 @@ class H5input{
     void SetNameCycle(std::string name, int rc);
 
     // Field read functions:
-    void OpenFieldsFile(std::string dtype, int nspec, int ntx, int nty, int ntz, int *coord, int *pdims, MPI_Comm CART_COMM);
+    int  OpenFieldsFile(std::string dtype, int nspec, int ntx, int nty, int ntz, int *coord, int *pdims, MPI_Comm CART_COMM);
     void ReadFields(double ***field, std::string fname, int nx, int ny, int nz, int rank=-1);
     void CloseFieldsFile();
 
