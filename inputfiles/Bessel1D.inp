@@ -8,7 +8,8 @@ RestartDirName = data   # Restart directory (for WriteMethod=default)
 #  %%%%%%%%%%%%%%%%%%% Input/Output flags %%%%%%%%%%%%%%%%%%
 Case              = Bessel1D                         # Case [ GEM | Dipole | ... ]
 FieldsInit        = ./data/Initial-Fields_000000.h5  # Initial fields h5 file
-PartInit          = Coils                            # Initial particles [ Maxwell | File ]
+PartInit          = maxwell                          # Initial particles [ maxwell | mono | File ]
+PartInj           = mono                             # Particle injector [ maxwell | mono ]
 WriteMethod       = ascii                            # Output method [ default | Parallel ]
 PoissonCorrection = no                               # Poisson correction [ yes | no ]
 SimulationName    = test                             # Simulation name for the output

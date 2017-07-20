@@ -153,6 +153,8 @@ class Collective
     string getCase();
     /*! get particle initialization type */
     string getPartInit();
+    /*! get particle injection type */
+    string getPartInj();
     /*! get output writing method */
     string getWriteMethod();
     /*! get simulation name */
@@ -354,6 +356,8 @@ class Collective
     string FieldsInit;
     /*! Particle initialization type */
     string PartInit;
+    /*! Particle injection type */
+    string PartInj;
     /*! Output writing method */
     string wmethod;
     /*! Simulation name */

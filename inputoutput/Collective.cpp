@@ -45,6 +45,7 @@ void Collective::ReadInput(string inputfile) {
     Case              = config.read<string>("Case");
     FieldsInit        = config.read<string>("FieldsInit");
     PartInit          = config.read<string>("PartInit");
+    PartInj           = config.read<string>("PartInj");
     wmethod           = config.read<string>("WriteMethod");
     SimName           = config.read<string>("SimulationName");
     PoissonCorrection = config.read<string>("PoissonCorrection");
@@ -1112,6 +1113,10 @@ string Collective::getCase() {
 /*! get Particle initialization type */
 string Collective::getPartInit() {
   return (PartInit);
+}
+/*! get Particle injection type */
+string Collective::getPartInj() {
+  return (PartInj);
 }
 /*! get simulation name */
 string Collective::getSimName() {
