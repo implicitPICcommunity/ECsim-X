@@ -1,6 +1,7 @@
 
 #include "ECsim.h"
 #include "MyClock.h"
+#include "Memory.h"
 
 using namespace ECsim;
 
@@ -384,6 +385,7 @@ void c_Solver::WriteConserved(int cycle) {
   }
 
   if (cycle == first_cycle+1) {
+
     totEn0 = EMf->getEenergy() + EMf->getBenergy();
     for (int is = 0; is < ns; is++) {
       totEn0 +=  part[is].getKe();
@@ -399,6 +401,9 @@ void c_Solver::WriteConserved(int cycle) {
 
   // write the conserved quantities
   if (cycle % col->getDiagnosticsOutputCycle() == 0) {
+    // Check the memory usage
+    check_mem_usage();
+
     Eenergy = EMf->getEenergy();
     Benergy = EMf->getBenergy();
     double ExtBenergy = EMf->getBextenergy();
