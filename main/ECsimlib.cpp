@@ -355,7 +355,6 @@ void c_Solver::InjectBoundaryParticles(){
       if (col->getRHOinject(i)>0.0)
         if (col->getPartInj() == "mono") {
           part[i].inject_mono_sphere(grid,EMf,vct,L_square,x_center,y_center,z_center, 1.0);
-printf("MONO injector\n");
 }
           //part[i].injector_rand_box_mono(grid, vct, EMf, col->getx_center(),col->gety_center(),col->getz_center(), col->getL_square());
         else
