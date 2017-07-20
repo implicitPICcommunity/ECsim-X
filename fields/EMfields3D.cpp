@@ -119,13 +119,24 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
   v_bulk = col->getVbulk();
   w_bulk = col->getWbulk();
 
+  long long memreq = 0;
+  int ntn = nxn*nyn*nzn;
+  int ntc = nxc*nyc*nzc;
+  memreq =   ntn*13 + ns*ntn*4 + ntn + ns*ntn*3 + NE_MASS*ntn*9 + ns*ntn*6 + 6*ntn + ns*ntn
+           + ns*ntc + 4*ntc + 3*ntc + 7*ntc + ntn*16;
+  memreq *= sizeof(double);
+
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  if (rank == 0) printf("---------------------------------------------------\n"
+                        "Memory needed for the fields: %.1f Mb/process\n"
+                        "---------------------------------------------------\n", ((double) memreq)/(1024*1024));
+   
+
   // arrays allocation: nodes
   Ex = newArr3(double, nxn, nyn, nzn);
   Ey = newArr3(double, nxn, nyn, nzn);
   Ez = newArr3(double, nxn, nyn, nzn);
-  //Ex_prev= newArr3(double, nxn, nyn, nzn);
-  //Ey_prev= newArr3(double, nxn, nyn, nzn);
-  //Ez_prev= newArr3(double, nxn, nyn, nzn);
   Exth = newArr3(double, nxn, nyn, nzn);
   Eyth = newArr3(double, nxn, nyn, nzn);
   Ezth = newArr3(double, nxn, nyn, nzn);
@@ -138,7 +149,6 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
   Jzh = newArr3(double, nxn, nyn, nzn);
   Jxhs = newArr4(double, ns, nxn, nyn, nzn);
   Jyhs = newArr4(double, ns, nxn, nyn, nzn);
-  Jzhs = newArr4(double, ns, nxn, nyn, nzn);
   Jzhs = newArr4(double, ns, nxn, nyn, nzn);
 
   rhotilde = newArr4(double, ns, nxn, nyn, nzn);
