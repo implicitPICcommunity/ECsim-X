@@ -54,6 +54,7 @@ class EMfields3D                // :public Field
     void initGEM(VirtualTopology3D * vct, Grid * grid, Collective *col);
     void initDoubleGEM(VirtualTopology3D * vct, Grid * grid, Collective *col);
     void initDoublePeriodicHarrisWithGaussianHumpPerturbation(VirtualTopology3D * vct, Grid * grid, Collective *col);
+    void tangential_discontinuity(VirtualTopology3D * vct, Grid * grid, Collective *col);
     void initWB8(VirtualTopology3D *vct, Grid *grid, Collective *col);
     void initWB8_6(VirtualTopology3D *vct, Grid *grid, Collective *col);
     void initDipole(VirtualTopology3D *vct, Grid *grid, Collective *col);

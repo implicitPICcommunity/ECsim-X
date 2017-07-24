@@ -90,6 +90,7 @@ int c_Solver::Init(int argc, char **argv) {
     if      (col->getCase()=="GEM")         EMf->initGEM(vct, grid,col);
     else if (col->getCase()=="DoubleGEM")   EMf->initDoubleGEM(vct, grid,col);
     else if (col->getCase()=="DoubleHarris")EMf->initDoublePeriodicHarrisWithGaussianHumpPerturbation(vct,grid,col);
+    else if (col->getCase()=="TD")          EMf->tangential_discontinuity(vct,grid,col);
     else if (col->getCase()=="Whistler")    EMf->initDoublePeriodicHarrisWithGaussianHumpPerturbation(vct,grid,col);
     else if (col->getCase()=="TwoCoils" || col->getCase()=="TwoCoilsINJ")    EMf->initWB8(vct,grid,col);
     else if (col->getCase()=="SixCoils" || col->getCase()=="SixCoilsINJ")    EMf->initWB8_6(vct,grid,col);
@@ -125,6 +126,7 @@ int c_Solver::Init(int argc, char **argv) {
     if      (col->getSolInit() && col->getPartInit()=="File") ReadPartclH5hut(ns, part, col, vct, grid);
     else if (col->getSolInit() && col->getPartInit() == "FromFieldFile") part[i].MaxwellianFromFieldFile(grid, EMf, vct);
     else if (col->getCase()=="DoubleGEM")      part[i].MaxwellianDoubleGEM(grid, EMf, vct);
+    else if (col->getCase()=="TD")             part[i].MaxwellianTangentialDiscontinuity(grid, EMf, vct);
     else if (col->getCase()=="Dipole")         part[i].maxwellian(grid, EMf, vct);
     else if (col->getCase()=="FluxRope")       part[i].maxwellian(grid, EMf, vct);
     else if (col->getCase()=="TwoCoils" || col->getCase()=="SixCoils" || col->getCase()=="TwoCoilsINJ" || col->getCase()=="SixCoilsINJ"){
