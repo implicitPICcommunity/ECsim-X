@@ -231,6 +231,7 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
       col->getCase() == "SixCoils" ||
       col->getCase() == "SixCoilsINJ" ||
       col->getCase() == "FluxRope" ||
+      col->getCase() == "Mirror" ||
       col->getCase() == "GEM" ) {
     Lambda = newArr3(double, nxn, nyn, nzn);
     damping = 1;
@@ -1890,6 +1891,78 @@ void EMfields3D::initDoublePeriodicHarrisWithGaussianHumpPerturbation(VirtualTop
   }
 }
 
+//Initializes the vacuum fields for Magnetic mirror.
+void EMfields3D::initMirror(VirtualTopology3D *vct, Grid *grid, Collective *col){
+  if (vct->getCartesian_rank() == 0) {
+    cout << "------------------------------------------" << endl;
+    cout << "Initialize magnetic mirror" << endl;
+    cout << "------------------------------------------" << endl;
+    cout << "B0x                              = " << B0x << endl;
+    cout << "B0y                              = " << B0y << endl;
+    cout << "B0z                              = " << B0z << endl;
+  }
+  Fext = 1;
+  double distance;
+
+  //char BlogName[256];
+  //sprintf(BlogName, "/home/aws/VacuumB.%d.csv", vct->getCartesian_rank());
+  //FILE *Blog = fopen(BlogName, "w");
+  //fprintf(Blog, "x,y,z,Bx,By,Bz\n");
+
+   for (int i=0; i < nxn; i++){
+     for (int j=0; j < nyn; j++){
+       for (int k=0; k < nzn; k++){
+         for (int is=0; is < ns; is++){
+           rhons[is][i][j][k] = rhoINIT[is] / FourPI;
+         }
+         Ex[i][j][k] = 0.0;
+         Ey[i][j][k] = 0.0;
+         Ez[i][j][k] = 0.0;
+         double blp[3];
+         double a=coilD/2.0;
+         double xc=x_center;
+         double yc=y_center;
+         double zc=z_center;
+         double deltax=coilSpacing/2.0;
+         double deltay=coilSpacing/2.0;
+         double deltaz=coilSpacing/2.0;
+         double x = grid->getXN(i,j,k);
+         double y = grid->getYN(i,j,k);
+         double z = grid->getZN(i,j,k);
+         loopY(blp, x, y, z, a, xc, yc+deltay, zc, B0y);
+         Bx_ext[i][j][k] += blp[0];
+         By_ext[i][j][k] += blp[1];
+         Bz_ext[i][j][k] += blp[2];
+         loopY(blp, x, y, z, a, xc, yc-deltay, zc, B0y);
+         Bx_ext[i][j][k] += blp[0];
+         By_ext[i][j][k] += blp[1];
+         Bz_ext[i][j][k] += blp[2];
+
+        //fprintf(Blog, "%f,%f,%f,%E,%E,%E\n", x, y, z, Bxn[i][j][k], Byn[i][j][k], Bzn[i][j][k]);
+      }
+    }
+  }
+
+  // communicate ghost
+  communicateNodeBC(nxn, nyn, nzn, Bx_ext, col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5], vct);
+  communicateNodeBC(nxn, nyn, nzn, By_ext, col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5], vct);
+  communicateNodeBC(nxn, nyn, nzn, Bz_ext, col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct);
+
+  MPI_Barrier(MPI_COMM_WORLD);
+  //fclose(Blog);
+
+  for (int is=0 ; is<ns; is++)
+    grid->interpN2C(rhocs,is,rhons);
+
+  if (restart1 ==0){
+    //  do nothing
+  } else { // EM initialization from RESTART
+    init(vct,grid,col);  // use the fields from restart file
+  }
+
+  SetLambda(grid, col);
+
+}
 //Initializes the vacuum fields for EMC2.
 void EMfields3D::initWB8(VirtualTopology3D *vct, Grid *grid, Collective *col){
   if (vct->getCartesian_rank() == 0) {
