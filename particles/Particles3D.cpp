@@ -272,6 +272,79 @@ void Particles3D::MaxwellianDoubleGEM(Grid * grid, Field * EMf, VirtualTopology3
 
 }
 
+/** Maxellian random velocity and uniform spatial distribution, goes with Tangential Discontinuity*/
+void Particles3D::MaxwellianTangentialDiscontinuity(Grid * grid, Field * EMf, VirtualTopology3D * vct) {
+
+  const double coarsedx = grid->getDX();
+  double globalx;
+  double uthp, vthp, wthp;
+  
+  double prob, theta, sign;
+  long long counter = 0;
+  for (int i = 1; i < grid->getNXC() - 1; i++)
+    for (int j = 1; j < grid->getNYC() - 1; j++)
+      for (int k = 1; k < grid->getNZC() - 1; k++)
+        for (int ii = 0; ii < npcelx; ii++)
+          for (int jj = 0; jj < npcely; jj++)
+            for (int kk = 0; kk < npcelz; kk++) {
+	      
+	      globalx= grid->getXN(i,j,k)+ coarsedx;
+	      
+              double xB =  .25 * Lx;
+              double xT =  .75 * Lx;
+
+              x[counter] = (ii + .5) * (dx / npcelx) + grid->getXN(i, j, k);  
+              y[counter] = (jj + .5) * (dy / npcely) + grid->getYN(i, j, k);
+              z[counter] = (kk + .5) * (dz / npcelz) + grid->getZN(i, j, k);
+              // q = charge
+              q[counter] = (qom / fabs(qom)) * (fabs(EMf->getRHOcs(i, j, k, ns)) / npcel) * (1.0 / grid->getInvVOLc(i,j,k));
+              // u
+              prob = sqrt(-2.0 * log(1.0 - .999999 * Drand48(seed)));
+              theta = 2.0 * M_PI * Drand48(seed);
+              if (globalx <= xB || globalx >= xT)
+                  {
+                   uthp = uth;
+                   vthp = vth;
+                   wthp = wth;
+                  }
+               else
+                  {
+                   if (qom < 0) 
+                      {
+                       uthp = uth * 1.24;
+                       vthp = vth * 1.24;
+                       wthp = wth * 1.24;
+                       // printf("uthp = %f\n ", uthp);
+                      }
+                   else
+                      {
+                       uthp = uth * 3.16;
+                       vthp = vth * 3.16;
+                       wthp = wth * 3.16;
+                      }
+                  }
+
+              u[counter] = u0 + uthp * prob * cos(theta);
+              // v
+              v[counter] = v0 + vthp * prob * sin(theta);
+              // w
+              prob = sqrt(-2.0 * log(1.0 - .999999 * Drand48(seed)));
+              theta = 2.0 * M_PI * Drand48(seed);
+              w[counter] = w0 + wthp * prob * cos(theta);
+              if (TrackParticleID)
+                ParticleID[counter] = counter * (unsigned long) pow(10.0, BirthRank[1]) + BirthRank[0];
+
+
+              counter++;
+            }
+
+
+}
+
+
+
+
+
 /** Monoenergetic random velocity and uniform spatial distribution */
 int Particles3D::monoenergetic_box(Grid* grid,Field* EMf,VirtualTopology3D* vct, double L_square, double x_center, double y_center, double z_center, double multiple){
 
