@@ -2135,6 +2135,8 @@ double Particles3D::deleteParticlesInsideSphere(double R, double x_center, doubl
 
     if ( (xd*xd+yd*yd+zd*zd) < R*R ){
       Q_removed += q[np_current];
+      K_removed += .5 * (q[np_current] / qom) * (u[np_current]*u[np_current] + v[np_current]*v[np_current] + w[np_current]*w[np_current]);
+
       del_pack(np_current,&nplast);
 
     } else {
@@ -2155,6 +2157,7 @@ double Particles3D::deleteParticlesOuterFrame(double multx, double multy, double
             if (x[np_current] > (Lx-multx*dx) ||
                 y[np_current] < multy*dy || y[np_current] > (Ly-multy*dx)) {
                 Q_removed += q[np_current];
+                K_removed += .5 * (q[np_current] / qom) * (u[np_current]*u[np_current] + v[np_current]*v[np_current] + w[np_current]*w[np_current]);
                 del_pack(np_current,&nplast);
             } else {
               np_current++;
@@ -2166,6 +2169,7 @@ double Particles3D::deleteParticlesOuterFrame(double multx, double multy, double
                 y[np_current] < multy*dy || y[np_current] > (Ly-multy*dy) ) {
                 //z[np_current] < multz*dz || z[np_current] > (Lz-multz*dz)) {
                 Q_removed += q[np_current];
+                K_removed += .5 * (q[np_current] / qom) * (u[np_current]*u[np_current] + v[np_current]*v[np_current] + w[np_current]*w[np_current]);
                 del_pack(np_current,&nplast);
             } else {
               np_current++;
@@ -2185,6 +2189,7 @@ double Particles3D::deleteParticlesOutsideSphere(double R, double x_center, doub
 		if (sqrt( pow(x[np_current] - x_center,2) + pow(y[np_current] - y_center,2) + pow(z[np_current] - z_center,2) ) > R){
 			// delete the particle and pack the particle array, the value of nplast changes
 			Q_removed += q[np_current];
+      K_removed += .5 * (q[np_current] / qom) * (u[np_current]*u[np_current] + v[np_current]*v[np_current] + w[np_current]*w[np_current]);
 			del_pack(np_current,&nplast);
 
 		} else {
@@ -2206,6 +2211,7 @@ double Particles3D::deleteParticlesOutsideBox(double L){
 			z[np_current] > L || z[np_current] < 0){
 			// delete the particle and pack the particle array, the value of nplast changes
 			Q_removed += q[np_current];
+      K_removed += .5 * (q[np_current] / qom) * (u[np_current]*u[np_current] + v[np_current]*v[np_current] + w[np_current]*w[np_current]);
 			del_pack(np_current,&nplast);
 
 		} else {

@@ -230,6 +230,8 @@ void Particles3Dcomm::allocate(int species, long long initnpmax, Collective * co
     cout << " Restart not implemented." << endl; 
   }
 
+  K_removed = 0;
+
 }
 
 /** calculate the weights given the position of particles 0,0,0 is the left,left, left node */
@@ -1176,6 +1178,14 @@ double Particles3Dcomm::getP() {
     localP += (q[i] / qom) * sqrt(u[i] * u[i] + v[i] * v[i] + w[i] * w[i]);
   MPI_Allreduce(&localP, &totalP, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
   return (totalP);
+}
+
+/** return the Kinetic energy removed from the system*/
+double Particles3Dcomm::getKremoved() {
+  double localK = K_removed;
+  double totalK = 0.0;
+  MPI_Allreduce(&localK, &totalK, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+  return (totalK);
 }
 
 /** return the highest kinetic energy */
