@@ -391,14 +391,14 @@ void c_Solver::WriteConserved(int cycle) {
 
   if (cycle == first_cycle+1) {
 
-    totEn0 = EMf->getEenergy() + EMf->getBenergy();
+    totEn0 = EMf->getEenergy() + EMf->getBenergy() + EMf->getEenergyRemoved();
     for (int is = 0; is < ns; is++) {
       totEn0 +=  part[is].getKe();
       totEn0 += part[is].getKremoved();
     }
     if (myrank == 0) {
       FILE* fd = fopen(cq.c_str(),"a");
-      fprintf(fd,"Cycle  Total energy   |En - En0|   Electric. En. Magnetic. En.  Kinetic En.   Momentum     Ext.Mag.En.  Kin. En. rem.     NOP     Charge        (NOP     Charge   ...))\n"
+      fprintf(fd,"Cycle  Total energy   |En - En0|   Electric. En. Magnetic. En.  Kinetic En.   Momentum     Ext.Mag.En.  Kin. En. Rem.   Ele. En. Rem.   NOP     Charge        (NOP     Charge   ...))\n"
                  "-----------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
       fclose(fd);
     }
@@ -412,6 +412,8 @@ void c_Solver::WriteConserved(int cycle) {
 
     Eenergy = EMf->getEenergy();
     Benergy = EMf->getBenergy();
+    double EenRem  = EMf->getEenergyRemoved();
+
     double ExtBenergy = EMf->getBextenergy();
     TOTenergy = 0.0;
     TOTmomentum = 0.0;
@@ -430,13 +432,14 @@ void c_Solver::WriteConserved(int cycle) {
     }
     if (myrank == 0) {
       FILE* fd = fopen(cq.c_str(),"a");
-      fprintf(fd,"%5d %13.6e %13.6e %13.6e %13.6e %13.6e %13.6e %13.6e %13.6e"
+      fprintf(fd,"%5d %13.6e %13.6e %13.6e %13.6e %13.6e %13.6e %13.6e %13.6e %13.6e"
                 ,cycle
-                ,(Eenergy + Benergy + TOTenergy), fabs((Eenergy + Benergy + TOTenergy) - totEn0)
+                ,(EenRem + Eenergy + Benergy + TOTenergy), fabs((EenRem + Eenergy + Benergy + TOTenergy) - totEn0)
                 ,Eenergy , Benergy, TOTenergy
                 ,TOTmomentum
                 ,ExtBenergy
                 ,Kr
+                ,EenRem
                 );
       for (int is = 0; is < ns; is++) fprintf(fd,"  %7ld %13.6e", nop[is], tq[is]);
       fprintf(fd,"\n");

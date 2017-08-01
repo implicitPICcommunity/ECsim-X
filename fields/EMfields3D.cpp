@@ -239,6 +239,9 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
 
   // Set to zero all the memory allocated
   setAllzero();
+  Eenergy = 0;
+  Benergy = 0;
+  EenergyRemoved = 0;
 
   #ifdef _TEST_CURL_
     testCurl(grid);
@@ -249,7 +252,6 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
     testDivergence(grid);
     exit(0);
   #endif
-
 }
 
 void EMfields3D::setAllzero()
@@ -3608,7 +3610,6 @@ double EMfields3D::getEenergy(void) {
 
 }
 
-
 /*! get the magnetic field energy */
 double EMfields3D::getBenergy(void) {
   double localBenergy = 0.0;
@@ -3653,6 +3654,27 @@ double EMfields3D::getBextenergy(void) {
 
   MPI_Allreduce(&localBenergy, &totalBenergy, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
   return (totalBenergy);
+}
+
+/*! get the electric field energy damped*/
+double EMfields3D::getEenergyRemoved(void) {
+ 
+  double lE = 0;
+  
+  for (int i = 1; i < nxn-2; i++)
+    for (int j = 1; j < nyn-2; j++)
+      for (int k = 1; k < nzn-2; k++) {
+        //lE += .5*Lambda[i][j][k]*(Ex[i][j][k] * Ex[i][j][k] + Ey[i][j][k] * Ey[i][j][k] + Ez[i][j][k] * Ez[i][j][k]) / (FourPI*invVOLn[i][j][k]);
+        lE += 2*Lambda[i][j][k]*(Exth[i][j][k] * Exth[i][j][k] + Eyth[i][j][k] * Eyth[i][j][k] + Ezth[i][j][k] * Ezth[i][j][k]) / (FourPI*invVOLn[i][j][k]);
+      }
+  EenergyRemoved += lE;
+
+  double localEenergy = EenergyRemoved;
+  double totalEenergy = 0.0;
+
+  MPI_Allreduce(&localEenergy, &totalEenergy, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+  return (totalEenergy);
+
 }
 
 
