@@ -2115,6 +2115,23 @@ void EMfields3D::initWB8(VirtualTopology3D *vct, Grid *grid, Collective *col){
          Bx_ext[i][j][k] += blp[0];
          By_ext[i][j][k] += blp[1];
          Bz_ext[i][j][k] += blp[2];
+         
+          loopY(blp, x, y, z, a/2.0, xc, yc+deltay, zc, -B1y);
+          Bx_ext[i][j][k] += blp[0];
+          By_ext[i][j][k] += blp[1];
+          Bz_ext[i][j][k] += blp[2];
+          loopY(blp, x, y, z, a/2.0, xc, yc-deltay, zc, B1y);
+          Bx_ext[i][j][k] += blp[0];
+          By_ext[i][j][k] += blp[1];
+          Bz_ext[i][j][k] += blp[2];
+          loopY(blp, x, y, z, a, xc, yc+deltay/2.0, zc, -B1y);
+          Bx_ext[i][j][k] += blp[0];
+          By_ext[i][j][k] += blp[1];
+          Bz_ext[i][j][k] += blp[2];
+          loopY(blp, x, y, z, a, xc, yc-deltay/2.0, zc, B1y);
+          Bx_ext[i][j][k] += blp[0];
+          By_ext[i][j][k] += blp[1];
+          Bz_ext[i][j][k] += blp[2];
 
         //fprintf(Blog, "%f,%f,%f,%E,%E,%E\n", x, y, z, Bxn[i][j][k], Byn[i][j][k], Bzn[i][j][k]);
       }
