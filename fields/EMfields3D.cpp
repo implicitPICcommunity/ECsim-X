@@ -2068,6 +2068,7 @@ void EMfields3D::initWB8(VirtualTopology3D *vct, Grid *grid, Collective *col){
   //sprintf(BlogName, "/home/aws/VacuumB.%d.csv", vct->getCartesian_rank());
   //FILE *Blog = fopen(BlogName, "w");
   //fprintf(Blog, "x,y,z,Bx,By,Bz\n");
+  
 
    for (int i=0; i < nxn; i++){
      for (int j=0; j < nyn; j++){
@@ -2079,13 +2080,17 @@ void EMfields3D::initWB8(VirtualTopology3D *vct, Grid *grid, Collective *col){
          Ey[i][j][k] = 0.0;
          Ez[i][j][k] = 0.0;
          double blp[3];
-         double a=coilD/2.0;
+         double a  = coilD/2.0;
+         double a2 = a + a*0.50;
+         double a3 = a - a*0.50;
          double xc=x_center;
          double yc=y_center;
          double zc=z_center;
          double deltax=coilSpacing/2.0;
          double deltay=coilSpacing/2.0;
          double deltaz=coilSpacing/2.0;
+         double deltay2=deltay - deltay*0.4;
+         double deltay3=deltay + deltay*0.4;
          double x = grid->getXN(i,j,k);
          double y = grid->getYN(i,j,k);
          double z = grid->getZN(i,j,k);
@@ -2116,22 +2121,22 @@ void EMfields3D::initWB8(VirtualTopology3D *vct, Grid *grid, Collective *col){
          By_ext[i][j][k] += blp[1];
          Bz_ext[i][j][k] += blp[2];
          
-          loopY(blp, x, y, z, a/2.0, xc, yc+deltay, zc, -B1y);
-          Bx_ext[i][j][k] += blp[0];
-          By_ext[i][j][k] += blp[1];
-          Bz_ext[i][j][k] += blp[2];
-          loopY(blp, x, y, z, a/2.0, xc, yc-deltay, zc, B1y);
-          Bx_ext[i][j][k] += blp[0];
-          By_ext[i][j][k] += blp[1];
-          Bz_ext[i][j][k] += blp[2];
-          loopY(blp, x, y, z, a, xc, yc+deltay/2.0, zc, -B1y);
-          Bx_ext[i][j][k] += blp[0];
-          By_ext[i][j][k] += blp[1];
-          Bz_ext[i][j][k] += blp[2];
-          loopY(blp, x, y, z, a, xc, yc-deltay/2.0, zc, B1y);
-          Bx_ext[i][j][k] += blp[0];
-          By_ext[i][j][k] += blp[1];
-          Bz_ext[i][j][k] += blp[2];
+         loopY(blp, x, y, z, a2, xc, yc+deltay2, zc, -B1y);
+         Bx_ext[i][j][k] += blp[0];
+         By_ext[i][j][k] += blp[1];
+         Bz_ext[i][j][k] += blp[2];
+         loopY(blp, x, y, z, a2, xc, yc-deltay2, zc, B1y);
+         Bx_ext[i][j][k] += blp[0];
+         By_ext[i][j][k] += blp[1];
+         Bz_ext[i][j][k] += blp[2];
+         loopY(blp, x, y, z, a3, xc, yc-deltay3, zc, B1y);
+         Bx_ext[i][j][k] += blp[0];
+         By_ext[i][j][k] += blp[1];
+         Bz_ext[i][j][k] += blp[2];
+         loopY(blp, x, y, z, a3, xc, yc+deltay3, zc, -B1y);
+         Bx_ext[i][j][k] += blp[0];
+         By_ext[i][j][k] += blp[1];
+         Bz_ext[i][j][k] += blp[2];
 
         //fprintf(Blog, "%f,%f,%f,%E,%E,%E\n", x, y, z, Bxn[i][j][k], Byn[i][j][k], Bzn[i][j][k]);
       }
