@@ -296,7 +296,7 @@ bool c_Solver::ParticlesMover() {
     totK1 +=  part[i].getKe();
   }
   double deltaK = totK1 - totK0;
-  EMf->communicateGhostP2G_spec(vct);
+  EMf->communicateGhostP2G_JP(vct);
   EMf->testJdotE(grid, deltaK);
   #endif
 
