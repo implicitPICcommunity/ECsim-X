@@ -82,23 +82,6 @@ void Particles3Dcomm::allocate(int species, long long initnpmax, Collective * co
   npcelx = col->getNpcelx(species);
   npcely = col->getNpcely(species);
   npcelz = col->getNpcelz(species);
-
-  // This if is necessary to restart with H5hut-io
-  if (initnpmax==0){
-    long ncproc = int(col->getNxc()/col->getXLEN()) *
-                  int(col->getNyc()/col->getYLEN()) *
-                  int(col->getNzc()/col->getZLEN());
-    nop   = ncproc * npcel;
-    npmax = nop * col->getNpMaxNpRatio();
-  }
-  else {
-    npmax = initnpmax*col->getNpMaxNpRatio();
-    nop   = initnpmax;
-  }
-
-  rhoINIT   = col->getRHOinit(species);
-  rhoINJECT = col->getRHOinject(species);
-
   qom = col->getQOM(species);
   uth = col->getUth(species);
   vth = col->getVth(species);
@@ -113,9 +96,42 @@ void Particles3Dcomm::allocate(int species, long long initnpmax, Collective * co
   dx = grid->getDX();
   dy = grid->getDY();
   dz = grid->getDZ();
+  nxn = grid->getNXN();
+  nyn = grid->getNYN();
+  nzn = grid->getNZN();
+  invVOL = 1.0/(dx*dy*dz);
   delta = col->getDelta();
   TrackParticleID = col->getTrackParticleID(species);
   c = col->getC();
+
+  // This if is necessary to restart with H5hut-io
+  if (initnpmax==0){
+    long ncproc = int(col->getNxc()/col->getXLEN()) *
+                  int(col->getNyc()/col->getYLEN()) *
+                  int(col->getNzc()/col->getZLEN());
+		// In these cases there are particle only in a small sphere, so this allow us to use more
+		// particles per cell.
+		if (col->getCase()=="TwoCoils"    || col->getCase()=="SixCoils" || 
+        col->getCase()=="TwoCoilsINJ" || col->getCase()=="SixCoilsINJ" || col->getCase()=="Mirror"){
+	    double D  = col->getL_square();		
+			double volS = (nzn == 4 ? D*D : D*D*D);
+			double volD = (nzn == 4 ? (nxn-3)*(nyn-3)*dx*dy: (nxn-3)*(nyn-3)*(nzn-3)*dx*dy*dz);
+			nop = npcel*ncproc*volS/volD;
+      npmax = nop * col->getNpMaxNpRatio();
+      
+    } else {
+      nop   = ncproc * npcel;
+      npmax = nop * col->getNpMaxNpRatio();
+    }
+  } else {
+    npmax = initnpmax*col->getNpMaxNpRatio();
+    nop   = initnpmax;
+  }
+
+
+  rhoINIT   = col->getRHOinit(species);
+  rhoINJECT = col->getRHOinject(species);
+
   // info for mover
   NiterMover = col->getNiterMover();
   // velocity of the injection from the wall
@@ -129,14 +145,6 @@ void Particles3Dcomm::allocate(int species, long long initnpmax, Collective * co
   zstart = grid->getZstart();
   zend = grid->getZend();
 
-  dx = grid->getDX();
-  dy = grid->getDY();
-  dz = grid->getDZ();
-
-  nxn = grid->getNXN();
-  nyn = grid->getNYN();
-  nzn = grid->getNZN();
-  invVOL = 1.0/(dx*dy*dz);
   // info from VirtualTopology3D
   cVERBOSE = vct->getcVERBOSE();
   Cylindrical = col->getCylindrical();
@@ -175,8 +183,9 @@ void Particles3Dcomm::allocate(int species, long long initnpmax, Collective * co
     long long memreq = (npmax*6 + buffer_size*6)*col->getNs();
     memreq *= sizeof(double);
     printf("---------------------------------------------------\n"
+					 "Maximum number of particles per process: %ld\n"
            "Memory needed for the particles: %.3f Gb/process\n"
-           "---------------------------------------------------\n", ((double) memreq)/(1000*1000));
+           "---------------------------------------------------\n",npmax, ((double) memreq)/(1000*1000));
   }
 
 
