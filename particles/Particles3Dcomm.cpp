@@ -116,7 +116,7 @@ void Particles3Dcomm::allocate(int species, long long initnpmax, Collective * co
 	    double D  = col->getL_square();		
 			double volS = (nzn == 4 ? D*D : D*D*D);
 			double volD = (nzn == 4 ? (nxn-3)*(nyn-3)*dx*dy: (nxn-3)*(nyn-3)*(nzn-3)*dx*dy*dz);
-			nop = npcel*ncproc*volS/volD;
+			nop = (volS > volD ? npcel*ncproc : npcel*ncproc*volS/volD);
       npmax = nop * col->getNpMaxNpRatio();
       
     } else {
