@@ -258,6 +258,7 @@ class Collective
 
     int getZeroCurrent();
 
+	  double getMemPartGb();
   private:
     /*! inputfile */
     string inputfile;
@@ -475,6 +476,9 @@ class Collective
 
     /** Initial current equal zero */
     int zeroCurrent;
+
+    /** Memory per process for the particles (Gb) . If -1, it is not used */
+    double MemPartGb;
 };
 
 #endif

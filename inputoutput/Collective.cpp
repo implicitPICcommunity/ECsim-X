@@ -40,6 +40,8 @@ void Collective::ReadInput(string inputfile) {
     B1y = config.read <double>("B1y");
     B1z = config.read <double>("B1z");
 
+    MemPartGb = config.read <double>("MemPartGb");
+
     delta = config.read < double >("delta");
 
     Case              = config.read<string>("Case");
@@ -1188,3 +1190,4 @@ double Collective::getVbulk() { return v_bulk; }
 double Collective::getWbulk() { return w_bulk; }
 /*! Get if the total current has to be zero */
 int Collective::getZeroCurrent() {return zeroCurrent;}
+double Collective::getMemPartGb() { return MemPartGb; }

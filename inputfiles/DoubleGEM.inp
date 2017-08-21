@@ -18,6 +18,8 @@ Cylindrical       = 0                               # Cylindrical coordinates (t
 Lagrangian        = 0                               # Lagrangian frame of reference
 ZeroCurrent       = 0                               # 1 -> assure that the inital current is zero
 
+MemPartGb   = -1                                    # Maximum memory allocated for the particles per process (Gb). If -1 it is not used
+
 #  %%%%%%%%%%%%%%%%%%% Magnetic Reconnection %%%%%%%%%%%%%%%%%%
 B0x = 0.0097
 B0y = 0.00

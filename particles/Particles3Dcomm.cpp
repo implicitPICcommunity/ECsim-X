@@ -22,6 +22,7 @@ developers: Stefano Markidis, Giovanni Lapenta.
 #include "MPIdata.h"
 
 #include "Particles3Dcomm.h"
+//#include "Memory.h"
 
 #include "hdf5.h"
 #include <vector>
@@ -109,23 +110,27 @@ void Particles3Dcomm::allocate(int species, long long initnpmax, Collective * co
     long ncproc = int(col->getNxc()/col->getXLEN()) *
                   int(col->getNyc()/col->getYLEN()) *
                   int(col->getNzc()/col->getZLEN());
-		// In these cases there are particle only in a small sphere, so this allow us to use more
-		// particles per cell.
-		if (col->getCase()=="TwoCoils"    || col->getCase()=="SixCoils" || 
-        col->getCase()=="TwoCoilsINJ" || col->getCase()=="SixCoilsINJ" || col->getCase()=="Mirror"){
-	    double D  = col->getL_square();		
-			double volS = (nzn == 4 ? D*D : D*D*D);
-			double volD = (nzn == 4 ? (nxn-3)*(nyn-3)*dx*dy: (nxn-3)*(nyn-3)*(nzn-3)*dx*dy*dz);
-			nop = (volS > volD ? npcel*ncproc : npcel*ncproc*volS/volD);
-      npmax = nop * col->getNpMaxNpRatio();
-      
-    } else {
-      nop   = ncproc * npcel;
-      npmax = nop * col->getNpMaxNpRatio();
-    }
+    nop   = ncproc * npcel;
+    npmax = nop * col->getNpMaxNpRatio();
   } else {
     npmax = initnpmax*col->getNpMaxNpRatio();
     nop   = initnpmax;
+  }
+
+  if (col->getMemPartGb() != -1) {
+		double memGb = col->getMemPartGb();
+		double mem = memGb*(1000*1024*1024);
+		nVar = 7;
+		double szpp = sizeof(double)*col->getNs()*(nVar + 0.05*nVar*6/col->getNpMaxNpRatio());
+    //printf("Size per particle: %f \n", szpp);
+		double npmax_0 = mem/szpp;
+		//printf ("With %g Gb I can use %.0f particles\n", memGb, npmax_0);
+		if (npmax_0 < npmax) {
+			printf("WARNING: particle memory set in the input file (%.3f Gb). The total memory allocated might not be big enough for holding all the particles"
+             "(npcelx * npcely * npcelz * number of cells)\n\n",memGb);
+			npmax = (long long) npmax_0;
+      nop = npmax/col->getNpMaxNpRatio();
+    }
   }
 
 
@@ -179,15 +184,17 @@ void Particles3Dcomm::allocate(int species, long long initnpmax, Collective * co
   buffer_size = (int) (.05 * nop * nVar + 1); // max: 5% of the particles in the processors is going out
   buffer_size_small = (int) (.01 * nop * nVar + 1); // max 1% not resizable 
 
-  if (vct->getCartesian_rank() == 0 && species == 0) {
-    long long memreq = (npmax*6 + buffer_size*6)*col->getNs();
+  if (vct->getCartesian_rank() == 0 && species == 1) {
+    long long memreq = (npmax*nVar + buffer_size*6)*col->getNs();
     memreq *= sizeof(double);
     printf("---------------------------------------------------\n"
 					 "Maximum number of particles per process: %ld\n"
-           "Memory needed for the particles: %.3f Gb/process\n"
-           "---------------------------------------------------\n",npmax, ((double) memreq)/(1000*1000));
+           "Memory needed for the particles: %.3f Mb/process\n"
+           "---------------------------------------------------\n",npmax, ((double) memreq)/(1024*1024));
   }
 
+  //double vm1, res1, vm0, res0;
+  //process_mem_usage(vm0, res0);
 
   // positions
   x = new double[npmax];
@@ -240,6 +247,8 @@ void Particles3Dcomm::allocate(int species, long long initnpmax, Collective * co
   }
 
   K_removed = 0;
+  //process_mem_usage(vm1, res1);
+  //printf("Memmory actually allocated: %g %g\n", vm1-vm0, res1-res0);
 
 }
 

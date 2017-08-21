@@ -16,7 +16,8 @@ SimulationName    = test                             # Simulation name for the o
 Cylindrical = 0                                      # Cylindrical coordinates (true = 1, false = 0)
 Lagrangian  = 0                                      # Lagrangian frame of reference
 ZeroCurrent = 0                                      # 1 -> assure that the inital current is zero
-
+ 
+MemPartGb   = -1                                     # Maximum memory allocated for the particles per process (Gb). If -1 it is not used
 
 #  %%%%%%%%%%%%%%%%%%% Magnetic Reconnection %%%%%%%%%%%%%%%%%%
 B0x = 0.0
