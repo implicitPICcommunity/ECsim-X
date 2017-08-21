@@ -119,15 +119,17 @@ void Particles3Dcomm::allocate(int species, long long initnpmax, Collective * co
 
   if (col->getMemPartGb() != -1) {
 		double memGb = col->getMemPartGb();
-		double mem = memGb*(1000*1024*1024);
+		double mem = memGb*(1000*1024*1024)/col->getNs();
 		nVar = 7;
-		double szpp = sizeof(double)*col->getNs()*(nVar + 0.05*nVar*6/col->getNpMaxNpRatio());
+		double szpp = sizeof(double)*(nVar + 0.05*nVar*6/col->getNpMaxNpRatio());
     //printf("Size per particle: %f \n", szpp);
 		double npmax_0 = mem/szpp;
 		//printf ("With %g Gb I can use %.0f particles\n", memGb, npmax_0);
 		if (npmax_0 < npmax) {
-			printf("WARNING: particle memory set in the input file (%.3f Gb). The total memory allocated might not be big enough for holding all the particles"
-             "(npcelx * npcely * npcelz * number of cells)\n\n",memGb);
+			if (vct->getCartesian_rank() == 0) {
+              printf("\nWARNING: particle memory set in the input file (%.3f Gb). The total memory allocated might not be big enough for holding all the particles"
+                     "(npcelx * npcely * npcelz * number of cells)\n\n",memGb);
+      }
 			npmax = (long long) npmax_0;
       nop = npmax/col->getNpMaxNpRatio();
     }
@@ -184,13 +186,14 @@ void Particles3Dcomm::allocate(int species, long long initnpmax, Collective * co
   buffer_size = (int) (.05 * nop * nVar + 1); // max: 5% of the particles in the processors is going out
   buffer_size_small = (int) (.01 * nop * nVar + 1); // max 1% not resizable 
 
-  if (vct->getCartesian_rank() == 0 && species == 1) {
-    long long memreq = (npmax*nVar + buffer_size*6)*col->getNs();
+  if (vct->getCartesian_rank() == 0) {
+    long long memreq = (npmax*nVar + buffer_size*6);
     memreq *= sizeof(double);
     printf("---------------------------------------------------\n"
-					 "Maximum number of particles per process: %ld\n"
-           "Memory needed for the particles: %.3f Mb/process\n"
-           "---------------------------------------------------\n",npmax, ((double) memreq)/(1024*1024));
+					 " Species %d:\n"
+					 "   Maximum number of particles per process: %ld\n"
+           "   Memory needed for the particles: %.3f Mb/process\n"
+           "---------------------------------------------------\n",species, npmax, ((double) memreq)/(1024*1024));
   }
 
   //double vm1, res1, vm0, res0;
