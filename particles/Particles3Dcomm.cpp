@@ -130,9 +130,8 @@ void Particles3Dcomm::allocate(int species, long long initnpmax, Collective * co
                    "(npcelx * npcely * npcelz * number of cells)\n\n",memGb);
     }
 		npmax = (long long) npmax_0;
-    nop = npmax/col->getNpMaxNpRatio();
+    if (initnpmax==0) nop = npmax/col->getNpMaxNpRatio();
   }
-
 
   rhoINIT   = col->getRHOinit(species);
   rhoINJECT = col->getRHOinject(species);

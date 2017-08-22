@@ -123,33 +123,37 @@ int c_Solver::Init(int argc, char **argv) {
   // Allocation of particles
   part = new Particles3D[ns];
 
-  for (int i = 0; i < ns; i++) {
-    part[i].allocate(i, 0, col, vct, grid);
-    if      (col->getSolInit() && col->getPartInit()=="File") ReadPartclH5hut(ns, part, col, vct, grid);
-    else if (col->getSolInit() && col->getPartInit() == "FromFieldFile") part[i].MaxwellianFromFieldFile(grid, EMf, vct);
-    else if (col->getCase()=="DoubleGEM")      part[i].MaxwellianDoubleGEM(grid, EMf, vct);
-    else if (col->getCase()=="TD")             part[i].MaxwellianTangentialDiscontinuity(grid, EMf, vct);
-    else if (col->getCase()=="Dipole")         part[i].maxwellian(grid, EMf, vct);
-    else if (col->getCase()=="FluxRope")       part[i].maxwellian(grid, EMf, vct);
-    else if (col->getCase()=="TwoCoils" || col->getCase()=="SixCoils" || col->getCase()=="TwoCoilsINJ" || col->getCase()=="SixCoilsINJ"
-             || col->getCase()=="Mirror"){
-      if (col->getRHOinit(i) > 0.0) 
-        if (col->getPartInit() == "mono") {
-          part[i].monoenergetic_sphere(grid,EMf,vct,L_square,x_center,y_center,z_center, 1.0);  // generated maxwellian in a box
-        } else {
-          part[i].maxwell_sphere(grid,EMf,vct,L_square,x_center,y_center,z_center, 1.0);  // generated maxwellian in a box
-        }
-      else 
-        part[i].empty(grid, EMf, vct);
-
-    } else part[i].maxwellian(grid, EMf, vct);
-    
-    // Compute the charge of the particles using the mass matrices
-    //part[i].fixCharge(grid, EMf, vct, col);
-
-    if (col->getCylindrical() == 1) part[i].fixZcylindrical();
-
-    if (col->getLagrangian() == 1) part[i].setLagrangianFrame(true);
+  if (col->getSolInit() && col->getPartInit()=="File") {
+    ReadPartclH5hut(ns, part, col, vct, grid);
+  } else {
+    for (int i = 0; i < ns; i++) {
+		  part[i].allocate(i, 0, col, vct, grid);
+  
+      if      (col->getSolInit() && col->getPartInit() == "FromFieldFile")  part[i].MaxwellianFromFieldFile(grid, EMf, vct);
+      else if (col->getCase()=="DoubleGEM")      part[i].MaxwellianDoubleGEM(grid, EMf, vct);
+      else if (col->getCase()=="TD")             part[i].MaxwellianTangentialDiscontinuity(grid, EMf, vct);
+      else if (col->getCase()=="Dipole")         part[i].maxwellian(grid, EMf, vct);
+      else if (col->getCase()=="FluxRope")       part[i].maxwellian(grid, EMf, vct);
+      else if (col->getCase()=="TwoCoils" || col->getCase()=="SixCoils" || col->getCase()=="TwoCoilsINJ" || col->getCase()=="SixCoilsINJ"
+               || col->getCase()=="Mirror"){
+        if (col->getRHOinit(i) > 0.0) 
+          if (col->getPartInit() == "mono") {
+            part[i].monoenergetic_sphere(grid,EMf,vct,L_square,x_center,y_center,z_center, 1.0);  // generated maxwellian in a box
+          } else {
+            part[i].maxwell_sphere(grid,EMf,vct,L_square,x_center,y_center,z_center, 1.0);  // generated maxwellian in a box
+          }
+        else 
+          part[i].empty(grid, EMf, vct);
+  
+      } else part[i].maxwellian(grid, EMf, vct);
+      
+      // Compute the charge of the particles using the mass matrices
+      //part[i].fixCharge(grid, EMf, vct, col);
+  
+      if (col->getCylindrical() == 1) part[i].fixZcylindrical();
+  
+      if (col->getLagrangian() == 1) part[i].setLagrangianFrame(true);
+    }
   }
   if (col->getLagrangian() == 1) EMf->setLagrangianFrame(vct, col, true);
 
