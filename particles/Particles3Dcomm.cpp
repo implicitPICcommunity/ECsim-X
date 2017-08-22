@@ -125,14 +125,12 @@ void Particles3Dcomm::allocate(int species, long long initnpmax, Collective * co
     //printf("Size per particle: %f \n", szpp);
 		double npmax_0 = mem/szpp;
 		//printf ("With %g Gb I can use %.0f particles\n", memGb, npmax_0);
-		if (npmax_0 < npmax) {
-			if (vct->getCartesian_rank() == 0) {
-              printf("\nWARNING: particle memory set in the input file (%.3f Gb). The total memory allocated might not be big enough for holding all the particles"
-                     "(npcelx * npcely * npcelz * number of cells)\n\n",memGb);
-      }
-			npmax = (long long) npmax_0;
-      nop = npmax/col->getNpMaxNpRatio();
+		if (vct->getCartesian_rank() == 0) {
+            printf("\nWARNING: particle memory set in the input file (%.3f Gb). The total memory allocated might not be big enough for holding all the particles"
+                   "(npcelx * npcely * npcelz * number of cells)\n\n",memGb);
     }
+		npmax = (long long) npmax_0;
+    nop = npmax/col->getNpMaxNpRatio();
   }
 
 
