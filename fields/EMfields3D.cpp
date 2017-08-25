@@ -3679,23 +3679,34 @@ double EMfields3D::getBextenergy(void) {
 }
 
 /*! get the electric field energy damped*/
-double EMfields3D::getEenergyRemoved(void) {
+double EMfields3D::getEenergyRemoved(bool save) {
  
   double lE = 0;
+  if (damping == 1) {
   
-  for (int i = 1; i < nxn-2; i++)
-    for (int j = 1; j < nyn-2; j++)
-      for (int k = 1; k < nzn-2; k++) {
-        //lE += .5*Lambda[i][j][k]*(Ex[i][j][k] * Ex[i][j][k] + Ey[i][j][k] * Ey[i][j][k] + Ez[i][j][k] * Ez[i][j][k]) / (FourPI*invVOLn[i][j][k]);
-        lE += 2*Lambda[i][j][k]*(Exth[i][j][k] * Exth[i][j][k] + Eyth[i][j][k] * Eyth[i][j][k] + Ezth[i][j][k] * Ezth[i][j][k]) / (FourPI*invVOLn[i][j][k]);
-      }
-  EenergyRemoved += lE;
-
-  double localEenergy = EenergyRemoved;
-  double totalEenergy = 0.0;
-
-  MPI_Allreduce(&localEenergy, &totalEenergy, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-  return (totalEenergy);
+  	for (int i = 1; i < nxn-2; i++)
+    	for (int j = 1; j < nyn-2; j++)
+      	for (int k = 1; k < nzn-2; k++) {
+        	lE += 2*Lambda[i][j][k]*(Exth[i][j][k] * Exth[i][j][k] + Eyth[i][j][k] * Eyth[i][j][k] + Ezth[i][j][k] * Ezth[i][j][k]) / (FourPI*invVOLn[i][j][k]);
+      	}
+		if (save) {
+  	  EenergyRemoved += lE;
+	
+  	  double localEenergy = EenergyRemoved;
+  	  double totalEenergy = 0.0;
+	
+  	  MPI_Allreduce(&localEenergy, &totalEenergy, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+  	  return (totalEenergy);
+	  } else {
+  	  double localEenergy = lE;
+  	  double totalEenergy = 0.0;
+	
+  	  MPI_Allreduce(&localEenergy, &totalEenergy, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+  	  return (totalEenergy);
+  
+    }
+  } else	
+		return 0.0;
 
 }
 

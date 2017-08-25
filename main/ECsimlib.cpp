@@ -395,7 +395,7 @@ void c_Solver::WriteConserved(int cycle) {
 
   if (cycle == first_cycle+1) {
 
-    totEn0 = EMf->getEenergy() + EMf->getBenergy() + EMf->getEenergyRemoved();
+    totEn0 = EMf->getEenergy() + EMf->getBenergy() + EMf->getEenergyRemoved(false);
     for (int is = 0; is < ns; is++) {
       totEn0 +=  part[is].getKe();
       totEn0 += part[is].getKremoved();
@@ -416,7 +416,7 @@ void c_Solver::WriteConserved(int cycle) {
 
     Eenergy = EMf->getEenergy();
     Benergy = EMf->getBenergy();
-    double EenRem  = EMf->getEenergyRemoved();
+    double EenRem  = EMf->getEenergyRemoved(true);
 
     double ExtBenergy = EMf->getBextenergy();
     TOTenergy = 0.0;

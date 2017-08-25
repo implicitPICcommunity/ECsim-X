@@ -321,7 +321,7 @@ class EMfields3D                // :public Field
 
     /*! get the electric field energy */
     double getEenergy();
-    double getEenergyRemoved();
+    double getEenergyRemoved(bool save);
     /*! get the magnetic field energy */
     double getBenergy();
     double getBextenergy();
