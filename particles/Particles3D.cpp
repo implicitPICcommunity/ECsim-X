@@ -839,7 +839,7 @@ int Particles3D::monoenergetic_sphere(Grid* grid,Field* EMf,VirtualTopology3D* v
 /* initialize random generator with different seed on different processor */
  
 	double harvest;
-	double prob, theta, sign;
+	double prob, theta, sign, mu;
 	long long counter=0;
 
   double volref = 2*M_PI*dx*dy;
@@ -870,16 +870,20 @@ int Particles3D::monoenergetic_sphere(Grid* grid,Field* EMf,VirtualTopology3D* v
 							  q[counter] =  Qref;
 							  if (ii == 0 && i == 1 && j == 1 && k == 1)
 								  cout << "Q at ("<< i<<","<<j<<","<<k<<") = "<<q[counter]<<endl;
+
+							  harvest =   rand()/(double)RAND_MAX;
+							  mu= harvest*2.0-1.0;
+
+							  harvest =   rand()/(double)RAND_MAX;
+							  theta = 2.0*M_PI*harvest;
+
 							  // u
-							  harvest =   rand()/(double)RAND_MAX;
-							  theta = 2.0*M_PI*harvest;
-							  u[counter] = multiple*u0 + uth*cos(theta);
+							  u[counter] = multiple*u0 + uth*sqrt(1.0-mu*mu)*cos(theta);
 							  // v
-							  v[counter] = multiple*v0 + vth*sin(theta);
+							  v[counter] = multiple*v0 + vth*sqrt(1.0-mu*mu)*sin(theta);
 							  // w
-							  harvest =   rand()/(double)RAND_MAX;
-							  theta = 2.0*M_PI*harvest;
-							  w[counter] = multiple*w0 + wth*cos(theta);
+							  w[counter] = multiple*w0 + wth*mu;
+
 							  if (TrackParticleID)
 								  ParticleID[counter]= counter*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
 
