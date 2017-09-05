@@ -182,6 +182,9 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
   Bx_ext = newArr3(double,nxn,nyn,nzn);
   By_ext = newArr3(double,nxn,nyn,nzn);
   Bz_ext = newArr3(double,nxn,nyn,nzn);
+  Bxc_ext = newArr3(double,nxc,nyc,nzc);
+  Byc_ext = newArr3(double,nxc,nyc,nzc);
+  Bzc_ext = newArr3(double,nxc,nyc,nzc);
   Ex_ext = newArr3(double,nxn,nyn,nzn);
   Ey_ext = newArr3(double,nxn,nyn,nzn);
   Ez_ext = newArr3(double,nxn,nyn,nzn);
@@ -299,6 +302,9 @@ void EMfields3D::setAllzero()
    eqValue(0.0, Bx_ext, nxn, nyn, nzn);
    eqValue(0.0, By_ext, nxn, nyn, nzn);
    eqValue(0.0, Bz_ext, nxn, nyn, nzn);
+   eqValue(0.0, Bxc_ext, nxc, nyc, nzc);
+   eqValue(0.0, Byc_ext, nxc, nyc, nzc);
+   eqValue(0.0, Bzc_ext, nxc, nyc, nzc);
    eqValue(0.0, Ex_ext, nxn, nyn, nzn);
    eqValue(0.0, Ey_ext, nxn, nyn, nzn);
    eqValue(0.0, Ez_ext, nxn, nyn, nzn);
@@ -1949,6 +1955,9 @@ void EMfields3D::initMirror(VirtualTopology3D *vct, Grid *grid, Collective *col)
   communicateNodeBC(nxn, nyn, nzn, Bx_ext, col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5], vct);
   communicateNodeBC(nxn, nyn, nzn, By_ext, col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5], vct);
   communicateNodeBC(nxn, nyn, nzn, Bz_ext, col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct);
+	grid->interpN2C(Bxc_ext,Bx_ext);
+	grid->interpN2C(Byc_ext,By_ext);
+	grid->interpN2C(Bzc_ext,Bz_ext);
 
   MPI_Barrier(MPI_COMM_WORLD);
   //fclose(Blog);
@@ -2147,6 +2156,9 @@ void EMfields3D::initWB8(VirtualTopology3D *vct, Grid *grid, Collective *col){
   communicateNodeBC(nxn, nyn, nzn, Bx_ext, col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5], vct);
   communicateNodeBC(nxn, nyn, nzn, By_ext, col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5], vct);
   communicateNodeBC(nxn, nyn, nzn, Bz_ext, col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct);
+	grid->interpN2C(Bxc_ext,Bx_ext);
+	grid->interpN2C(Byc_ext,By_ext);
+	grid->interpN2C(Bzc_ext,Bz_ext);
 
   MPI_Barrier(MPI_COMM_WORLD);
   //fclose(Blog);
@@ -2243,6 +2255,9 @@ void EMfields3D::initWB8_6(VirtualTopology3D *vct, Grid *grid, Collective *col){
   communicateNodeBC(nxn, nyn, nzn, Bx_ext, col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5], vct);
   communicateNodeBC(nxn, nyn, nzn, By_ext, col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5], vct);
   communicateNodeBC(nxn, nyn, nzn, Bz_ext, col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct);
+	grid->interpN2C(Bxc_ext,Bx_ext);
+	grid->interpN2C(Byc_ext,By_ext);
+	grid->interpN2C(Bzc_ext,Bz_ext);
 
   MPI_Barrier(MPI_COMM_WORLD);
   //fclose(Blog);
@@ -2488,6 +2503,13 @@ void EMfields3D::initDipole(VirtualTopology3D *vct, Grid *grid, Collective *col)
   for (int is=0 ; is<ns; is++)
     grid->interpN2C(rhocs,is,rhons);
 
+  communicateNodeBC(nxn, nyn, nzn, Bx_ext, col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5], vct);
+  communicateNodeBC(nxn, nyn, nzn, By_ext, col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5], vct);
+  communicateNodeBC(nxn, nyn, nzn, Bz_ext, col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct);
+	grid->interpN2C(Bxc_ext,Bx_ext);
+	grid->interpN2C(Byc_ext,By_ext);
+	grid->interpN2C(Bzc_ext,Bz_ext);
+
   // initialize B on centers
   for (int i=0; i < nxc; i++){
     for (int j=0; j < nyc; j++){
@@ -2551,6 +2573,9 @@ void EMfields3D::initHalfPlanet(VirtualTopology3D *vct, Grid *grid, Collective *
   communicateNodeBC(nxn, nyn, nzn, Bx_ext, col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5], vct);
   communicateNodeBC(nxn, nyn, nzn, By_ext, col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5], vct);
   communicateNodeBC(nxn, nyn, nzn, Bz_ext, col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct);
+	grid->interpN2C(Bxc_ext,Bx_ext);
+	grid->interpN2C(Byc_ext,By_ext);
+	grid->interpN2C(Bzc_ext,Bz_ext);
 
   // initialize B on centers
   for (int i=0; i < nxc; i++){
@@ -3643,9 +3668,9 @@ double EMfields3D::getBenergy(void) {
   for (int i = 1; i < nxc-1; i++)
     for (int j = 1; j < nyc-1; j++)
       for (int k = 1; k < nzc-1; k++){
-        Bxt = Bxc[i][j][k];
-        Byt = Byc[i][j][k];
-        Bzt = Bzc[i][j][k];
+        Bxt = Bxc[i][j][k] + Fext*Bxc_ext[i][j][k];
+        Byt = Byc[i][j][k] + Fext*Byc_ext[i][j][k];
+        Bzt = Bzc[i][j][k] + Fext*Bzc_ext[i][j][k];
         localBenergy += .5*(Bxt*Bxt + Byt*Byt + Bzt*Bzt)/(FourPI*invVOLc[i][j][k]);
       }
 

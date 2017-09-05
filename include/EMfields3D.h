@@ -515,6 +515,12 @@ class EMfields3D                // :public Field
     double***  By_ext;
     /*! External magnetic field component-Z, defined on nodes */
     double***  Bz_ext;
+    /*! External magnetic field component-X, defined on centers */
+    double***  Bxc_ext;
+    /*! External magnetic field component-Y, defined on centers */
+    double***  Byc_ext;
+    /*! External magnetic field component-Z, defined on centers */
+    double***  Bzc_ext;
     /*! External electric field component-X, defined on nodes */
     double***  Ex_ext;
     /*! External electric field component-Y, defined on nodes */
