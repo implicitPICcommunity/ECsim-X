@@ -52,6 +52,11 @@ y_center =   1.        # Ly = simulation box length - y direction in m
 z_center =   1.        # Lz = simulation box length - z direction in m  
 L_square =   .1
 
+x_center_inj =   37.5 # center of the injector - x direction in m  
+y_center_inj =   37.5 # center of the injector - y direction in m
+z_center_inj =   0.05 # center of the injector - z direction in m  
+L_square_inj =   14.4 # diameter of the injector
+
 CoilD = 25.2	       #magnetic coil diameter -- Proposed WB8 simulation dimensions. 
 CoilSpacing= 40.0      #spacing parameter for magnets 
 
