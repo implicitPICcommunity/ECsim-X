@@ -3657,8 +3657,8 @@ double EMfields3D::getEenergy(void) {
 
 }
 
-/*! get the magnetic field energy */
-double EMfields3D::getBenergy(void) {
+/*! get the total magnetic field energy */
+double EMfields3D::getBtotenergy(void) {
   double localBenergy = 0.0;
   double totalBenergy = 0.0;
   double Bxt = 0.0;
@@ -3671,6 +3671,29 @@ double EMfields3D::getBenergy(void) {
         Bxt = Bxc[i][j][k] + Fext*Bxc_ext[i][j][k];
         Byt = Byc[i][j][k] + Fext*Byc_ext[i][j][k];
         Bzt = Bzc[i][j][k] + Fext*Bzc_ext[i][j][k];
+        localBenergy += .5*(Bxt*Bxt + Byt*Byt + Bzt*Bzt)/(FourPI*invVOLc[i][j][k]);
+      }
+
+
+
+  MPI_Allreduce(&localBenergy, &totalBenergy, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+  return (totalBenergy);
+}
+
+/*! get the total magnetic field energy */
+double EMfields3D::getBintenergy(void) {
+  double localBenergy = 0.0;
+  double totalBenergy = 0.0;
+  double Bxt = 0.0;
+  double Byt = 0.0;
+  double Bzt = 0.0;
+
+  for (int i = 1; i < nxc-1; i++)
+    for (int j = 1; j < nyc-1; j++)
+      for (int k = 1; k < nzc-1; k++){
+        Bxt = Bxc[i][j][k];
+        Byt = Byc[i][j][k];
+        Bzt = Bzc[i][j][k];
         localBenergy += .5*(Bxt*Bxt + Byt*Byt + Bzt*Bzt)/(FourPI*invVOLc[i][j][k]);
       }
 
@@ -4077,7 +4100,7 @@ void EMfields3D::testDivergence(Grid* grid)
 void EMfields3D::testJdotE(Grid* grid, double deltaK) 
 {
   double Een = getEenergy();
-  double Ben = getBenergy();
+  double Ben = getBintenergy();
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   char name[128];

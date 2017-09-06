@@ -395,14 +395,29 @@ void c_Solver::WriteConserved(int cycle) {
 
   if (cycle == first_cycle+1) {
 
-    totEn0 = EMf->getEenergy() + EMf->getBenergy()-EMf->getBextenergy() + EMf->getEenergyRemoved(false);
+    totEn0 = EMf->getEenergy() + EMf->getBintenergy() + EMf->getEenergyRemoved(false);
     for (int is = 0; is < ns; is++) {
       totEn0 +=  part[is].getKe();
       totEn0 += part[is].getKremoved();
     }
     if (myrank == 0) {
       FILE* fd = fopen(cq.c_str(),"a");
-      fprintf(fd,"Cycle  Total energy   |En - En0|   Electric. En. Magnetic. En.  Kinetic En.   Momentum     Ext.Mag.En.  Kin. En. Rem.   Ele. En. Rem.   NOP     Charge        (NOP     Charge   ...))\n"
+      fprintf(fd,"# 1 -> Cycle\n"
+                 "# 2 -> Total internal energy: sum(B_plasma*B_plasma) + sum(E_plasma*E_plasma) + sum(K_part)\n"
+                 "# 3 -> Variation of total internal energy\n"
+                 "# 4 -> Electric energy: sum(E_plasma*E_plasma)\n"
+                 "# 5 -> Local magnetic energy: sum(B_total*B_total) - sum(B_extern*B_extern)\n"
+                 "# 6 -> Kinetic energy\n"
+                 "# 7 -> Momentum\n"
+                 "# 8 -> Total magnetic energy: sum(B_total*B_total)\n"
+                 "# 9 -> Kinetic energy removed\n"
+                 "# 10 -> Electric energy removed\n"
+                 "# 11-> Number of particles of species 0\n"
+                 "# 12-> Total charge of species 0\n"
+                 "#(13-> Number of particles of species 1)\n"
+                 "#(14-> Total charge of species 1)\n"
+                 "#(...)\n");
+      fprintf(fd," 1         2           3           4           5           6           7           8           9           10        11        12    \n"
                  "-----------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
       fclose(fd);
     }
@@ -416,7 +431,8 @@ void c_Solver::WriteConserved(int cycle) {
 
     Eenergy = EMf->getEenergy();
     double ExtBenergy = EMf->getBextenergy();
-    Benergy = EMf->getBenergy() - ExtBenergy;
+    double IntBenergy = EMf->getBintenergy();
+    Benergy = EMf->getBtotenergy();
     double EenRem  = EMf->getEenergyRemoved(true);
 
     TOTenergy = 0.0;
@@ -436,16 +452,16 @@ void c_Solver::WriteConserved(int cycle) {
     }
     if (myrank == 0) {
       FILE* fd = fopen(cq.c_str(),"a");
-      fprintf(fd,"%5d %13.6e %13.6e %13.6e %13.6e %13.6e %13.6e %13.6e %13.6e %13.6e"
+      fprintf(fd,"%5d %11.4e %11.4e %11.4e %11.4e %11.4e %11.4e %11.4e %11.4e %11.4e"
                 ,cycle
-                ,(EenRem + Eenergy + Benergy + TOTenergy), fabs((EenRem + Eenergy + Benergy + TOTenergy) - totEn0)
-                ,Eenergy , Benergy, TOTenergy
+                ,(EenRem + Eenergy + IntBenergy + TOTenergy), fabs((EenRem + Eenergy + IntBenergy + TOTenergy) - totEn0)
+                ,Eenergy , Benergy-ExtBenergy, TOTenergy
                 ,TOTmomentum
-                ,ExtBenergy
+                ,Benergy
                 ,Kr
                 ,EenRem
                 );
-      for (int is = 0; is < ns; is++) fprintf(fd,"  %7ld %13.6e", nop[is], tq[is]);
+      for (int is = 0; is < ns; is++) fprintf(fd," %7ld %11.4e", nop[is], tq[is]);
       fprintf(fd,"\n");
 
       fclose(fd);
