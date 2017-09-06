@@ -202,6 +202,10 @@ void Collective::ReadInput(string inputfile) {
     y_center = config.read < double >("y_center");
     z_center = config.read < double >("z_center");
     L_square = config.read < double >("L_square");
+    x_center_inj= config.read < double >("x_center_inj");
+    y_center_inj= config.read < double >("y_center_inj");
+    z_center_inj= config.read < double >("z_center_inj");
+    L_square_inj= config.read < double >("L_square_inj");
 
    // if (Case == "TwoCoils" || Case == "TwoCoilsINJ" || Case == "SixCoils" || Case == "SixCoilsINJ") {
       coilD = config.read<double>( "CoilD" );
@@ -867,6 +871,22 @@ double Collective::getz_center() {
 /*! get L_square */
 double Collective::getL_square() {
   return (L_square);
+}
+/*! get x_center */
+double Collective::getx_center_inj() {
+  return (x_center_inj);
+}
+/*! get y_center */
+double Collective::gety_center_inj() {
+  return (y_center_inj);
+}
+/*! get z_center */
+double Collective::getz_center_inj() {
+  return (z_center_inj);
+}
+/*! get L_square */
+double Collective::getL_square_inj() {
+  return (L_square_inj);
 }
 double Collective::getcoilD(){
         return(coilD);

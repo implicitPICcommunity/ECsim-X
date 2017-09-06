@@ -62,6 +62,14 @@ class Collective
     double getz_center();
     /*! Get object size - cubic box */
     double getL_square();
+    /*! Get object center for injection - direction X */
+    double getx_center_inj();
+    /*! Get object center for injection - direction Y */
+    double gety_center_inj();
+    /*! Get object center for injection - direction Z */
+    double getz_center_inj();
+    /*! Get object size for injection - cubic box */
+    double getL_square_inj();
     /** getgeometry coild - Coil Diameter */
     double getcoilD();
     /** getgeometry coild - Coil Spacing */
@@ -290,6 +298,14 @@ class Collective
     double y_center;
     /*! object center - Z direction */
     double z_center;
+    /*! object size - assuming a cubic box */
+    double L_square_inj;
+    /*! object center - X direction */
+    double x_center_inj;
+    /*! object center - Y direction */
+    double y_center_inj;
+    /*! object center - Z direction */
+    double z_center_inj;
     /*! object size - assuming a cubic box */
     double L_square;
     /** geometry coil - Coil Diameter */

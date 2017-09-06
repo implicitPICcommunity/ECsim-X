@@ -38,6 +38,11 @@ int c_Solver::Init(int argc, char **argv) {
   z_center = col->getz_center();
   L_square = col->getL_square();
 
+  x_center_inj= col->getx_center_inj();
+  y_center_inj= col->gety_center_inj();
+  z_center_inj= col->getz_center_inj();
+  L_square_inj= col->getL_square_inj();
+
 
   // initialize the virtual cartesian topology 
   vct = new VCtopology3D(col);
@@ -364,11 +369,11 @@ void c_Solver::InjectBoundaryParticles(){
       Qremoved[i] = part[i].deleteParticlesOutsideSphere(col->getDelta(),col->getx_center(),col->gety_center(),col->getz_center());
       if (col->getRHOinject(i)>0.0)
         if (col->getPartInj() == "mono") {
-          part[i].inject_mono_sphere(grid,EMf,vct,L_square,x_center,y_center,z_center, 1.0);
-}
+          part[i].inject_mono_sphere(grid,EMf,vct,L_square_inj,x_center_inj,y_center_inj,z_center_inj, 1.0);
+        }
           //part[i].injector_rand_box_mono(grid, vct, EMf, col->getx_center(),col->gety_center(),col->getz_center(), col->getL_square());
         else
-          part[i].inject_maxwell_sphere(grid,EMf,vct,L_square,x_center,y_center,z_center, 1.0);  // generated maxwellian in a box
+          part[i].inject_maxwell_sphere(grid,EMf,vct,L_square_inj,x_center_inj,y_center_inj,z_center_inj, 1.0);  // generated maxwellian in a box
           //part[i].injector_rand_box(grid, vct, EMf, col->getx_center(),col->gety_center(),col->getz_center(), col->getL_square());
     } else if (col->getCase()=="Dipole") {
        Qremoved[i] = part[i].deleteParticlesInsideSphere(col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
