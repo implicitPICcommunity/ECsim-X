@@ -90,6 +90,7 @@ class Particles3D:public Particles3Dcomm {
     /** Delete the particles outside the cube with dimension L */
     double deleteParticlesOutsideBox(double L);
     double deleteParticlesOuterFrame(double multx, double multy, double multz);
+    double deleteParticlesInsideTorus_XZ(double R_torus, double r_torus, double x_center, double y_center, double z_center);
     double ReturnToCenterCircle(double L_outer);
     void fixZcylindrical();
     void fixPosition();

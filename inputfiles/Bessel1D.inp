@@ -54,8 +54,9 @@ z_center =   0.05 # center of initial square - z direction in m
 L_square =   14.4 # side of initial square 
 
 
-CoilD = 25.2      # magnetic coil diameter -- Proposed WB8 simulation dimensions. 
-CoilSpacing= 40.0 # spacing parameter for magnets 
+CoilD = 25.2        # magnetic coil diameter -- Proposed WB8 simulation dimensions. 
+CoilSpacing= 40.0   # spacing parameter for magnets 
+CoilThickness = 6.0 # Thickness of the coils (diameter)
 
 nxc =  32         # nxc = number of cells - x direction  
 nyc =  32         # nyc = number of cells - y direction

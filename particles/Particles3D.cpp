@@ -2205,6 +2205,33 @@ double Particles3D::deleteParticlesOutsideSphere(double R, double x_center, doub
 	return(Q_removed);
 }
 
+/** Delete the particles inside the torus with radius R and r and center x_center y_center z_center */
+double Particles3D::deleteParticlesInsideTorus_XZ(double D_torus, double d_torus, double x_center, double y_center, double z_center){
+	// calculate accumulated charge on the spacecraft
+	double R_torus = D_torus/2.0;
+	double r_torus = d_torus/2.0;
+	long long np_current = 0, nplast = nop-1;
+  double R1 = R_torus - r_torus;
+  double R2 = R_torus + r_torus;
+	while (np_current < nplast+1){
+    double r = sqrt(pow(x[np_current]-x_center,2) +  pow(z[np_current]-z_center,2));
+    bool removed = false;
+    if ( r > R1 && r < R2) {
+      double zmax = sqrt(r_torus*r_torus - pow(R_torus - r,2));
+      if (fabs(y[np_current] - y_center) < zmax) {
+			  // delete the particle and pack the particle array, the value of nplast changes
+			  Q_removed += q[np_current];
+        K_removed += .5 * (q[np_current] / qom) * (u[np_current]*u[np_current] + v[np_current]*v[np_current] + w[np_current]*w[np_current]);
+			  del_pack(np_current,&nplast);
+				removed = true;
+		  }
+    }
+    if (!removed)  np_current++;
+	}
+	nop = nplast +1;
+	return(Q_removed);
+}
+
 //** Delete the particles outside the cube with dimension L */
 double Particles3D::deleteParticlesOutsideBox(double L){
 	// calculate accumulated charge on the spacecraft

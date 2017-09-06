@@ -206,6 +206,7 @@ void Collective::ReadInput(string inputfile) {
    // if (Case == "TwoCoils" || Case == "TwoCoilsINJ" || Case == "SixCoils" || Case == "SixCoilsINJ") {
       coilD = config.read<double>( "CoilD" );
       coilSpacing = config.read<double>( "CoilSpacing" );
+      coilThickness = config.read<double>( "CoilThickness" );
     //}
 
     npcelx = new int[ns];
@@ -922,6 +923,10 @@ double Collective::getcoilD(){
 /** get CoilSpacing */
 double Collective::getcoilSpacing(){
         return(coilSpacing);
+}
+/** get CoilThickness */
+double Collective::getcoilThickness(){
+        return(coilThickness);
 }
 /*! get nxc */
 int Collective::getNxc() {

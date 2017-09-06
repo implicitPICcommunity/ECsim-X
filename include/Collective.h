@@ -74,6 +74,8 @@ class Collective
     double getcoilD();
     /** getgeometry coild - Coil Spacing */
     double getcoilSpacing();
+    /** getgeometry coild - Coil thickness */
+    double getcoilThickness();
     /** Get cylindrical coordinates */
     int getCylindrical();
     /** Get lagrangian reference frame */
@@ -312,6 +314,8 @@ class Collective
     double coilD;
     /** geometry coil - Coil Spacing */
     double coilSpacing;
+    /** geometry coil - Coil Thickness */
+    double coilThickness;
     /*! number of cells - X direction */
     int nxc;
     /*! number of cells - Y direction */

@@ -358,18 +358,45 @@ void c_Solver::InjectBoundaryParticles(){
       }
     }
 
-    if (col->getCase()=="TwoCoils" || col->getCase()=="SixCoils") {
-        Qremoved[i] = part[i].ReturnToCenterCircle(col->getDelta());
-    } else if (col->getCase()=="TwoCoilsINJ" || col->getCase()=="SixCoilsINJ" || col->getCase()=="Mirror") {
-      Qremoved[i] = part[i].deleteParticlesOutsideSphere(col->getDelta(),col->getx_center(),col->gety_center(),col->getz_center());
+    if (col->getCase()=="TwoCoils") {
+       Qremoved[i] = part[i].ReturnToCenterCircle(col->getDelta());
+       double dst_2 = col->getcoilSpacing()/2.0;
+       Qremoved[i] += part[i].deleteParticlesInsideTorus_XZ(col->getcoilD(), col->getcoilThickness(), col->getx_center(),col->gety_center()+dst_2,col->getz_center());
+       Qremoved[i] += part[i].deleteParticlesInsideTorus_XZ(col->getcoilD(), col->getcoilThickness(), col->getx_center(),col->gety_center()-dst_2,col->getz_center());
+
+    } else if (col->getCase()=="SixCoils") {
+       Qremoved[i] = part[i].ReturnToCenterCircle(col->getDelta());
+
+    } else if (col->getCase()=="TwoCoilsINJ") {
+      Qremoved[i]  = part[i].deleteParticlesOutsideSphere(col->getDelta(),col->getx_center(),col->gety_center(),col->getz_center());
+      double dst_2 = col->getcoilSpacing()/2.0;
+      Qremoved[i] += part[i].deleteParticlesInsideTorus_XZ(col->getcoilD(), col->getcoilThickness(), col->getx_center(),col->gety_center()+dst_2,col->getz_center());
+      Qremoved[i] += part[i].deleteParticlesInsideTorus_XZ(col->getcoilD(), col->getcoilThickness(), col->getx_center(),col->gety_center()-dst_2,col->getz_center());
       if (col->getRHOinject(i)>0.0)
-        if (col->getPartInj() == "mono") {
+        if (col->getPartInj() == "mono") 
           part[i].inject_mono_sphere(grid,EMf,vct,col->getL_square_inj(i),col->getx_center_inj(i),col->gety_center_inj(i),col->getz_center_inj(i), 1.0);
-        }
-          //part[i].injector_rand_box_mono(grid, vct, EMf, col->getx_center(),col->gety_center(),col->getz_center(), col->getL_square());
         else
           part[i].inject_maxwell_sphere(grid,EMf,vct,col->getL_square_inj(i),col->getx_center_inj(i),col->gety_center_inj(i),col->getz_center_inj(i), 1.0);  // generated maxwellian in a box
-          //part[i].injector_rand_box(grid, vct, EMf, col->getx_center(),col->gety_center(),col->getz_center(), col->getL_square());
+
+    } else if (col->getCase()=="SixCoilsINJ") {
+      Qremoved[i]  = part[i].deleteParticlesOutsideSphere(col->getDelta(),col->getx_center(),col->gety_center(),col->getz_center());
+      if (col->getRHOinject(i)>0.0)
+        if (col->getPartInj() == "mono") 
+          part[i].inject_mono_sphere(grid,EMf,vct,col->getL_square_inj(i),col->getx_center_inj(i),col->gety_center_inj(i),col->getz_center_inj(i), 1.0);
+        else
+          part[i].inject_maxwell_sphere(grid,EMf,vct,col->getL_square_inj(i),col->getx_center_inj(i),col->gety_center_inj(i),col->getz_center_inj(i), 1.0);  // generated maxwellian in a box
+
+    } else if (col->getCase()=="Mirror") {
+      Qremoved[i]  = part[i].deleteParticlesOutsideSphere(col->getDelta(),col->getx_center(),col->gety_center(),col->getz_center());
+      double dst_2 = col->getcoilSpacing()/2.0;
+      Qremoved[i] += part[i].deleteParticlesInsideTorus_XZ(col->getcoilD(), col->getcoilThickness(), col->getx_center(),col->gety_center()+dst_2,col->getz_center());
+      Qremoved[i] += part[i].deleteParticlesInsideTorus_XZ(col->getcoilD(), col->getcoilThickness(), col->getx_center(),col->gety_center()-dst_2,col->getz_center());
+      if (col->getRHOinject(i)>0.0)
+        if (col->getPartInj() == "mono") 
+          part[i].inject_mono_sphere(grid,EMf,vct,col->getL_square_inj(i),col->getx_center_inj(i),col->gety_center_inj(i),col->getz_center_inj(i), 1.0);
+        else
+          part[i].inject_maxwell_sphere(grid,EMf,vct,col->getL_square_inj(i),col->getx_center_inj(i),col->gety_center_inj(i),col->getz_center_inj(i), 1.0);  // generated maxwellian in a box
+          
     } else if (col->getCase()=="Dipole") {
        Qremoved[i] = part[i].deleteParticlesInsideSphere(col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
        //Qremoved[i] = part[i].deleteParticlesOuterFrame(2.0, 2.0, 0.0);
