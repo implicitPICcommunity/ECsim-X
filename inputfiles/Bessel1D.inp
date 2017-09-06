@@ -53,10 +53,6 @@ y_center =   37.5 # center of initial square - y direction in m
 z_center =   0.05 # center of initial square - z direction in m  
 L_square =   14.4 # side of initial square 
 
-x_center_inj =   37.5 # center of the injector - x direction in m  
-y_center_inj =   37.5 # center of the injector - y direction in m
-z_center_inj =   0.05 # center of the injector - z direction in m  
-L_square_inj =   14.4 # diameter of the injector
 
 CoilD = 25.2      # magnetic coil diameter -- Proposed WB8 simulation dimensions. 
 CoilSpacing= 40.0 # spacing parameter for magnets 
@@ -78,6 +74,11 @@ ZLEN = 1          # Number of subdomains in the X direction
 #    1 = protons
 #    2,3,4,5,... = ions
 ns = 1
+
+x_center_inj =   37.5  37.5 # center of the injector - x direction in m  
+y_center_inj =   37.5  37.5 # center of the injector - y direction in m
+z_center_inj =   0.05  0.05 # center of the injector - z direction in m  
+L_square_inj =   14.4  14.4 # diameter of the injector
 
 rhoINIT         =    0.2     0.2        # Initial density (make sure you are neutral)
 rhoINJECT       =    0.0     0.0        # Injected density 

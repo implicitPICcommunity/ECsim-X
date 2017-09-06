@@ -91,10 +91,6 @@ namespace ECsim {
     double y_center;
     double z_center;
     double L_square;
-    double x_center_inj;
-    double y_center_inj;
-    double z_center_inj;
-    double L_square_inj;
 
 
     double totEn0;

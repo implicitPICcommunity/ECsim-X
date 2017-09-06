@@ -202,10 +202,6 @@ void Collective::ReadInput(string inputfile) {
     y_center = config.read < double >("y_center");
     z_center = config.read < double >("z_center");
     L_square = config.read < double >("L_square");
-    x_center_inj= config.read < double >("x_center_inj");
-    y_center_inj= config.read < double >("y_center_inj");
-    z_center_inj= config.read < double >("z_center_inj");
-    L_square_inj= config.read < double >("L_square_inj");
 
    // if (Case == "TwoCoils" || Case == "TwoCoilsINJ" || Case == "SixCoils" || Case == "SixCoilsINJ") {
       coilD = config.read<double>( "CoilD" );
@@ -222,6 +218,10 @@ void Collective::ReadInput(string inputfile) {
     u0 = new double[ns];
     v0 = new double[ns];
     w0 = new double[ns];
+    x_center_inj = new double[ns];
+    y_center_inj = new double[ns];
+    z_center_inj = new double[ns];
+    L_square_inj = new double[ns];
 
     array_int npcelx0 = config.read < array_int > ("npcelx");
     array_int npcely0 = config.read < array_int > ("npcely");
@@ -234,6 +234,10 @@ void Collective::ReadInput(string inputfile) {
     array_double v00 = config.read < array_double > ("v0");
     array_double w00 = config.read < array_double > ("w0");
 
+    array_double xceninj = config.read < array_double > ("x_center_inj");
+    array_double yceninj = config.read < array_double > ("y_center_inj");
+    array_double zceninj = config.read < array_double > ("z_center_inj");
+    array_double lsquinj = config.read < array_double > ("L_square_inj");
 
     npcelx[0] = npcelx0.a;
     npcely[0] = npcely0.a;
@@ -245,6 +249,10 @@ void Collective::ReadInput(string inputfile) {
     u0[0] = u00.a;
     v0[0] = v00.a;
     w0[0] = w00.a;
+    x_center_inj[0] = xceninj.a;
+    y_center_inj[0] = yceninj.a;
+    z_center_inj[0] = zceninj.a;
+    L_square_inj[0] = lsquinj.a;
 
     if (ns > 1) {
       npcelx[1] = npcelx0.b;
@@ -257,6 +265,10 @@ void Collective::ReadInput(string inputfile) {
       u0[1] = u00.b;
       v0[1] = v00.b;
       w0[1] = w00.b;
+      x_center_inj[1] = xceninj.b;
+      y_center_inj[1] = yceninj.b;
+      z_center_inj[1] = zceninj.b;
+      L_square_inj[1] = lsquinj.b;
     }
     if (ns > 2) {
       npcelx[2] = npcelx0.c;
@@ -269,6 +281,10 @@ void Collective::ReadInput(string inputfile) {
       u0[2] = u00.c;
       v0[2] = v00.c;
       w0[2] = w00.c;
+      x_center_inj[2] = xceninj.c;
+      y_center_inj[2] = yceninj.c;
+      z_center_inj[2] = zceninj.c;
+      L_square_inj[2] = lsquinj.c;
     }
     if (ns > 3) {
       npcelx[3] = npcelx0.d;
@@ -281,6 +297,10 @@ void Collective::ReadInput(string inputfile) {
       u0[3] = u00.d;
       v0[3] = v00.d;
       w0[3] = w00.d;
+      x_center_inj[3] = xceninj.d;
+      y_center_inj[3] = yceninj.d;
+      z_center_inj[3] = zceninj.d;
+      L_square_inj[3] = lsquinj.d;
     }
     if (ns > 4) {
       npcelx[4] = npcelx0.e;
@@ -293,6 +313,10 @@ void Collective::ReadInput(string inputfile) {
       u0[4] = u00.e;
       v0[4] = v00.e;
       w0[4] = w00.e;
+      x_center_inj[4] = xceninj.e;
+      y_center_inj[4] = yceninj.e;
+      z_center_inj[4] = zceninj.e;
+      L_square_inj[4] = lsquinj.e;
     }
     if (ns > 5) {
       npcelx[5] = npcelx0.f;
@@ -304,7 +328,11 @@ void Collective::ReadInput(string inputfile) {
       wth[5] = wth0.f;
       u0[5] = u00.f;
       v0[5] = v00.f;
-      w0[1] = w00.f;
+      w0[5] = w00.f;
+      x_center_inj[5] = xceninj.f;
+      y_center_inj[5] = yceninj.f;
+      z_center_inj[5] = zceninj.f;
+      L_square_inj[5] = lsquinj.f;
     }
 
     u_bulk = u0[0];
@@ -873,20 +901,20 @@ double Collective::getL_square() {
   return (L_square);
 }
 /*! get x_center */
-double Collective::getx_center_inj() {
-  return (x_center_inj);
+double Collective::getx_center_inj(int ind) {
+  return (x_center_inj[ind]);
 }
 /*! get y_center */
-double Collective::gety_center_inj() {
-  return (y_center_inj);
+double Collective::gety_center_inj(int ind) {
+  return (y_center_inj[ind]);
 }
 /*! get z_center */
-double Collective::getz_center_inj() {
-  return (z_center_inj);
+double Collective::getz_center_inj(int ind) {
+  return (z_center_inj[ind]);
 }
 /*! get L_square */
-double Collective::getL_square_inj() {
-  return (L_square_inj);
+double Collective::getL_square_inj(int ind) {
+  return (L_square_inj[ind]);
 }
 double Collective::getcoilD(){
         return(coilD);
