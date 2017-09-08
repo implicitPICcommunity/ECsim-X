@@ -148,8 +148,8 @@ Vinj                   = 10       # Velocity of the injection from the wall
 CGtol                  = 1E-3     # CG solver stopping criterium tolerance
 GMREStol               = 1E-17    # GMRES solver stopping criterium tolerance
 NiterMover             = 3        # mover predictor corrector iteration
-FieldOutputCycle       = 10      # Output for field
-ParticlesOutputCycle   = 100000   # Output for particles if 1 it doesnt save particles data
+FieldOutputCycle       = 10      # Output for field (if 0 it does not save fields data)
+ParticlesOutputCycle   = 100000   # Output for particles (if 0 it does not save particles data)
 RestartOutputCycle     = 200     # restart cycle
 DiagnosticsOutputCycle = 1        # Diagnostics cycle
 

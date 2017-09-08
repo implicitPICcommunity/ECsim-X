@@ -766,24 +766,31 @@ void c_Solver::WriteOutput(int cycle) {
     /* -------------------------------------------- */
     /* Parallel HDF5 output using the H5hut library */
     /* -------------------------------------------- */
-    if (cycle == first_cycle || cycle%(col->getFieldOutputCycle())==0)        WriteFieldsH5hut(ns, grid, EMf,  col, vct, cycle);
-    if (cycle == first_cycle || cycle%(col->getParticlesOutputCycle())==0)    WritePartclH5hut(ns, grid, part, col, vct, cycle);
+    if (col->getFieldOutputCycle() != 0) 
+      if (cycle == first_cycle || cycle%(col->getFieldOutputCycle())==0)        WriteFieldsH5hut(ns, grid, EMf,  col, vct, cycle);
+
+    if (col->getParticlesOutputCycle() != 0) 
+      if (cycle == first_cycle || cycle%(col->getParticlesOutputCycle())==0)    WritePartclH5hut(ns, grid, part, col, vct, cycle);
     //if (cycle%(col->getParticlesOutputCycle())==0 &&
         //cycle!=col->getLast_cycle() && cycle!=0)      WritePartclH5hut(ns, grid, part, col, vct, cycle);
 
   } else {
 
     // OUTPUT to large file, called proc**
-    if (cycle % (col->getFieldOutputCycle()) == 0 || cycle == first_cycle) {
-      hdf5_agent.open_append(SaveDirName + "/proc" + num_proc.str() + ".hdf");
-      output_mgr.output("Eall + Ball + rhos + Jsall + pressure", cycle);
-      // Pressure tensor is available
-      hdf5_agent.close();
+    if (col->getFieldOutputCycle() != 0) {
+      if (cycle % (col->getFieldOutputCycle()) == 0 ) {
+        hdf5_agent.open_append(SaveDirName + "/proc" + num_proc.str() + ".hdf");
+        output_mgr.output("Eall + Ball + rhos + Jsall + pressure", cycle);
+        // Pressure tensor is available
+        hdf5_agent.close();
+      }
     }
-    if (cycle % (col->getParticlesOutputCycle()) == 0 && col->getParticlesOutputCycle() != 1) {
-      hdf5_agent.open_append(SaveDirName + "/proc" + num_proc.str() + ".hdf");
-      output_mgr.output("position + velocity + q ", cycle, 1);
-      hdf5_agent.close();
+    if (col->getParticlesOutputCycle() != 0) {
+      if (cycle % (col->getParticlesOutputCycle()) == 0) {
+        hdf5_agent.open_append(SaveDirName + "/proc" + num_proc.str() + ".hdf");
+        output_mgr.output("position + velocity + q ", cycle, 1);
+        hdf5_agent.close();
+      }
     }
   }
 
