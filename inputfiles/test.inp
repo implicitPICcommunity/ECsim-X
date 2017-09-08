@@ -14,21 +14,21 @@ WriteMethod       = h5hut                            # Output method [ default |
 PoissonCorrection = no                               # Poisson correction [ yes | no ]
 SimulationName    = test                             # Simulation name for the output
 Cylindrical = 0                                      # Cylindrical coordinates (true = 1, false = 0)
-Lagrangian  = 0                                      # Lagrangian frame of reference
-ZeroCurrent = 0                                      # 1 -> assure that the inital current is zero
+Lagrangian  = 0                                      # OPTIONAL (default 0) Lagrangian frame of reference OPTIONAL 
+ZeroCurrent = 0                                      # OPTIONAL (default 0) 1 -> assure that the inital current is zero
  
-MemPartGb   = -1                                     # Maximum memory allocated for the particles per process (Gb). If -1 it is not used
+MemPartGb   = -1               #OPTIONAL (default -1) Maximum memory allocated for the particles per process (Gb). If -1 it is not used
 
 #  %%%%%%%%%%%%%%%%%%% Magnetic Reconnection %%%%%%%%%%%%%%%%%%
-B0x = 0.0
-B0y = 0.0
-B0z = 0.0
+B0x = 0.0   # OPTIONAL (default 0)
+B0y = 0.0   # OPTIONAL (default 0)
+B0z = 0.0   # OPTIONAL (default 0)
 
-B1x = 0.0
-B1y = 0.0
-B1z = 0.0
+B1x = 0.0   # OPTIONAL (default 0)
+B1y = 0.0   # OPTIONAL (default 0)
+B1z = 0.0   # OPTIONAL (default 0)
 
-delta = 3.0
+delta = 3.0   # OPTIONAL (default 0)
 
 #  %%%%%%%%%%%%%%%%%%% TIME %%%%%%%%%%%%%%%%%%
 dt = 0.125        # dt = time step this is still in wp-1
@@ -47,14 +47,14 @@ Lx =   6.0        # Lx = simulation box length - x direction in m
 Ly =   6.0        # Ly = simulation box length - y direction in m
 Lz =   6.0        # Lz = simulation box length - z direction in m  
 
-x_center =   37.5 # center of initial square - x direction in m  
-y_center =   37.5 # center of initial square - y direction in m
-z_center =   0.05 # center of initial square - z direction in m  
-L_square =   14.4 # side of initial square 
+x_center =   37.5 # OPTIONAL (default 0) center of initial plasma - x direction   
+y_center =   37.5 # OPTIONAL (default 0) center of initial plasma - y direction 
+z_center =   0.05 # OPTIONAL (default 0) center of initial plasma - z direction   
+L_square =   14.4 # OPTIONAL (default 0) side/diameter of initial plasma 
 
-CoilD = 25.2        # magnetic coil diameter -- Proposed WB8 simulation dimensions. 
-CoilSpacing= 40.0   # spacing parameter for magnets 
-CoilThickness = 6.0 # Thickness of the coils (diameter)
+CoilD = 25.2        # OPTIONAL (default 0) magnetic coil plasmaer -- Proposed WB8 simulation dimensions. 
+CoilSpacing= 40.0   # OPTIONAL (default 0) spacing parameter for magnets 
+CoilThickness = 6.0 # OPTIONAL (default 0) Thickness of the coils (diameter)
 
 nxc =  16         # nxc = number of cells - x direction  
 nyc =  16         # nyc = number of cells - y direction
@@ -74,10 +74,10 @@ ZLEN = 1          # Number of subdomains in the X direction
 #    2,3,4,5,... = ions
 ns = 2
 
-x_center_inj =   37.5  37.5 # center of the injector - x direction in m  
-y_center_inj =   37.5  37.5 # center of the injector - y direction in m
-z_center_inj =   0.05  0.05 # center of the injector - z direction in m  
-L_square_inj =   14.4  14.4 # diameter of the injector
+x_center_inj =   37.5  37.5 # OPTIONAL (default x_center) center of the injector - x direction   
+y_center_inj =   37.5  37.5 # OPTIONAL (default y_center) center of the injector - y direction 
+z_center_inj =   0.05  0.05 # OPTIONAL (default z_center) center of the injector - z direction   
+L_square_inj =   14.4  14.4 # OPTIONAL (default L_square) diameter of the injector
 
 rhoINIT         =    0.2     0.2        # Initial density (make sure you are neutral)
 rhoINJECT       =    0.0     0.0        # Injected density 
@@ -143,12 +143,11 @@ PERIODICZ       = 1                  # In direction Z (1=true, 0=false)
 # %%%%%%%%%%%% Numerics options %%%%%%%%%%%%%%%
 verbose                = 1        # Print to video results
 Vinj                   = 10       # Velocity of the injection from the wall
-CGtol                  = 1E-3     # CG solver stopping criterium tolerance
 GMREStol               = 1E-17    # GMRES solver stopping criterium tolerance
 NiterMover             = 3        # mover predictor corrector iteration
-FieldOutputCycle       = 10      # Output for field
+FieldOutputCycle       = 10       # Output for field
 ParticlesOutputCycle   = 100000   # Output for particles if 1 it doesnt save particles data
-RestartOutputCycle     = 200     # restart cycle
+RestartOutputCycle     = 200      # restart cycle
 DiagnosticsOutputCycle = 1        # Diagnostics cycle
 
 

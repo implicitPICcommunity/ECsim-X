@@ -7,6 +7,14 @@ void Collective::ReadInput(string inputfile) {
   int test_verbose;
   // Loading the input file 
   ConfigFile config(inputfile);
+  array_double arrayZero;
+	arrayZero.a = 0.0;
+	arrayZero.b = 0.0;
+	arrayZero.c = 0.0;
+	arrayZero.d = 0.0;
+	arrayZero.e = 0.0;
+	arrayZero.f = 0.0;
+
   // the following variables are ALWAYS taken from inputfile, even if restarting 
   try {
   {
@@ -18,7 +26,6 @@ void Collective::ReadInput(string inputfile) {
       abort();
     }
 #endif
-
     dt = config.read < double >("dt");
     ncycles = config.read < int >("ncycles");
     th = config.read < double >("th");
@@ -28,21 +35,18 @@ void Collective::ReadInput(string inputfile) {
     ns = config.read < int >("ns");
     NpMaxNpRatio = config.read < double >("NpMaxNpRatio");
     // GEM Challenge 
-    B0x = config.read <double>("B0x");
-    B0y = config.read <double>("B0y");
-    B0z = config.read <double>("B0z");
+    B0x = config.read <double>("B0x", 0.0);
+    B0y = config.read <double>("B0y", 0.0);
+    B0z = config.read <double>("B0z", 0.0);
 
     // Earth parameters
-    B1x = 0.0;
-    B1y = 0.0;
-    B1z = 0.0;
-    B1x = config.read <double>("B1x");
-    B1y = config.read <double>("B1y");
-    B1z = config.read <double>("B1z");
+    B1x = config.read <double>("B1x", 0.0);
+    B1y = config.read <double>("B1y", 0.0);
+    B1z = config.read <double>("B1z", 0.0);
 
-    MemPartGb = config.read <double>("MemPartGb");
+    MemPartGb = config.read <double>("MemPartGb", -1);
 
-    delta = config.read < double >("delta");
+    delta = config.read < double >("delta", 0);
 
     Case              = config.read<string>("Case");
     FieldsInit        = config.read<string>("FieldsInit");
@@ -52,8 +56,8 @@ void Collective::ReadInput(string inputfile) {
     SimName           = config.read<string>("SimulationName");
     PoissonCorrection = config.read<string>("PoissonCorrection");
     Cylindrical       = config.read < int >("Cylindrical");
-    Lagrangian        = config.read < int >("Lagrangian");
-    zeroCurrent       = config.read < int >("ZeroCurrent");
+    Lagrangian        = config.read < int >("Lagrangian", 0);
+    zeroCurrent       = config.read < int >("ZeroCurrent", 0);
 
 
     rhoINIT = new double[ns];
@@ -85,7 +89,6 @@ void Collective::ReadInput(string inputfile) {
       rhoINJECT[5]=rhoINJECT0.f;
 
     // take the tolerance of the solvers
-    CGtol = config.read < double >("CGtol");
     GMREStol = config.read < double >("GMREStol");
     NiterMover = config.read < int >("NiterMover");
     // take the injection of the particless
@@ -198,16 +201,14 @@ void Collective::ReadInput(string inputfile) {
     }
 #endif
 
-    x_center = config.read < double >("x_center");
-    y_center = config.read < double >("y_center");
-    z_center = config.read < double >("z_center");
-    L_square = config.read < double >("L_square");
+    x_center = config.read < double >("x_center", 0.0);
+    y_center = config.read < double >("y_center", 0.0);
+    z_center = config.read < double >("z_center", 0.0);
+    L_square = config.read < double >("L_square", 0.0);
 
-   // if (Case == "TwoCoils" || Case == "TwoCoilsINJ" || Case == "SixCoils" || Case == "SixCoilsINJ") {
-      coilD = config.read<double>( "CoilD" );
-      coilSpacing = config.read<double>( "CoilSpacing" );
-      coilThickness = config.read<double>( "CoilThickness" );
-    //}
+    coilD = config.read<double>( "CoilD", 0.0);
+    coilSpacing = config.read<double>( "CoilSpacing", 0.0);
+    coilThickness = config.read<double>( "CoilThickness", 0.0);
 
     npcelx = new int[ns];
     npcely = new int[ns];
@@ -235,10 +236,15 @@ void Collective::ReadInput(string inputfile) {
     array_double v00 = config.read < array_double > ("v0");
     array_double w00 = config.read < array_double > ("w0");
 
-    array_double xceninj = config.read < array_double > ("x_center_inj");
-    array_double yceninj = config.read < array_double > ("y_center_inj");
-    array_double zceninj = config.read < array_double > ("z_center_inj");
-    array_double lsquinj = config.read < array_double > ("L_square_inj");
+    array_double arrayInjX, arrayInjY, arrayInjZ, arrayInjL;
+		arrayInjX.a = arrayInjX.b = arrayInjX.c = arrayInjX.e = arrayInjX.d = arrayInjX.f = x_center;
+		arrayInjY.a = arrayInjY.b = arrayInjY.c = arrayInjY.e = arrayInjY.d = arrayInjY.f = y_center;
+		arrayInjZ.a = arrayInjZ.b = arrayInjZ.c = arrayInjZ.e = arrayInjZ.d = arrayInjZ.f = z_center;
+		arrayInjL.a = arrayInjL.b = arrayInjL.c = arrayInjL.e = arrayInjL.d = arrayInjL.f = L_square;
+    array_double xceninj = config.read < array_double > ("x_center_inj", arrayInjX);
+    array_double yceninj = config.read < array_double > ("y_center_inj", arrayInjY);
+    array_double zceninj = config.read < array_double > ("z_center_inj", arrayInjZ);
+    array_double lsquinj = config.read < array_double > ("L_square_inj", arrayInjL);
 
     npcelx[0] = npcelx0.a;
     npcely[0] = npcely0.a;
