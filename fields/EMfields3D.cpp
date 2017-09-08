@@ -3711,13 +3711,22 @@ double EMfields3D::getBextenergy(void) {
   double Byt = 0.0;
   double Bzt = 0.0;
 
-  for (int i = 1; i < nxn-2; i++)
-    for (int j = 1; j < nyn-2; j++)
-      for (int k = 1; k < nzn-2; k++){
-        Bxt = Bx_ext[i][j][k];
-        Byt = By_ext[i][j][k];
-        Bzt = Bz_ext[i][j][k];
-        localBenergy += .5*(Bxt*Bxt + Byt*Byt + Bzt*Bzt)/(FourPI*invVOLn[i][j][k]);
+  //for (int i = 1; i < nxn-2; i++)
+  //  for (int j = 1; j < nyn-2; j++)
+  //    for (int k = 1; k < nzn-2; k++){
+  //      Bxt = Bx_ext[i][j][k];
+  //      Byt = By_ext[i][j][k];
+  //      Bzt = Bz_ext[i][j][k];
+  //      localBenergy += .5*(Bxt*Bxt + Byt*Byt + Bzt*Bzt)/(FourPI*invVOLn[i][j][k]);
+  //    }
+
+  for (int i = 1; i < nxc-1; i++)
+    for (int j = 1; j < nyc-1; j++)
+      for (int k = 1; k < nzc-1; k++){
+        Bxt = Bxc_ext[i][j][k];
+        Byt = Byc_ext[i][j][k];
+        Bzt = Bzc_ext[i][j][k];
+        localBenergy += .5*(Bxt*Bxt + Byt*Byt + Bzt*Bzt)/(FourPI*invVOLc[i][j][k]);
       }
 
 
