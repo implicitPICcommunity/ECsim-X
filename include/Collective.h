@@ -169,6 +169,8 @@ class Collective
     string getWriteMethod();
     /*! get simulation name */
     string getSimName();
+    /*! get probes file name */
+    string getProbesFile();
     /*! get poisson correction flag */
     string getPoissonCorrection();
 
@@ -499,6 +501,9 @@ class Collective
 
     /** Memory per process for the particles (Gb) . If -1, it is not used */
     double MemPartGb;
+
+    /** Usage of probes */
+    string probesFile;
 };
 
 #endif

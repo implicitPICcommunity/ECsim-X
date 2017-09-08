@@ -58,6 +58,7 @@ void Collective::ReadInput(string inputfile) {
     Cylindrical       = config.read < int >("Cylindrical");
     Lagrangian        = config.read < int >("Lagrangian", 0);
     zeroCurrent       = config.read < int >("ZeroCurrent", 0);
+    probesFile        = config.read<string>("ProbesFile", "no");
 
 
     rhoINIT = new double[ns];
@@ -1190,6 +1191,10 @@ string Collective::getWriteMethod() {
 /*! get Poisson correction flag */
 string Collective::getPoissonCorrection() {
   return (PoissonCorrection);
+}
+/*! get probes file name */
+string Collective::getProbesFile() {
+  return (probesFile);
 }
 /*! get initial solution flag */
 bool Collective::getSolInit() {

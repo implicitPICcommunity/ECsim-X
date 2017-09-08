@@ -2,6 +2,7 @@
 #include "ECsim.h"
 #include "MyClock.h"
 #include "Memory.h"
+#include "Probes.h"
 
 using namespace ECsim;
 
@@ -67,6 +68,8 @@ int c_Solver::Init(int argc, char **argv) {
   MPI_Barrier(MPI_COMM_WORLD);
   grid = new Grid3DCU(col, vct);  // Create the local grid
   EMf = new EMfields3D(col, grid);  // Create Electromagnetic Fields Object
+
+  probes = new Probes(col, grid);
   
   if (col->getSolInit()) {
     /* -------------------------------------------- */
@@ -416,6 +419,10 @@ void c_Solver::WriteRestart(int cycle) {
 }
 
 void c_Solver::WriteConserved(int cycle) {
+
+  probes->setValues(EMf);
+  if (cycle == LastCycle()) probes->writeFiles();
+
   if (cycle == first_cycle) {
   return;
   }
@@ -444,8 +451,8 @@ void c_Solver::WriteConserved(int cycle) {
                  "#(13-> Number of particles of species 1)\n"
                  "#(14-> Total charge of species 1)\n"
                  "#(...)\n");
-      fprintf(fd," 1         2           3           4           5           6           7           8           9           10        11        12    \n"
-                 "-----------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+      fprintf(fd,"# 1        2           3           4           5           6           7           8           9           10        11        12    \n"
+                 "#----------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
       fclose(fd);
     }
 

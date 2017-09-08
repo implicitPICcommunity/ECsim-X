@@ -17,7 +17,9 @@ Cylindrical = 0                                      # Cylindrical coordinates (
 Lagrangian  = 0                                      # OPTIONAL (default 0) Lagrangian frame of reference OPTIONAL 
 ZeroCurrent = 0                                      # OPTIONAL (default 0) 1 -> assure that the inital current is zero
  
-MemPartGb   = -1               #OPTIONAL (default -1) Maximum memory allocated for the particles per process (Gb). If -1 it is not used
+MemPartGb   = -1       # OPTIONAL (default -1) Maximum memory allocated for the particles per process (Gb). If -1 it is not used
+
+ProbesFile = no        # OPTIONAL (degault no) File with probes coordinates.
 
 #  %%%%%%%%%%%%%%%%%%% Magnetic Reconnection %%%%%%%%%%%%%%%%%%
 B0x = 0.0   # OPTIONAL (default 0)

@@ -15,6 +15,7 @@
 #include "Restart3D.h"
 #include "ParallelIO.h"
 #include "PetscSolver.h"
+#include "Probes.h"
 
 #include <iostream>
 #include <fstream>
@@ -56,6 +57,7 @@ namespace ECsim {
     Grid3DCU      *grid;
     EMfields3D    *EMf;
     Particles3D   *part;
+    Probes        *probes;
     double        *Ke;
     double        *momentum;
     double        *qom;
