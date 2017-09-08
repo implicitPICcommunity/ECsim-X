@@ -49,7 +49,7 @@ Probes::Probes(Collective* col, Grid* grid)
       double yg = atof(txt);
       txt = strtok_r(NULL, " ", &saveptr);
       double zg = atof(txt);
-      if (xg > xmin && xg < xmax && yg > ymin && yg < ymax && zg > zmin && zg < zmax) {
+      if (xg >= xmin && xg < xmax && yg >= ymin && yg < ymax && zg >= zmin && zg < zmax) {
         if (np == npmax) {
           npmax += 20;
           id = (int*)    realloc(id, npmax*sizeof(int));
