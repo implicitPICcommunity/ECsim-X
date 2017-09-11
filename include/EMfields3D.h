@@ -121,7 +121,8 @@ class EMfields3D                // :public Field
     void communicateGhostP2G(int ns, int bcFaceXright, int bcFaceXleft, int bcFaceYright, int bcFaceYleft, VirtualTopology3D * vct);
     /*! add an amount of charge density to charge density field at node X,Y,Z */
     void addRho(double weight[][2][2], int X, int Y, int Z, int is);
-    /*! add an amount of current density - direction X to current density field at node X,Y,Z */
+    /*! add an amount of particles at node X,Y,Z */
+    void addN(double weight[][2][2], int X, int Y, int Z, int is);
 
     void addMass(double val[3][3], int, int, int, int);
     void addMassXX(double val, int, int, int, int);
@@ -227,6 +228,8 @@ class EMfields3D                // :public Field
     double ****getRHOns();
     /*! SPECIES: get density array on nodes */
     double ***& getRHOns(int is);
+    /*! SPECIES: get number of particles array on nodes */
+    double ***& getNns(int is);
     /*! SPECIES: get density array on cells without the ghost cells */
     double ***getRHOcs(int is);
     double ***& getRHOcs(int is, int dummy);
@@ -506,6 +509,8 @@ class EMfields3D                // :public Field
     double ****Jys;
     /*! SPECIES: current density Z-component, defined on nodes */
     double ****Jzs;
+    /*! SPECIES: number of particles, defined on nodes */
+    double ****Nns;
 
     /** Divergence of E */
     double ***divE;

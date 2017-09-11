@@ -191,6 +191,7 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
   // involving species
   rhons = newArr4(double, ns, nxn, nyn, nzn);
   rhocs = newArr4(double, ns, nxc, nyc, nzc);
+  Nns   = newArr4(double, ns, nxn, nyn, nzn);
   // arrays allocation: central points 
   Bxc = newArr3(double, nxc, nyc, nzc);
   Byc = newArr3(double, nxc, nyc, nzc);
@@ -311,6 +312,7 @@ void EMfields3D::setAllzero()
 
    eqValue(0.0,rhons, ns, nxn, nyn, nzn);
    eqValue(0.0,rhocs, ns, nxc, nyc, nzc);
+   eqValue(0.0,Nns, ns, nxn, nyn, nzn);
 
    eqValue(0.0, Bxc, nxc, nyc, nzc);
    eqValue(0.0, Byc, nxc, nyc, nzc);
@@ -1151,11 +1153,13 @@ void EMfields3D::communicateGhostP2G_Rho(VirtualTopology3D * vct) {
   // interpolate adding common nodes among processors
   for (int i=0; i<ns; i++) { 
     communicateInterp(nxn, nyn, nzn, i, rhons, 2, 2, 2, 2, 2, 2, vct);
+    communicateInterp(nxn, nyn, nzn, i, Nns, 2, 2, 2, 2, 2, 2, vct);
   }
 
   // put the correct values on ghost cells
   for (int i=0; i<ns; i++) { 
     communicateNode_P(nxn, nyn, nzn, rhons, i, vct);
+    communicateNode_P(nxn, nyn, nzn, Nns, i, vct);
   }
 }
 
@@ -1188,6 +1192,16 @@ void EMfields3D::addRho(double weight[][2][2], int X, int Y, int Z, int is) {
       for (int k = 0; k < 2; k++) {
         const double temp = weight[i][j][k];
         rhons[is][X - i][Y - j][Z - k] += temp * invVOLn[X - i][Y - j][Z - k];
+      }
+}
+
+/*! add an amount of number of particles at node X,Y */
+void EMfields3D::addN(double weight[][2][2], int X, int Y, int Z, int is) {
+  for (int i = 0; i < 2; i++)
+    for (int j = 0; j < 2; j++)
+      for (int k = 0; k < 2; k++) {
+        const double temp = weight[i][j][k];
+        Nns[is][X - i][Y - j][Z - k] += temp;
       }
 }
 
@@ -1308,6 +1322,7 @@ void EMfields3D::addPzz(double weight[][2][2], int X, int Y, int Z, int is) {
 
 void EMfields3D::setZeroRho() {
   eqValue(0.0, rhons, ns, nxn, nyn, nzn);
+  eqValue(0.0, Nns, ns, nxn, nyn, nzn);
   eqValue(0.0, rhocs, ns, nxc, nyc, nzc);
 
 }
@@ -3404,6 +3419,10 @@ double ****EMfields3D::getRHOns() {
 double ***& EMfields3D::getRHOns(int is) {
   return (rhons[is]);
 }
+/*! get particle array defined on nodes for one species */
+double ***& EMfields3D::getNns(int is) {
+  return (Nns[is]);
+}
 /*! get species density component X array cell without the ghost cells */
 double ***EMfields3D::getRHOcs(int is) {
   for (int i = 0; i < nxc; i++)
@@ -3871,6 +3890,7 @@ EMfields3D::~EMfields3D() {
   delArr4(rhons, ns, nxn, nyn);
   delArr4(rhotilde, ns, nxn, nyn);
   delArr3(divE, nxn, nyn);
+  delArr4(Nns, ns, nxn, nyn);
   // central points
   delArr3(Bxc, nxc, nyc);
   delArr3(Byc, nxc, nyc);

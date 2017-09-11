@@ -514,6 +514,13 @@ void Particles3Dcomm::computeCharge(Field * EMf, Grid * grid, VirtualTopology3D 
             temp[ii][jj][kk] = q[ip]*weight[ii][jj][kk];
           }
       EMf->addRho(temp, ix, iy, iz, ns);
+
+      // add number of particles          
+      for (int ii = 0; ii < 2; ii++)
+        for (int jj = 0; jj < 2; jj++)
+          for (int kk = 0; kk < 2; kk++) {
+          }
+      EMf->addN(weight, ix, iy, iz, ns);
     }
   }
 }

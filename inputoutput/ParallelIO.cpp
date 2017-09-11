@@ -164,6 +164,7 @@ void WriteFieldsH5hut(int nspec, Grid3DCU *grid, EMfields3D *EMf, Collective *co
     ss << is;
     string s_is = ss.str();
     file.WriteFields(EMf->getRHOns(is), "rho_"+ s_is, grid->getNXN(), grid->getNYN(), grid->getNZN());
+    file.WriteFields(EMf->getNns(is),   "N_"  + s_is, grid->getNXN(), grid->getNYN(), grid->getNZN());
     file.WriteFields(EMf->getJxs(is),   "Jx_" + s_is, grid->getNXN(), grid->getNYN(), grid->getNZN());
     file.WriteFields(EMf->getJys(is),   "Jy_" + s_is, grid->getNXN(), grid->getNYN(), grid->getNZN());
     file.WriteFields(EMf->getJzs(is),   "Jz_" + s_is, grid->getNXN(), grid->getNYN(), grid->getNZN());
