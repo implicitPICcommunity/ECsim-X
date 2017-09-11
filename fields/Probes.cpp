@@ -2,8 +2,8 @@
 
 Probes::Probes(Collective* col, Grid* grid)
 {
-  // 3 values: Ex, Ey, Ez
-  nval = 6;
+  // 9 values: Ex, Ey, Ez, Bx, By, Bz, Btx, Bty, Btz
+  nval = 9;
 
   probesfile = col->getProbesFile().c_str();  // File with the position of the probes
   if (strcmp(probesfile,"no") == 0) {
@@ -110,6 +110,9 @@ void Probes::setValues(EMfields3D* EMf)
   double*** Bx = EMf->getBx();
   double*** By = EMf->getBy();
   double*** Bz = EMf->getBz();
+  double*** Bx_ext = EMf->getBx_ext();
+  double*** By_ext = EMf->getBy_ext();
+  double*** Bz_ext = EMf->getBz_ext();
   for(int p=0; p<np; p++) {
       data[p][0][npt] = interpolate(p, Ex);
       data[p][1][npt] = interpolate(p, Ey);
@@ -117,6 +120,9 @@ void Probes::setValues(EMfields3D* EMf)
       data[p][3][npt] = interpolate(p, Bx);
       data[p][4][npt] = interpolate(p, By);
       data[p][5][npt] = interpolate(p, Bz);
+      data[p][6][npt] = interpolate(p, Bx_ext);
+      data[p][7][npt] = interpolate(p, By_ext);
+      data[p][8][npt] = interpolate(p, Bz_ext);
   }
   npt++;
 }
@@ -132,8 +138,8 @@ void Probes::writeHeader()
                "#  x = %.4f\n" 
                "#  y = %.4f\n" 
                "#  z = %.4f\n" 
-               "#   t           Ex            Ey            Ez            Bx            By            Bz       \n"
-               "#----------------------------------------------------------------------------------------------\n"
+               "#   t           Ex            Ey            Ez            Bx            By            Bz            Bx_ext        By_ext        Bz_ext   \n"
+               "#----------------------------------------------------------------------------------------------------------------------------------------\n"
                ,p, x[p], y[p], z[p]);
     fclose(fd);
   }
