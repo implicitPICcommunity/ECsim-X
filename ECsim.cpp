@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
   /* ------------------------------ */
 
   KCode.Init(argc, argv);
-  KCode.InjectBoundaryParticles();
+  KCode.InjectBoundaryParticles(0);
   KCode.WriteOutput(KCode.FirstCycle());
 
   /* ------------ */
@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
     clocks->stop(2);
 
     clocks->start(3);
-    b_err = KCode.ParticlesMover();
+    b_err = KCode.ParticlesMover(i);
     clocks->stop(3);
 
     if ( b_err) i = KCode.LastCycle() + 1;

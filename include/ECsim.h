@@ -36,10 +36,10 @@ namespace ECsim {
 
   public:
     int Init(int argc, char **argv);
-    void InjectBoundaryParticles();
+    void InjectBoundaryParticles(int cycle);
     void GatherMoments();
     void CalculateField();
-    bool ParticlesMover();
+    bool ParticlesMover(int cycle);
     void WriteOutput(int cycle);
     void WriteConserved(int cycle);
     void WriteRestart(int cycle);
@@ -93,7 +93,8 @@ namespace ECsim {
     double y_center;
     double z_center;
     double L_square;
-
+  
+    int freqInj; 
 
     double totEn0;
 

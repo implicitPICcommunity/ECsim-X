@@ -39,6 +39,9 @@ int c_Solver::Init(int argc, char **argv) {
   z_center = col->getz_center();
   L_square = col->getL_square();
 
+  freqInj = (int) col->getVinj();
+
+
 
   // initialize the virtual cartesian topology 
   vct = new VCtopology3D(col);
@@ -275,7 +278,7 @@ void c_Solver::CalculateField() {
 
 }
 
-bool c_Solver::ParticlesMover() {
+bool c_Solver::ParticlesMover(int cycle) {
 
   /*  -------------- */
   /*  Particle mover */
@@ -336,7 +339,7 @@ bool c_Solver::ParticlesMover() {
   /* -------------------------------------- */
   /* Repopulate the buffer zone at the edge */
   /* -------------------------------------- */
-  InjectBoundaryParticles();
+  InjectBoundaryParticles(cycle);
 
   if (mem_avail < 0) {          // not enough memory space allocated for particles: stop the simulation
     if (myrank == 0) {
@@ -350,7 +353,7 @@ bool c_Solver::ParticlesMover() {
   return (false);
 }
 
-void c_Solver::InjectBoundaryParticles(){
+void c_Solver::InjectBoundaryParticles(int cycle){
 
   for (int i=0; i < ns; i++) {
     if (col->getRHOinject(i)>0.0){
@@ -375,11 +378,12 @@ void c_Solver::InjectBoundaryParticles(){
       double dst_2 = col->getcoilSpacing()/2.0;
       Qremoved[i] += part[i].deleteParticlesInsideTorus_XZ(col->getcoilD(), col->getcoilThickness(), col->getx_center(),col->gety_center()+dst_2,col->getz_center());
       Qremoved[i] += part[i].deleteParticlesInsideTorus_XZ(col->getcoilD(), col->getcoilThickness(), col->getx_center(),col->gety_center()-dst_2,col->getz_center());
-      if (col->getRHOinject(i)>0.0)
+      if ((cycle > 0) && ((cycle-1) % freqInj == 0) && (col->getRHOinject(i)>0.0)) {
         if (col->getPartInj() == "mono") 
           part[i].inject_mono_sphere(grid,EMf,vct,col->getL_square_inj(i),col->getx_center_inj(i),col->gety_center_inj(i),col->getz_center_inj(i), 1.0);
         else
           part[i].inject_maxwell_sphere(grid,EMf,vct,col->getL_square_inj(i),col->getx_center_inj(i),col->gety_center_inj(i),col->getz_center_inj(i), 1.0);  // generated maxwellian in a box
+      }
 
     } else if (col->getCase()=="SixCoilsINJ") {
       Qremoved[i]  = part[i].deleteParticlesOutsideSphere(col->getDelta(),col->getx_center(),col->gety_center(),col->getz_center());

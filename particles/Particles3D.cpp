@@ -635,9 +635,9 @@ int Particles3D::inject_maxwell_sphere(Grid* grid,Field* EMf,VirtualTopology3D* 
 
 	double harvest;
 	double prob, theta, sign;
-	double inject_probability;
-	inject_probability = Vinj;
-	inject_probability /= npcelx*npcely*npcelz ;
+	//double inject_probability;
+	//inject_probability = Vinj;
+	//inject_probability /= npcelx*npcely*npcelz ;
 	for (int i=1; i< grid->getNXC()-1;i++)
 		for (int j=1; j< grid->getNYC()-1;j++)
 			for (int k=1; k< grid->getNZC()-1;k++)
@@ -654,7 +654,7 @@ int Particles3D::inject_maxwell_sphere(Grid* grid,Field* EMf,VirtualTopology3D* 
 							if (dst < L_square/2) {
 								harvest =   rand()/(double)RAND_MAX;
 								//cout << harvest << "   " << inject_probability << endl;
-								if(harvest < inject_probability){
+								//if(harvest < inject_probability){
 							  // q = charg
 							  q[counter] =  (qom/fabs(qom))* rhoINJECT *(1.0/grid->getInvVOLc(i,j,k));
 							  if (ii == 0 && jj == 0 && kk == 0 && i == 1 && j == 1 && k == 1)
@@ -678,7 +678,7 @@ int Particles3D::inject_maxwell_sphere(Grid* grid,Field* EMf,VirtualTopology3D* 
 
 
 							  counter++ ;
-							}
+							//}
 							}
 						}
 
@@ -774,9 +774,9 @@ int Particles3D::inject_mono_sphere(Grid* grid,Field* EMf,VirtualTopology3D* vct
 
 	double harvest;
 	double prob, theta, sign, mu;
-	double inject_probability;
-	inject_probability = Vinj;
-	inject_probability /= npcelx*npcely*npcelz ;
+	//double inject_probability;
+	//inject_probability = Vinj;
+	//inject_probability /= npcelx*npcely*npcelz ;
 	for (int i=1; i< grid->getNXC()-1;i++)
 		for (int j=1; j< grid->getNYC()-1;j++)
 			for (int k=1; k< grid->getNZC()-1;k++)
@@ -793,7 +793,7 @@ int Particles3D::inject_mono_sphere(Grid* grid,Field* EMf,VirtualTopology3D* vct
 							if (dst < L_square/2) {
 								harvest =   rand()/(double)RAND_MAX;
 								//cout << harvest << "   " << inject_probability << endl;
-								if(harvest < inject_probability){
+								//if(harvest < inject_probability){
 							  // q = charg
 							  q[counter] =  (qom/fabs(qom))* rhoINJECT *(1.0/grid->getInvVOLc(i,j,k));
 							  if (ii == 0 && jj == 0 && kk == 0 && i == 1 && j == 1 && k == 1)
@@ -823,7 +823,7 @@ int Particles3D::inject_mono_sphere(Grid* grid,Field* EMf,VirtualTopology3D* vct
 
 							  counter++ ;
 							}
-							}
+							//}
 						}
 
 	nop = counter;
