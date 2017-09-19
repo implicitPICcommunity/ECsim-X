@@ -250,6 +250,12 @@ class EMfields3D                // :public Field
     double ***getBy_ext();
     /** get external magnetic Field component Z */
     double ***getBz_ext();
+    /** get external magnetic Field component X. Centers */
+    double ***getBxc_ext();
+    /** get external magnetic Field component Y. Centers */
+    double ***getByc_ext();
+    /** get external magnetic Field component Z. Centers */
+    double ***getBzc_ext();
     /** get external electric Field component X */
     double ***getEx_ext();
     /** get external electric Field component Y */

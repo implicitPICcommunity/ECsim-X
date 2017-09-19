@@ -236,6 +236,7 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
       col->getCase() == "SixCoilsINJ" ||
       col->getCase() == "FluxRope" ||
       col->getCase() == "Mirror" ||
+      col->getCase() == "pulse" ||
       col->getCase() == "GEM" ) {
     Lambda = newArr3(double, nxn, nyn, nzn);
     damping = 1;
@@ -604,6 +605,9 @@ void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTo
 
   // Temporal damping
   if (damping == 1) {
+    //sumscalprod(imageEX, 1.0, tempXC, Lambda, nxc, nyc, nzc);
+    //sumscalprod(imageEY, 1.0, tempYC, Lambda, nxc, nyc, nzc);
+    //sumscalprod(imageEZ, 1.0, tempZC, Lambda, nxc, nyc, nzc);
     sumscalprod(imageBX, 1.0, tempX, Lambda, nxn, nyn, nzn);
     sumscalprod(imageBY, 1.0, tempY, Lambda, nxn, nyn, nzn);
     sumscalprod(imageBZ, 1.0, tempZ, Lambda, nxn, nyn, nzn);
@@ -2862,8 +2866,16 @@ void EMfields3D::initPulse(VirtualTopology3D * vct, Grid * grid, Collective *col
           double r = sqrt(xl*xl + yl*yl + zl*zl);
           if (r < L_square) Ez[i][j][k] = 1.0;
 
-        }
+		}
 
+        	double external_radius = Ly/20.;
+        	double scale_decay = external_radius/3.0;
+        	for (int i=0; i < nxn; i++)
+        		for (int j=0; j < nyn; j++)
+        			for (int k=0; k < nzn; k++){
+        					if (grid->getXN(i,j,k) < Lx/3) Lambda[i][j][k] = 1.0;
+									else Lambda[i][j][k] = 0.0;
+        			}
 
 }
 
@@ -3473,6 +3485,18 @@ double ***EMfields3D::getBy_ext() {
 double ***EMfields3D::getBz_ext() {
   return(Bz_ext);
 }
+/*! get Bxc_ext  */
+double ***EMfields3D::getBxc_ext() {
+  return(Bxc_ext);
+}
+/*!  get Byc_ext */
+double ***EMfields3D::getByc_ext() {
+  return(Byc_ext);
+}
+/*!  get Bzc_ext */
+double ***EMfields3D::getBzc_ext() {
+  return(Bzc_ext);
+}
 
 /*! get Ex_ext  */
 double ***EMfields3D::getEx_ext() {
@@ -3763,6 +3787,7 @@ double EMfields3D::getEenergyRemoved(bool save) {
   	for (int i = 1; i < nxn-2; i++)
     	for (int j = 1; j < nyn-2; j++)
       	for (int k = 1; k < nzn-2; k++) {
+        	//lE += Lambda[i][j][k]*(Ex[i][j][k] * Ex[i][j][k] + Ey[i][j][k] * Ey[i][j][k] + Ez[i][j][k] * Ez[i][j][k]) / (FourPI*invVOLn[i][j][k]);
         	lE += 2*Lambda[i][j][k]*(Exth[i][j][k] * Exth[i][j][k] + Eyth[i][j][k] * Eyth[i][j][k] + Ezth[i][j][k] * Ezth[i][j][k]) / (FourPI*invVOLn[i][j][k]);
       	}
 		if (save) {

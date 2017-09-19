@@ -310,6 +310,9 @@ void ReadFieldsH5hut(int nspec, bool readext, bool readBc, EMfields3D *EMf, Coll
     infile.ReadFields(EMf->getBx_ext(), "Bx_ext", grid->getNXN(), grid->getNYN(), grid->getNZN());
     infile.ReadFields(EMf->getBy_ext(), "By_ext", grid->getNXN(), grid->getNYN(), grid->getNZN());
     infile.ReadFields(EMf->getBz_ext(), "Bz_ext", grid->getNXN(), grid->getNYN(), grid->getNZN());
+    grid->interpN2C(EMf->getBxc_ext(), EMf->getBx_ext());
+    grid->interpN2C(EMf->getByc_ext(), EMf->getBy_ext());
+    grid->interpN2C(EMf->getBzc_ext(), EMf->getBz_ext());
   }
 
   for (int is = 0; is < nspec; is++){
