@@ -605,9 +605,9 @@ void EMfields3D::MaxwellImage(double *im, double *vector, Grid * grid, VirtualTo
 
   // Temporal damping
   if (damping == 1) {
-    //sumscalprod(imageEX, 1.0, tempXC, Lambda, nxc, nyc, nzc);
-    //sumscalprod(imageEY, 1.0, tempYC, Lambda, nxc, nyc, nzc);
-    //sumscalprod(imageEZ, 1.0, tempZC, Lambda, nxc, nyc, nzc);
+    sumscalprod(imageEX, 1.0, tempXC, Lambda, nxc, nyc, nzc);
+    sumscalprod(imageEY, 1.0, tempYC, Lambda, nxc, nyc, nzc);
+    sumscalprod(imageEZ, 1.0, tempZC, Lambda, nxc, nyc, nzc);
     sumscalprod(imageBX, 1.0, tempX, Lambda, nxn, nyn, nzn);
     sumscalprod(imageBY, 1.0, tempY, Lambda, nxn, nyn, nzn);
     sumscalprod(imageBZ, 1.0, tempZ, Lambda, nxn, nyn, nzn);
