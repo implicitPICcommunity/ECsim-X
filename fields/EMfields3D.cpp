@@ -229,6 +229,7 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
   Jy_ext = newArr3(double, nxn, nyn, nzn);
   Jz_ext = newArr3(double, nxn, nyn, nzn);
 
+  damping = 0;
   if (col->getCase() == "Dipole" ||
       col->getCase() == "TwoCoils" ||
       col->getCase() == "TwoCoilsINJ" ||
@@ -238,9 +239,12 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
       col->getCase() == "Mirror" ||
       col->getCase() == "pulse" ||
       col->getCase() == "GEM" ) {
-    Lambda = newArr3(double, nxn, nyn, nzn);
-    damping = 1;
-  } else damping = 0;
+		if (col->getLambdaDamping() == "yes") {
+      Lambda = newArr3(double, nxn, nyn, nzn);
+      damping = 1;
+    }
+  } 
+  printf("Damping: %d\n",damping);
 
   // Set to zero all the memory allocated
   setAllzero();
@@ -1651,6 +1655,8 @@ void EMfields3D::initGEM(VirtualTopology3D * vct, Grid * grid, Collective *col) 
   else {
     init(vct, grid, col);            // use the fields from restart file
   }
+  
+  if (damping == 1) {
  //     	Adds damping region padded near the edge of the y axis.
         	double external_radius = Ly/20.;
         	double scale_decay = external_radius/3.0;
@@ -1663,6 +1669,7 @@ void EMfields3D::initGEM(VirtualTopology3D * vct, Grid * grid, Collective *col) 
         					Lambda[i][j][k]  = 1.0* tanh((r-(Ly/2-external_radius))/scale_decay);
         				}
         			}
+  }
 
 }
 
@@ -2404,18 +2411,21 @@ void EMfields3D::initFluxRope(VirtualTopology3D *vct, Grid *grid, Collective *co
 	} else {
 	    init(vct, grid, col);;  // use the fields from restart file
 	}
-	double scale_decay = L_square/10.0;
-	for (int i=0; i < nxn; i++)
-		for (int j=0; j < nyn; j++)
-			for (int k=0; k < nzn; k++){
-				Lambda[i][j][k]  = 0.0;
-        double r;
-        if (Cylindrical == 1) r = sqrt(pow(grid->getXN(i,j,k),2.0) + pow(grid->getYN(i,j,k)-Ly/2.0,2.0));
-        else r = sqrt(pow(grid->getXN(i,j,k)-Lx/2.0,2.0) + pow(grid->getYN(i,j,k)-Ly/2.0,2.0) +  pow(grid->getZN(i,j,k)-Lz/2.0,2.0));
-				if(r>L_square){
-					Lambda[i][j][k]  = 1.0* tanh((r-L_square)/scale_decay);
-				}
-			}
+
+  if (damping == 1) {
+	  double scale_decay = L_square/10.0;
+	  for (int i=0; i < nxn; i++)
+		  for (int j=0; j < nyn; j++)
+			  for (int k=0; k < nzn; k++){
+				  Lambda[i][j][k]  = 0.0;
+          double r;
+          if (Cylindrical == 1) r = sqrt(pow(grid->getXN(i,j,k),2.0) + pow(grid->getYN(i,j,k)-Ly/2.0,2.0));
+          else r = sqrt(pow(grid->getXN(i,j,k)-Lx/2.0,2.0) + pow(grid->getYN(i,j,k)-Ly/2.0,2.0) +  pow(grid->getZN(i,j,k)-Lz/2.0,2.0));
+				  if(r>L_square){
+					  Lambda[i][j][k]  = 1.0* tanh((r-L_square)/scale_decay);
+				  }
+			  }
+  }
 
 }
 
@@ -2867,15 +2877,6 @@ void EMfields3D::initPulse(VirtualTopology3D * vct, Grid * grid, Collective *col
           if (r < L_square) Ez[i][j][k] = 1.0;
 
 		}
-
-        	double external_radius = Ly/20.;
-        	double scale_decay = external_radius/3.0;
-        	for (int i=0; i < nxn; i++)
-        		for (int j=0; j < nyn; j++)
-        			for (int k=0; k < nzn; k++){
-        					if (grid->getXN(i,j,k) < Lx/3) Lambda[i][j][k] = 1.0;
-									else Lambda[i][j][k] = 0.0;
-        			}
 
 }
 
@@ -4470,19 +4471,21 @@ void EMfields3D::setZeroCurrent(VirtualTopology3D * vct)
 
 void EMfields3D::SetLambda(Grid *grid, Collective* col){
 
-  double dst = col->getDelta()+dx;
-	double scale_decay = dst/10.0;
-  for (int i=0; i < nxn; i++)
-  	for (int j=0; j < nyn; j++)
-  		for (int k=0; k < nzn; k++){
-  			Lambda[i][j][k]  = 0.0;
-        double r;
-        if (Cylindrical == 1) r = sqrt(pow(grid->getXN(i,j,k),2.0) + pow(grid->getYN(i,j,k)-Ly/2.0,2.0));
-        else r = sqrt(pow(grid->getXN(i,j,k)-Lx/2.0,2.0) + pow(grid->getYN(i,j,k)-Ly/2.0,2.0) + pow(grid->getZN(i,j,k)-Lz/2.0,2.0));
-  			if(r>dst){
-  				Lambda[i][j][k]  = 1.0* tanh((r-dst)/scale_decay);
-  			}
-  		}
+  if (damping == 1) {
+    double dst = col->getDelta()+dx;
+  	double scale_decay = dst/10.0;
+    for (int i=0; i < nxn; i++)
+    	for (int j=0; j < nyn; j++)
+    		for (int k=0; k < nzn; k++){
+    			Lambda[i][j][k]  = 0.0;
+          double r;
+          if (Cylindrical == 1) r = sqrt(pow(grid->getXN(i,j,k),2.0) + pow(grid->getYN(i,j,k)-Ly/2.0,2.0));
+          else r = sqrt(pow(grid->getXN(i,j,k)-Lx/2.0,2.0) + pow(grid->getYN(i,j,k)-Ly/2.0,2.0) + pow(grid->getZN(i,j,k)-Lz/2.0,2.0));
+    			if(r>dst){
+    				Lambda[i][j][k]  = 1.0* tanh((r-dst)/scale_decay);
+    			}
+    		}
+  }
 /*
   for (int i=0; i < nxn; i++){
     for (int j=0; j < nyn; j++){

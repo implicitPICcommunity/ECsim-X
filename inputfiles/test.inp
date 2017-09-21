@@ -21,6 +21,9 @@ MemPartGb   = -1       # OPTIONAL (default -1) Maximum memory allocated for the 
 
 ProbesFile = no        # OPTIONAL (degault no) File with probes coordinates.
 
+LambdaDamping = yes    # OPTIONAL (default yes) It enables/disables the Lambda damping (if it is enabled in the Case used, otherwise it has
+                       #                        no effect).
+
 #  %%%%%%%%%%%%%%%%%%% Magnetic Reconnection %%%%%%%%%%%%%%%%%%
 B0x = 0.0   # OPTIONAL (default 0)
 B0y = 0.0   # OPTIONAL (default 0)

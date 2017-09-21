@@ -271,6 +271,8 @@ class Collective
     int getZeroCurrent();
 
 	  double getMemPartGb();
+
+    string getLambdaDamping();
   private:
     /*! inputfile */
     string inputfile;
@@ -504,6 +506,9 @@ class Collective
 
     /** Usage of probes */
     string probesFile;
+    
+    /** Lambda damping */
+    string LambdaDamping;
 };
 
 #endif

@@ -46,6 +46,8 @@ void Collective::ReadInput(string inputfile) {
 
     MemPartGb = config.read <double>("MemPartGb", -1);
 
+    LambdaDamping = config.read<string>("LambdaDamping","yes");
+
     delta = config.read < double >("delta", 0);
 
     Case              = config.read<string>("Case");
@@ -1247,6 +1249,11 @@ int Collective::getCylindrical() {
 /*! Lagrangian reference frame */
 int Collective::getLagrangian() {
   return Lagrangian;
+}
+
+/* Lambda damping */
+string Collective::getLambdaDamping() {
+  return LambdaDamping;
 }
 /*! Return the bulk velocity */
 double Collective::getUbulk() { return u_bulk; }
