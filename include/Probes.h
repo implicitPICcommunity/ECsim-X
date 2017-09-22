@@ -50,6 +50,7 @@ private:
     bool active;  
     const char* probesfile;
     char savedir[256];
+    int ns;     // Number of species
     int np;     // Number of probes
     int nval;   // Number of values in each probe
     int npt;    // Number of time steps of each probe

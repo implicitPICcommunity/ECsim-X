@@ -223,6 +223,7 @@ int c_Solver::Init(int argc, char **argv) {
   #endif
 
 
+  gridUpdated = false;
 
   clocks->stop(0);
   return 0;
@@ -261,6 +262,28 @@ void c_Solver::GatherMoments(){
   #ifdef _CHARGE_FROM_CURRENT_
   EMf->chargeFromCurrent(grid, vct);
   #endif
+}
+
+/** Compute the charge, current and pressure densities. They are not needed for the 
+ * calculation, only for the output */
+void c_Solver::GatherMoments_extra() {
+ if (!gridUpdated) {
+    // Compute the charge density and the current of each specie 
+    EMf->setZeroDensities();                  // set to zero the densities
+    for (int i = 0; i < ns; i++)
+      part[i].computeCurrent(EMf, grid, vct);      // interpolate Particles to Grid(Nodes)
+  
+    #ifndef _CHARGE_FROM_CURRENT_
+    EMf->setZeroRho();                  // set to zero the densities
+    for (int i = 0; i < ns; i++)
+      part[i].computeCharge(EMf, grid, vct);      // interpolate Particles to Grid(Nodes)
+  
+    EMf->communicateGhostP2G_Rho(vct);
+    #endif
+    
+    EMf->communicateGhostP2G_JP(vct);
+    gridUpdated = true;
+  }
 }
 
 void c_Solver::CalculateField() {
@@ -350,6 +373,8 @@ bool c_Solver::ParticlesMover(int cycle) {
     return (true);              // exit from the time loop
   }
 
+  gridUpdated = false;
+
   return (false);
 }
 
@@ -423,13 +448,16 @@ void c_Solver::WriteRestart(int cycle) {
 }
 
 void c_Solver::WriteConserved(int cycle) {
-
-  probes->setValues(EMf);
-  if (cycle == LastCycle()) probes->writeFiles();
-
   if (cycle == first_cycle) {
   return;
   }
+
+  if (probes->getNP() > 0) {
+    GatherMoments_extra();
+    probes->setValues(EMf);
+    if (cycle == LastCycle()) probes->writeFiles();
+  }
+
 
   if (cycle == first_cycle+1) {
 
@@ -517,21 +545,7 @@ void c_Solver::WriteOutput(int cycle) {
   }
 
   EMf->divergenceOfE(grid, vct);
-
-  // Compute the charge density and the current of each specie 
-  EMf->setZeroDensities();                  // set to zero the densities
-  for (int i = 0; i < ns; i++)
-    part[i].computeCurrent(EMf, grid, vct);      // interpolate Particles to Grid(Nodes)
-
-  #ifndef _CHARGE_FROM_CURRENT_
-  EMf->setZeroRho();                  // set to zero the densities
-  for (int i = 0; i < ns; i++)
-    part[i].computeCharge(EMf, grid, vct);      // interpolate Particles to Grid(Nodes)
-
-  EMf->communicateGhostP2G_Rho(vct);
-  #endif
-  
-  EMf->communicateGhostP2G_JP(vct);
+  GatherMoments_extra();
   
 
   if (col->getWriteMethod() == "ascii") {

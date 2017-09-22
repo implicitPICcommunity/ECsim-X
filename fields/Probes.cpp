@@ -2,8 +2,9 @@
 
 Probes::Probes(Collective* col, Grid* grid)
 {
-  // 9 values: Ex, Ey, Ez, Bx, By, Bz, Btx, Bty, Btz
-  nval = 9;
+  ns = col->getNs();
+  // values: Ex, Ey, Ez, Bx, By, Bz, Btx, Bty, Btz, rho_s, Jx_s, Jy_s, Jz_s, P_s
+  nval = 9 + ns*7;
 
   probesfile = col->getProbesFile().c_str();  // File with the position of the probes
   if (strcmp(probesfile,"no") == 0) {
@@ -113,6 +114,13 @@ void Probes::setValues(EMfields3D* EMf)
   double*** Bx_ext = EMf->getBx_ext();
   double*** By_ext = EMf->getBy_ext();
   double*** Bz_ext = EMf->getBz_ext();
+  double**** rhons = EMf->getRHOns();
+  double**** Jxs = EMf->getJxs();
+  double**** Jys = EMf->getJys();
+  double**** Jzs = EMf->getJzs();
+  double**** Pxxs = EMf->getpXXsn();
+  double**** Pyys = EMf->getpYYsn();
+  double**** Pzzs = EMf->getpZZsn();
   for(int p=0; p<np; p++) {
       data[p][0][npt] = interpolate(p, Ex);
       data[p][1][npt] = interpolate(p, Ey);
@@ -123,6 +131,15 @@ void Probes::setValues(EMfields3D* EMf)
       data[p][6][npt] = interpolate(p, Bx_ext);
       data[p][7][npt] = interpolate(p, By_ext);
       data[p][8][npt] = interpolate(p, Bz_ext);
+      for(int s=0; s<ns; s++) {
+        data[p][9 + s*7][npt] = interpolate(p, rhons[s]);
+        data[p][10+ s*7][npt] = interpolate(p, Jxs[s]);
+        data[p][11+ s*7][npt] = interpolate(p, Jys[s]);
+        data[p][12+ s*7][npt] = interpolate(p, Jzs[s]);
+        data[p][13+ s*7][npt] = interpolate(p, Pxxs[s]);
+        data[p][14+ s*7][npt] = interpolate(p, Pyys[s]);
+        data[p][15+ s*7][npt] = interpolate(p, Pzzs[s]);
+      }
   }
   npt++;
 }
@@ -138,8 +155,19 @@ void Probes::writeHeader()
                "#  x = %.4f\n" 
                "#  y = %.4f\n" 
                "#  z = %.4f\n" 
-               "#   t           Ex            Ey            Ez            Bx            By            Bz            Bx_ext        By_ext        Bz_ext   \n"
-               "#----------------------------------------------------------------------------------------------------------------------------------------\n"
+               "#---------------------------------------------------------\n"
+               "#  1        ->  t \n"
+               "#  2,3,4    ->  Ex, Ey, Ez \n"
+               "#  5,6,7    ->  Bx, By, Bz \n"
+               "#  8,9,10   ->  Bx_ext, By_ext, Bz_ext \n"
+               "#  11       ->  rho_0\n"
+               "#  12,13,14 ->  Jx_0, Jy_0, Jz_0 \n"
+               "#  15,16,17 ->  Pxx_0, Pyy_0, Pzz_0 \n"
+               "# (18       ->  rho_1               )\n"
+               "# (19,20,21 ->  Jx_1, Jy_1, Jz_1    )\n"
+               "# (22,23,24 ->  Pxx_1, Pyy_1, Pzz_1 )\n"
+               "# ... \n"
+               "#---------------------------------------------------------\n"
                ,p, x[p], y[p], z[p]);
     fclose(fd);
   }
@@ -227,4 +255,3 @@ void Probes::print()
     printf("\n");
   }
 }
-

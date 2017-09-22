@@ -38,6 +38,7 @@ namespace ECsim {
     int Init(int argc, char **argv);
     void InjectBoundaryParticles(int cycle);
     void GatherMoments();
+    void GatherMoments_extra();
     void CalculateField();
     bool ParticlesMover(int cycle);
     void WriteOutput(int cycle);
@@ -97,6 +98,9 @@ namespace ECsim {
     int freqInj; 
 
     double totEn0;
+
+    /* True if the charge, current and pressure have been updated (they are not needed for the calculation, only for the output) */
+    bool gridUpdated;
 
 #ifdef __WITH_PETSC__
     PetscSolver *petscSolver;
