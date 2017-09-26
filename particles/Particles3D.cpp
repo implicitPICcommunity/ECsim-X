@@ -63,7 +63,8 @@ Particles3D::Particles3D() {
 
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  long long seed = time(NULL) + (rank+1)*20 + ns;
+  long long seed = (rank+1)*20 + ns;
+  //long long seed = time(NULL) + (rank+1)*20 + ns;
   srand(seed);
   srand48(seed);
 
@@ -206,7 +207,6 @@ void Particles3D::maxwellian(Grid * grid, Field * EMf, VirtualTopology3D * vct) 
               //z[counter] = Drand48(seed)*dz + grid->getZN(i,j,k);
               // q = charge
               q[counter] = (qom / fabs(qom)) * (fabs(EMf->getRHOcs(i, j, k, ns)) / npcel) * (1.0 / grid->getInvVOLc(i,j,k));
-
               harvest = rand() / (double) RAND_MAX;
               prob = sqrt(-2.0 * log(1.0 - .999999 * harvest));
               harvest = rand() / (double) RAND_MAX;
