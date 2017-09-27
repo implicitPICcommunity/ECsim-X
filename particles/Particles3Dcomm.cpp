@@ -216,8 +216,8 @@ void Particles3Dcomm::allocate(int species, long long initnpmax, Collective * co
   q = new double[npmax];
   // ID
   if (TrackParticleID) {
-    partID   = new long[npmax];
-    partRank = new long[npmax];
+    partID   = new long long[npmax];
+    partRank = new long long[npmax];
   }
 
   printf("Buffer size: %d\n", buffer_size);
@@ -1125,11 +1125,11 @@ double *Particles3Dcomm::getWall()  const {
   return (w);
 }
 /**get ID of particle with label indexPart */
-long *Particles3Dcomm::getParticleIDall()  const {
+long long *Particles3Dcomm::getParticleIDall()  const {
   return (partID);
 }
 /**get proc of particle with label indexPart */
-long *Particles3Dcomm::getParticleRankall()  const {
+long long *Particles3Dcomm::getParticleRankall()  const {
   return (partRank);
 }
 /**get charge of particle with label indexPart */
@@ -1189,11 +1189,11 @@ double Particles3Dcomm::getW(long long indexPart)  const {
   return (w[indexPart]);
 }
 /**get ID of particle with label indexPart */
-long Particles3Dcomm::getParticleID(long long indexPart)  const {
+long long Particles3Dcomm::getParticleID(long long indexPart)  const {
   return (partID[indexPart]);
 }
 /**get ID of particle with label indexPart */
-long Particles3Dcomm::getParticleRank(long long indexPart)  const {
+long long Particles3Dcomm::getParticleRank(long long indexPart)  const {
   return (partRank[indexPart]);
 }
 /**get charge of particle with label indexPart */

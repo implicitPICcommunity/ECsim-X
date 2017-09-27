@@ -180,7 +180,7 @@ void H5output::WriteParticles(int ispec, long long np, double *q, double *x, dou
 
 }
 
-void H5output::WriteParticles(int ispec, long long np, long *rank, long* id,  double *q, double *x, double *y, double *z, double *u, double *v, double *w, MPI_Comm CART_COMM){
+void H5output::WriteParticles(int ispec, long long np, long long *rank, long long* id,  double *q, double *x, double *y, double *z, double *u, double *v, double *w, MPI_Comm CART_COMM){
 
   /* --------------------------------------------------------------------- */
   /* Find out the total number of particles of species i in all the domain */
@@ -210,12 +210,12 @@ void H5output::WriteParticles(int ispec, long long np, long *rank, long* id,  do
 
   sstm << "tagR_" << ispec;
   std::string dtset = sstm.str();
-  H5PartWriteDataInt64(partfile,dtset.c_str(),rank);
+  H5PartWriteDataInt64(partfile,dtset.c_str(),(const int64_t*) rank);
   sstm.str("");
 
   sstm << "tagP_" << ispec;
   dtset = sstm.str();
-  H5PartWriteDataInt64(partfile,dtset.c_str(),id);
+  H5PartWriteDataInt64(partfile,dtset.c_str(),(const int64_t*) id);
   sstm.str("");
 
   sstm << "q_" << ispec;

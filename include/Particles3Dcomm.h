@@ -92,8 +92,8 @@ public:
   /** get q array for all the particles by reference */
   double *& getQref();
   /** get the ID array   */
-  long *getParticleIDall() const;
-  long *getParticleRankall() const;
+  long long *getParticleIDall() const;
+  long long *getParticleRankall() const;
   /** get X-position of particle with label indexPart */
   double getX(long long indexPart) const;
   /** get Y-position of particle with label indexPart */
@@ -107,8 +107,8 @@ public:
   /** get w (Z-velocity) of particle with label indexPart */
   double getW(long long indexPart) const;
   /** get ID of particle with label indexPart */
-  long getParticleID(long long indexPart) const;
-  long getParticleRank(long long indexPart) const;
+  long long getParticleID(long long indexPart) const;
+  long long getParticleRank(long long indexPart) const;
   /**get charge of particle with label indexPart */
   double getQ(long long indexPart) const;
   /** get charge of array for ID particles */
@@ -190,9 +190,9 @@ protected:
   /** TrackParticleID */
   bool TrackParticleID;
   /** Local particle ID, number of process where it was created and number of paricles created by this process*/
-  long *partID;
-  long *partRank;
-  long npTracked;
+  long long *partID;
+  long long *partRank;
+  long long npTracked;
   /** number of variables to be stored in buffer for communication for each particle  */
   int nVar;
   /** Charge array */
