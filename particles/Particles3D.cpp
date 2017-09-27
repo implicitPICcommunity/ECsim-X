@@ -61,7 +61,6 @@ Particles3D::Particles3D() {
   // see allocate(int species, Collective* col, VirtualTopology3D* vct, Grid* grid)
   //
 
-  int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   long long seed = (rank+1)*20 + ns;
   //long long seed = time(NULL) + (rank+1)*20 + ns;
@@ -96,8 +95,11 @@ void Particles3D::uniform_background(Grid * grid, Field * EMf) {
               v[counter] = 0.0;
               w[counter] = 0.0;
               q[counter] = (qom / fabs(qom)) * (EMf->getRHOcs(i, j, k, ns) / npcel) * (1.0 / grid->getInvVOLc(i,j,k));
-              if (TrackParticleID)
-                ParticleID[counter] = counter * (unsigned long) pow(10.0, BirthRank[1]) + BirthRank[0];
+              if (TrackParticleID) {
+                partID[counter]   = npTracked;
+                partRank[counter] = rank;
+                npTracked++;
+              }
               counter++;
             }
 
@@ -174,8 +176,11 @@ void Particles3D::maxwellian(Grid * grid, Field * EMf, VirtualTopology3D * vct) 
               theta = 2.0 * M_PI * harvest;
               w[counter] = w0 + wth * prob * cos(theta);
 
-              if (TrackParticleID)
-                ParticleID[counter] = counter * (unsigned long) pow(10.0, BirthRank[1]) + BirthRank[0];
+              if (TrackParticleID) {
+                partID[counter]   = npTracked;
+                partRank[counter] = rank;
+                npTracked++;
+              }
 
               counter++;
             }
@@ -219,8 +224,11 @@ void Particles3D::maxwellian(Grid * grid, Field * EMf, VirtualTopology3D * vct) 
               theta = 2.0 * M_PI * harvest;
               w[counter] = w0 + wth * prob * cos(theta);
 
-              if (TrackParticleID)
-                ParticleID[counter] = counter * (unsigned long) pow(10.0, BirthRank[1]) + BirthRank[0];
+              if (TrackParticleID) {
+                partID[counter]   = npTracked;
+                partRank[counter] = rank;
+                npTracked++;
+              }
 
               counter++;
             }
@@ -262,8 +270,11 @@ void Particles3D::MaxwellianDoubleGEM(Grid * grid, Field * EMf, VirtualTopology3
               prob = sqrt(-2.0 * log(1.0 - .999999 * Drand48(seed)));
               theta = 2.0 * M_PI * Drand48(seed);
               w[counter] = w0*shaperz + wth * prob * cos(theta);
-              if (TrackParticleID)
-                ParticleID[counter] = counter * (unsigned long) pow(10.0, BirthRank[1]) + BirthRank[0];
+              if (TrackParticleID) {
+                partID[counter]   = npTracked;
+                partRank[counter] = rank;
+                npTracked++;
+              }
 
 
               counter++;
@@ -331,8 +342,11 @@ void Particles3D::MaxwellianTangentialDiscontinuity(Grid * grid, Field * EMf, Vi
               prob = sqrt(-2.0 * log(1.0 - .999999 * Drand48(seed)));
               theta = 2.0 * M_PI * Drand48(seed);
               w[counter] = w0 + wthp * prob * cos(theta);
-              if (TrackParticleID)
-                ParticleID[counter] = counter * (unsigned long) pow(10.0, BirthRank[1]) + BirthRank[0];
+              if (TrackParticleID) {
+                partID[counter]   = npTracked;
+                partRank[counter] = rank;
+                npTracked++;
+              }
 
 
               counter++;
@@ -376,8 +390,11 @@ int Particles3D::monoenergetic_box(Grid* grid,Field* EMf,VirtualTopology3D* vct,
                 harvest =   rand()/(double)RAND_MAX;
                 theta = 2.0*M_PI*harvest;
                 w[counter] = multiple*w0 + wth*cos(theta);
-                if (TrackParticleID)
-                	ParticleID[counter]= counter*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
+                if (TrackParticleID) {
+                  partID[counter]   = npTracked;
+                  partRank[counter] = rank;
+                  npTracked++;
+                }
                 
                 counter++ ;
               }
@@ -423,8 +440,11 @@ int Particles3D::maxwell_box(Grid* grid,Field* EMf,VirtualTopology3D* vct, doubl
 							harvest =   rand()/(double)RAND_MAX;
 							theta = 2.0*M_PI*harvest;
 							w[counter] = multiple*w0 + wth*prob*cos(theta);
-							if (TrackParticleID)
-								ParticleID[counter]= counter*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
+              if (TrackParticleID) {
+                partID[counter]   = npTracked;
+                partRank[counter] = rank;
+                npTracked++;
+              }
 
 
 							counter++ ;
@@ -485,8 +505,11 @@ int Particles3D::maxwell_sphere(Grid* grid,Field* EMf,VirtualTopology3D* vct, do
 							  harvest =   rand()/(double)RAND_MAX;
 							  theta = 2.0*M_PI*harvest;
 							  w[counter] = multiple*w0 + wth*prob*cos(theta);
-							  if (TrackParticleID)
-								  ParticleID[counter]= counter*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
+                if (TrackParticleID) {
+                  partID[counter]   = npTracked;
+                  partRank[counter] = rank;
+                  npTracked++;
+                }
 
 
 							  counter++ ;
@@ -539,8 +562,11 @@ int Particles3D::maxwell_sphere(Grid* grid,Field* EMf,VirtualTopology3D* vct, do
 							  harvest =   rand()/(double)RAND_MAX;
 							  theta = 2.0*M_PI*harvest;
 							  w[counter] = multiple*w0 + wth*prob*cos(theta);
-							  if (TrackParticleID)
-								  ParticleID[counter]= counter*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
+                if (TrackParticleID) {
+                  partID[counter]   = npTracked;
+                  partRank[counter] = rank;
+                  npTracked++;
+                }
 
 
 							  counter++ ;
@@ -612,8 +638,11 @@ int Particles3D::inject_maxwell_sphere(Grid* grid,Field* EMf,VirtualTopology3D* 
 							  harvest =   rand()/(double)RAND_MAX;
 							  theta = 2.0*M_PI*harvest;
 							  w[counter] = multiple*w0 + wth*prob*cos(theta);
-							  if (TrackParticleID)
-								  ParticleID[counter]= counter*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
+                if (TrackParticleID) {
+                  partID[counter]   = npTracked;
+                  partRank[counter] = rank;
+                  npTracked++;
+                }
 
 
 							  counter++ ;
@@ -673,8 +702,11 @@ int Particles3D::inject_maxwell_sphere(Grid* grid,Field* EMf,VirtualTopology3D* 
 							  harvest =   rand()/(double)RAND_MAX;
 							  theta = 2.0*M_PI*harvest;
 							  w[counter] = multiple*w0 + wth*prob*cos(theta);
-							  if (TrackParticleID)
-								  ParticleID[counter]= counter*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
+                if (TrackParticleID) {
+                  partID[counter]   = npTracked;
+                  partRank[counter] = rank;
+                  npTracked++;
+                }
 
 
 							  counter++ ;
@@ -751,8 +783,11 @@ int Particles3D::inject_mono_sphere(Grid* grid,Field* EMf,VirtualTopology3D* vct
 							  w[counter] = multiple*w0 + wth*mu;
 
 
-							  if (TrackParticleID)
-								  ParticleID[counter]= counter*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
+                if (TrackParticleID) {
+                  partID[counter]   = npTracked;
+                  partRank[counter] = rank;
+                  npTracked++;
+                }
 
 
 							  counter++ ;
@@ -817,8 +852,11 @@ int Particles3D::inject_mono_sphere(Grid* grid,Field* EMf,VirtualTopology3D* vct
 							  w[counter] = multiple*w0 + wth*mu;
 
 
-							  if (TrackParticleID)
-								  ParticleID[counter]= counter*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
+                if (TrackParticleID) {
+                  partID[counter]   = npTracked;
+                  partRank[counter] = rank;
+                  npTracked++;
+                }
 
 
 							  counter++ ;
@@ -884,8 +922,11 @@ int Particles3D::monoenergetic_sphere(Grid* grid,Field* EMf,VirtualTopology3D* v
 							  // w
 							  w[counter] = multiple*w0 + wth*mu;
 
-							  if (TrackParticleID)
-								  ParticleID[counter]= counter*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
+                if (TrackParticleID) {
+                  partID[counter]   = npTracked;
+                  partRank[counter] = rank;
+                  npTracked++;
+                }
 
 
 							  counter++ ;
@@ -1026,8 +1067,11 @@ void Particles3D::MaxwellianFromFieldFile(Grid* grid,Field* EMf,VirtualTopology3
               harvest = rand() / (double) RAND_MAX;
               theta = 2.0 * M_PI * harvest;
               w[counter] = M_w0 + wth * prob * cos(theta);
-              if (TrackParticleID)
-                ParticleID[counter] = counter * (unsigned long) pow(10.0, BirthRank[1]) + BirthRank[0];
+              if (TrackParticleID) {
+                partID[counter]   = npTracked;
+                partRank[counter] = rank;
+                npTracked++;
+              }
               counter++;
             }
           }
@@ -1617,8 +1661,11 @@ int Particles3D::particle_repopulator(Grid* grid,VirtualTopology3D* vct, Field* 
                   v[particles_index] -= v_bulk;
                   w[particles_index] -= w_bulk;
                 }
-                if (TrackParticleID)
-                  ParticleID[particles_index]= particles_index*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
+                if (TrackParticleID) {
+                  partID[particles_index]   = npTracked;
+                  partRank[particles_index] = rank;
+                  npTracked++;
+                }
 
 
                 particles_index++ ;
@@ -1672,8 +1719,11 @@ int Particles3D::particle_repopulator(Grid* grid,VirtualTopology3D* vct, Field* 
                 prob  = sqrt(-2.0*log(1.0-.999999*Drand48(seed)));
                 theta = 2.0*M_PI*Drand48(seed);
                 w[particles_index] = w0 + wth*prob*cos(theta);
-                if (TrackParticleID)
-                  ParticleID[particles_index]= particles_index*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
+                if (TrackParticleID) {
+                  partID[particles_index]   = npTracked;
+                  partRank[particles_index] = rank;
+                  npTracked++;
+                }
 
                 if (Lagrangian == 1) {
                   u[particles_index] -= u_bulk;
@@ -1730,8 +1780,11 @@ int Particles3D::particle_repopulator(Grid* grid,VirtualTopology3D* vct, Field* 
                 prob  = sqrt(-2.0*log(1.0-.999999*Drand48(seed)));
                 theta = 2.0*M_PI*Drand48(seed);
                 w[particles_index] = w0 + wth*prob*cos(theta);
-                if (TrackParticleID)
-                  ParticleID[particles_index]= particles_index*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
+                if (TrackParticleID) {
+                  partID[particles_index]   = npTracked;
+                  partRank[particles_index] = rank;
+                  npTracked++;
+                }
 
                 if (Lagrangian == 1) {
                   u[particles_index] -= u_bulk;
@@ -1789,8 +1842,11 @@ int Particles3D::particle_repopulator(Grid* grid,VirtualTopology3D* vct, Field* 
                 prob  = sqrt(-2.0*log(1.0-.999999*Drand48(seed)));
                 theta = 2.0*M_PI*Drand48(seed);
                 w[particles_index] = w0 + wth*prob*cos(theta);
-                if (TrackParticleID)
-                  ParticleID[particles_index]= particles_index*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
+                if (TrackParticleID) {
+                  partID[particles_index]   = npTracked;
+                  partRank[particles_index] = rank;
+                  npTracked++;
+                }
 
                 if (Lagrangian == 1) {
                   u[particles_index] -= u_bulk;
@@ -1846,8 +1902,11 @@ int Particles3D::particle_repopulator(Grid* grid,VirtualTopology3D* vct, Field* 
                 prob  = sqrt(-2.0*log(1.0-.999999*Drand48(seed)));
                 theta = 2.0*M_PI*Drand48(seed);
                 w[particles_index] = w0 + wth*prob*cos(theta);
-                if (TrackParticleID)
-                  ParticleID[particles_index]= particles_index*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
+                if (TrackParticleID) {
+                  partID[particles_index]   = npTracked;
+                  partRank[particles_index] = rank;
+                  npTracked++;
+                }
 
                 if (Lagrangian == 1) {
                   u[particles_index] -= u_bulk;
@@ -1903,8 +1962,11 @@ int Particles3D::particle_repopulator(Grid* grid,VirtualTopology3D* vct, Field* 
                 prob  = sqrt(-2.0*log(1.0-.999999*Drand48(seed)));
                 theta = 2.0*M_PI*Drand48(seed);
                 w[particles_index] = w0 + wth*prob*cos(theta);
-                if (TrackParticleID)
-                  ParticleID[particles_index]= particles_index*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
+                if (TrackParticleID) {
+                  partID[particles_index]   = npTracked;
+                  partRank[particles_index] = rank;
+                  npTracked++;
+                }
 
                 if (Lagrangian == 1) {
                   u[particles_index] -= u_bulk;
@@ -2021,8 +2083,11 @@ void Particles3D::linear_perturbation(double deltaBoB, double kx, double ky, dou
               rejected = false;
 
           }
-          if (TrackParticleID)
-            ParticleID[counter] = counter * (unsigned long) pow(10.0, BirthRank[1]) + BirthRank[0];
+          if (TrackParticleID) {
+            partID[counter]   = npTracked;
+            partRank[counter] = rank;
+            npTracked++;
+          }
           counter++;
         }
   nop = counter + 1;
@@ -2326,8 +2391,11 @@ int Particles3D::injector_rand_box(Grid* grid,VirtualTopology3D* vct, Field* EMf
 			w[nop] = - v0 * (z[nop]-Lz/2.0)/r + wth*prob*cos(theta);;
 
 
-			if (TrackParticleID)
-				ParticleID[nop]= nop*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
+      if (TrackParticleID) {
+        partID[counter]   = npTracked;
+        partRank[counter] = rank;
+        npTracked++;
+      }
 
 			//printf("*** DEBUG: Added a particle at (x,y,z) = (%f,%f,%f) with (vx,vy,vz) = (%f,%f,%f)\n", x[nop], y[nop], z[nop], u[nop], v[nop], w[nop]);
 
@@ -2426,8 +2494,11 @@ int Particles3D::injector_rand_box_mono(Grid* grid,VirtualTopology3D* vct, Field
 			w[nop] = - v0 * (z[nop]-Lz/2.0)/r + wth*cos(theta);;
 
 
-			if (TrackParticleID)
-				ParticleID[nop]= nop*(unsigned long)pow(10.0,BirthRank[1])+BirthRank[0];
+      if (TrackParticleID) {
+        partID[counter]   = npTracked;
+        partRank[counter] = rank;
+        npTracked++;
+      }
 
 			//printf("*** DEBUG: Added a particle at (x,y,z) = (%f,%f,%f) with (vx,vy,vz) = (%f,%f,%f)\n", x[nop], y[nop], z[nop], u[nop], v[nop], w[nop]);
 
