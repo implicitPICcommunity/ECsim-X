@@ -182,8 +182,8 @@ void Particles3Dcomm::allocate(int species, long long initnpmax, Collective * co
     nVar = 9;
   else
     nVar = 7;
-  buffer_size = (int) (.05 * nop * nVar + 1); // max: 5% of the particles in the processors is going out
-  buffer_size_small = (int) (.01 * nop * nVar + 1); // max 1% not resizable 
+  buffer_size = (int) (.05 * npmax * nVar + 1); // max: 5% of the particles in the processors is going out
+  buffer_size_small = (int) (.01 * npmax * nVar + 1); // max 1% not resizable 
 
   if (vct->getCartesian_rank() == 0) {
     long long memreq = (npmax*nVar + buffer_size*6);
@@ -219,6 +219,8 @@ void Particles3Dcomm::allocate(int species, long long initnpmax, Collective * co
     partID   = new long[npmax];
     partRank = new long[npmax];
   }
+
+  printf("Buffer size: %d\n", buffer_size);
 
   b_X_RIGHT = new double[buffer_size];
   b_X_RIGHT_ptr = b_X_RIGHT;    // alias to make the resize
