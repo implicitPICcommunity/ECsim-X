@@ -476,7 +476,7 @@ void c_Solver::WriteConserved(int cycle) {
                  "# 3 -> Variation of total internal energy\n"
                  "# 4 -> Electric energy: sum(E_plasma*E_plasma)\n"
                  "# 5 -> Local magnetic energy: sum(B_total*B_total) - sum(B_extern*B_extern)\n"
-                 "# 6 -> Kinetic energy\n"
+                 "# 6 -> Kinetic energy (currently in the domain plus the one removed in the past)\n"
                  "# 7 -> Momentum\n"
                  "# 8 -> Total magnetic energy: sum(B_total*B_total)\n"
                  "# 9 -> Kinetic energy removed\n"
