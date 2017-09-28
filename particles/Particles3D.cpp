@@ -2705,3 +2705,12 @@ int Particles3D::updateLagrangianFrame(VirtualTopology3D * vct) {
   return (0);                   // exit succcesfully (hopefully) 
 }
 
+void Particles3D::tagParticles() {
+
+  for (long long counter = 0; counter < nop; counter++) {
+      partID[counter]   = npTracked;
+      partRank[counter] = rank;
+      npTracked++;
+  }
+
+}

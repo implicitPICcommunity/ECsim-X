@@ -131,6 +131,9 @@ int c_Solver::Init(int argc, char **argv) {
 
   if (col->getSolInit() && col->getPartInit()=="File") {
     ReadPartclH5hut(ns, part, col, vct, grid);
+    for (int i = 0; i < ns; i++) {
+      if (col->getTrackParticleID(i)) part[i].tagParticles();
+    }
   } else {
     for (int i = 0; i < ns; i++) {
 		  part[i].allocate(i, 0, col, vct, grid);
