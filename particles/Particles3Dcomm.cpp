@@ -1208,8 +1208,18 @@ long long Particles3Dcomm::getNOP()  const {
 double Particles3Dcomm::getKe() {
   double localKe = 0.0;
   double totalKe = 0.0;
-  for (register long long i = 0; i < nop; i++) {
-    localKe += .5 * (q[i] / qom) * (u[i] * u[i] + v[i] * v[i] + w[i] * w[i]);
+  if (Lagrangian == 0) {
+    for (register long long i = 0; i < nop; i++) {
+      localKe += .5 * (q[i] / qom) * (u[i] * u[i] + v[i] * v[i] + w[i] * w[i]);
+    }
+  } else {
+    for (register long long i = 0; i < nop; i++) {
+      double vx = u[i] + u_bulk;
+      double vy = v[i] + v_bulk;
+      double vz = w[i] + w_bulk;
+      localKe += .5 * (q[i] / qom) * (vx*vx + vy*vy + vz*vz);
+    }
+
   }
   MPI_Allreduce(&localKe, &totalKe, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
   return (totalKe);
@@ -1218,8 +1228,18 @@ double Particles3Dcomm::getKe() {
 double Particles3Dcomm::getP() {
   double localP = 0.0;
   double totalP = 0.0;
-  for (register long long i = 0; i < nop; i++)
-    localP += (q[i] / qom) * sqrt(u[i] * u[i] + v[i] * v[i] + w[i] * w[i]);
+  if (Lagrangian == 0) {
+    for (register long long i = 0; i < nop; i++)
+      localP += (q[i] / qom) * sqrt(u[i] * u[i] + v[i] * v[i] + w[i] * w[i]);
+  } else {
+    for (register long long i = 0; i < nop; i++) {
+      double vx = u[i] + u_bulk;
+      double vy = v[i] + v_bulk;
+      double vz = w[i] + w_bulk;
+      localP += (q[i] / qom) * sqrt(vx*vx + vy*vy + vz*vz);
+    }
+
+  }
   MPI_Allreduce(&localP, &totalP, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
   return (totalP);
 }
