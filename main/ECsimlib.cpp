@@ -479,12 +479,13 @@ void c_Solver::WriteConserved(int cycle) {
                  "# 6 -> Kinetic energy (currently in the domain plus the one removed in the past)\n"
                  "# 7 -> Momentum\n"
                  "# 8 -> Total magnetic energy: sum(B_total*B_total)\n"
-                 "# 9 -> Kinetic energy removed\n"
-                 "# 10 -> Electric energy removed\n"
-                 "# 11-> Number of particles of species 0\n"
-                 "# 12-> Total charge of species 0\n"
-                 "#(13-> Number of particles of species 1)\n"
-                 "#(14-> Total charge of species 1)\n"
+                 "# 9 -> Internal magnetic energy: sum(B_local*B_local)\n"
+                 "# 10-> Kinetic energy removed\n"
+                 "# 11-> Electric energy removed\n"
+                 "# 12-> Number of particles of species 0\n"
+                 "# 13-> Total charge of species 0\n"
+                 "#(14-> Number of particles of species 1)\n"
+                 "#(15-> Total charge of species 1)\n"
                  "#(...)\n");
       fprintf(fd,"# 1        2           3           4           5           6           7           8           9           10        11        12    \n"
                  "#----------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
@@ -521,12 +522,13 @@ void c_Solver::WriteConserved(int cycle) {
     }
     if (myrank == 0) {
       FILE* fd = fopen(cq.c_str(),"a");
-      fprintf(fd,"%5d %11.4e %11.4e %11.4e %11.4e %11.4e %11.4e %11.4e %11.4e %11.4e"
+      fprintf(fd,"%5d %11.4e %11.4e %11.4e %11.4e %11.4e %11.4e %11.4e %11.4e %11.4e %11.4e"
                 ,cycle
                 ,(EenRem + Eenergy + IntBenergy + TOTenergy), fabs((EenRem + Eenergy + IntBenergy + TOTenergy) - totEn0)
                 ,Eenergy , Benergy-ExtBenergy, TOTenergy
                 ,TOTmomentum
                 ,Benergy
+                ,IntBenergy
                 ,Kr
                 ,EenRem
                 );
