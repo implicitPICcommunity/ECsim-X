@@ -978,6 +978,12 @@ int Particles3D::monoenergetic_sphere(Grid* grid,Field* EMf,VirtualTopology3D* v
 							  // w
 							  w[counter] = multiple*w0 + wth*mu;
 
+                if (TrackParticleID) {
+                  partID[counter]   = npTracked;
+                  partRank[counter] = rank;
+                  npTracked++;
+                }
+
 							  counter++ ;
 							}
 						}
