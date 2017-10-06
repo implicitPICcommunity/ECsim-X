@@ -484,8 +484,10 @@ void c_Solver::WriteConserved(int cycle) {
                  "# 11-> Electric energy removed\n"
                  "# 12-> Number of particles of species 0\n"
                  "# 13-> Total charge of species 0\n"
-                 "#(14-> Number of particles of species 1)\n"
-                 "#(15-> Total charge of species 1)\n"
+                 "# 14-> Kinetic energy of species 0\n"
+                 "#(15-> Number of particles of species 1)\n"
+                 "#(16-> Total charge of species 1)\n"
+                 "#(17-> Kinetic energy of species 1)\n"
                  "#(...)\n");
       fprintf(fd,"# 1        2           3           4           5           6           7           8           9           10        11        12    \n"
                  "#----------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
@@ -532,7 +534,7 @@ void c_Solver::WriteConserved(int cycle) {
                 ,Kr
                 ,EenRem
                 );
-      for (int is = 0; is < ns; is++) fprintf(fd," %7ld %11.4e", nop[is], tq[is]);
+      for (int is = 0; is < ns; is++) fprintf(fd," %7ld %11.4e %11.4e", nop[is], tq[is], Ke[is]);
       fprintf(fd,"\n");
 
       fclose(fd);
