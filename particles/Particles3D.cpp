@@ -2193,7 +2193,7 @@ void Particles3D::RotatePlaneXY(double theta) {
 }
 
 /*! Delete the particles inside the sphere with radius R and center x_center y_center and return the total charge removed */
-double Particles3D::deleteParticlesInsideSphere(double R, double x_center, double y_center, double z_center){
+double Particles3D::deleteParticlesInsideSphere(Field* EMf, double R, double x_center, double y_center, double z_center){
 
   long long np_current = 0;
   long long nplast     = nop-1;
@@ -2212,6 +2212,11 @@ double Particles3D::deleteParticlesInsideSphere(double R, double x_center, doubl
       Q_removed += q[np_current];
       K_removed += .5 * (q[np_current] / qom) * (u[np_current]*u[np_current] + v[np_current]*v[np_current] + w[np_current]*w[np_current]);
 
+      int ix = 1 + int (floor((x[np_current] - xstart) / dx));
+      int iy = 1 + int (floor((y[np_current] - ystart) / dy));
+      int iz = 1 + int (floor((z[np_current] - zstart) / dz));
+      EMf->addQrem(q[np_current], ix, iy, iz, ns);
+
       del_pack(np_current,&nplast);
 
     } else {
@@ -2224,7 +2229,7 @@ double Particles3D::deleteParticlesInsideSphere(double R, double x_center, doubl
 
 
 /** Delete the particles outer multx*dx, multy*dy, multz*dz celles */
-double Particles3D::deleteParticlesOuterFrame(double multx, double multy, double multz){
+double Particles3D::deleteParticlesOuterFrame(Field* EMf, double multx, double multy, double multz){
 	// calculate accumulated charge on the spacecraft
 	long long np_current = 0, nplast = nop-1;
         if (Cylindrical == 1) {
@@ -2233,6 +2238,11 @@ double Particles3D::deleteParticlesOuterFrame(double multx, double multy, double
                 y[np_current] < multy*dy || y[np_current] > (Ly-multy*dx)) {
                 Q_removed += q[np_current];
                 K_removed += .5 * (q[np_current] / qom) * (u[np_current]*u[np_current] + v[np_current]*v[np_current] + w[np_current]*w[np_current]);
+                int ix = 1 + int (floor((x[np_current] - xstart) / dx));
+                int iy = 1 + int (floor((y[np_current] - ystart) / dy));
+                int iz = 1 + int (floor((z[np_current] - zstart) / dz));
+                EMf->addQrem(q[np_current], ix, iy, iz, ns);
+
                 del_pack(np_current,&nplast);
             } else {
               np_current++;
@@ -2245,6 +2255,10 @@ double Particles3D::deleteParticlesOuterFrame(double multx, double multy, double
                 //z[np_current] < multz*dz || z[np_current] > (Lz-multz*dz)) {
                 Q_removed += q[np_current];
                 K_removed += .5 * (q[np_current] / qom) * (u[np_current]*u[np_current] + v[np_current]*v[np_current] + w[np_current]*w[np_current]);
+                int ix = 1 + int (floor((x[np_current] - xstart) / dx));
+                int iy = 1 + int (floor((y[np_current] - ystart) / dy));
+                int iz = 1 + int (floor((z[np_current] - zstart) / dz));
+                EMf->addQrem(q[np_current], ix, iy, iz, ns);
                 del_pack(np_current,&nplast);
             } else {
               np_current++;
@@ -2257,7 +2271,7 @@ double Particles3D::deleteParticlesOuterFrame(double multx, double multy, double
 }
 
 /** Delete the particles inside the sphere with radius R and center x_center y_center */
-double Particles3D::deleteParticlesOutsideSphere(double R, double x_center, double y_center, double z_center){
+double Particles3D::deleteParticlesOutsideSphere(Field* EMf, double R, double x_center, double y_center, double z_center){
 	// calculate accumulated charge on the spacecraft
 	long long np_current = 0, nplast = nop-1;
 	while (np_current < nplast+1){
@@ -2265,6 +2279,10 @@ double Particles3D::deleteParticlesOutsideSphere(double R, double x_center, doub
 			// delete the particle and pack the particle array, the value of nplast changes
 			Q_removed += q[np_current];
       K_removed += .5 * (q[np_current] / qom) * (u[np_current]*u[np_current] + v[np_current]*v[np_current] + w[np_current]*w[np_current]);
+      int ix = 1 + int (floor((x[np_current] - xstart) / dx));
+      int iy = 1 + int (floor((y[np_current] - ystart) / dy));
+      int iz = 1 + int (floor((z[np_current] - zstart) / dz));
+      EMf->addQrem(q[np_current], ix, iy, iz, ns);
 			del_pack(np_current,&nplast);
 
 		} else {
@@ -2277,7 +2295,7 @@ double Particles3D::deleteParticlesOutsideSphere(double R, double x_center, doub
 }
 
 /** Delete the particles inside the torus with radius R and r and center x_center y_center z_center */
-double Particles3D::deleteParticlesInsideTorus_XZ(double D_torus, double d_torus, double x_center, double y_center, double z_center){
+double Particles3D::deleteParticlesInsideTorus_XZ(Field* EMf, double D_torus, double d_torus, double x_center, double y_center, double z_center){
 	// calculate accumulated charge on the spacecraft
 	double R_torus = D_torus/2.0;
 	double r_torus = d_torus/2.0;
@@ -2293,6 +2311,10 @@ double Particles3D::deleteParticlesInsideTorus_XZ(double D_torus, double d_torus
 			  // delete the particle and pack the particle array, the value of nplast changes
 			  Q_removed += q[np_current];
         K_removed += .5 * (q[np_current] / qom) * (u[np_current]*u[np_current] + v[np_current]*v[np_current] + w[np_current]*w[np_current]);
+        int ix = 1 + int (floor((x[np_current] - xstart) / dx));
+        int iy = 1 + int (floor((y[np_current] - ystart) / dy));
+        int iz = 1 + int (floor((z[np_current] - zstart) / dz));
+        EMf->addQrem(q[np_current], ix, iy, iz, ns);
 			  del_pack(np_current,&nplast);
 				removed = true;
 		  }
@@ -2304,7 +2326,7 @@ double Particles3D::deleteParticlesInsideTorus_XZ(double D_torus, double d_torus
 }
 
 //** Delete the particles outside the cube with dimension L */
-double Particles3D::deleteParticlesOutsideBox(double L){
+double Particles3D::deleteParticlesOutsideBox(Field* EMf, double L){
 	// calculate accumulated charge on the spacecraft
 	long long np_current = 0, nplast = nop-1;
 	while (np_current < nplast+1){
@@ -2314,6 +2336,10 @@ double Particles3D::deleteParticlesOutsideBox(double L){
 			// delete the particle and pack the particle array, the value of nplast changes
 			Q_removed += q[np_current];
       K_removed += .5 * (q[np_current] / qom) * (u[np_current]*u[np_current] + v[np_current]*v[np_current] + w[np_current]*w[np_current]);
+      int ix = 1 + int (floor((x[np_current] - xstart) / dx));
+      int iy = 1 + int (floor((y[np_current] - ystart) / dy));
+      int iz = 1 + int (floor((z[np_current] - zstart) / dz));
+      EMf->addQrem(q[np_current], ix, iy, iz, ns);
 			del_pack(np_current,&nplast);
 
 		} else {

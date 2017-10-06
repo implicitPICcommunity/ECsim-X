@@ -84,13 +84,13 @@ class Particles3D:public Particles3Dcomm {
     /** particle repopulator */
     int particle_repopulator(Grid* grid,VirtualTopology3D* vct, Field* EMf, int is);
     /*! Delete the particles inside the sphere with radius R and center x_center y_center and return the total charge removed */
-    double deleteParticlesInsideSphere(double R, double x_center, double y_center, double z_center);
+    double deleteParticlesInsideSphere(Field* EMf, double R, double x_center, double y_center, double z_center);
     /** Delete the particles outside the sphere with radius R and center x_center y_center */
-    double deleteParticlesOutsideSphere(double R, double x_center, double y_center, double z_center);
+    double deleteParticlesOutsideSphere(Field* EMf, double R, double x_center, double y_center, double z_center);
     /** Delete the particles outside the cube with dimension L */
-    double deleteParticlesOutsideBox(double L);
-    double deleteParticlesOuterFrame(double multx, double multy, double multz);
-    double deleteParticlesInsideTorus_XZ(double R_torus, double r_torus, double x_center, double y_center, double z_center);
+    double deleteParticlesOutsideBox(Field* EMf, double L);
+    double deleteParticlesOuterFrame(Field* EMf, double multx, double multy, double multz);
+    double deleteParticlesInsideTorus_XZ(Field* EMf, double R_torus, double r_torus, double x_center, double y_center, double z_center);
     double ReturnToCenterCircle(double L_outer);
     void fixZcylindrical();
     void fixPosition();

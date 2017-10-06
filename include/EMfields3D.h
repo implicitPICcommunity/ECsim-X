@@ -123,6 +123,8 @@ class EMfields3D                // :public Field
     void addRho(double weight[][2][2], int X, int Y, int Z, int is);
     /*! add an amount of particles at node X,Y,Z */
     void addN(double weight[][2][2], int X, int Y, int Z, int is);
+    /*! add an amount of charge at cell X,Y,Z */
+    void addQrem(double val, int X, int Y, int Z, int ns);
 
     void addMass(double val[3][3], int, int, int, int);
     void addMassXX(double val, int, int, int, int);
@@ -236,6 +238,8 @@ class EMfields3D                // :public Field
     double ***getRhotilde(int is);
 
     double ***getDivE();
+    double ***getQrem(int is);
+    double ***getTmpX();
 
     /** get external magnetic Field component X defined on node(indexX,indexY,indexZ) */
     double &getBx_ext(int indexX, int indexY, int indexZ) const;
@@ -520,6 +524,9 @@ class EMfields3D                // :public Field
 
     /** Divergence of E */
     double ***divE;
+
+    /** Charge removed in each cell */
+    double ****Qrem;
    
     /*! External magnetic field component-X, defined on nodes */
     double***  Bx_ext;

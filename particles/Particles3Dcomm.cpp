@@ -220,8 +220,6 @@ void Particles3Dcomm::allocate(int species, long long initnpmax, Collective * co
     partRank = new long long[npmax];
   }
 
-  printf("Buffer size: %d\n", buffer_size);
-
   b_X_RIGHT = new double[buffer_size];
   b_X_RIGHT_ptr = b_X_RIGHT;    // alias to make the resize
   b_X_LEFT = new double[buffer_size];

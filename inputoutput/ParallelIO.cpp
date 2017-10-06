@@ -158,7 +158,7 @@ void WriteFieldsH5hut(int nspec, Grid3DCU *grid, EMfields3D *EMf, Collective *co
   file.WriteFields(EMf->getBy_ext(), "By_ext",   grid->getNXN(), grid->getNYN(), grid->getNZN());
   file.WriteFields(EMf->getBz_ext(), "Bz_ext",   grid->getNXN(), grid->getNYN(), grid->getNZN());
   //file.WriteFields(EMf->GetLambda(), "Lambda", grid->getNXN(), grid->getNYN(), grid->getNZN());
-
+  
   for (int is=0; is<nspec; is++) {
     stringstream  ss;
     ss << is;
@@ -175,6 +175,11 @@ void WriteFieldsH5hut(int nspec, Grid3DCU *grid, EMfields3D *EMf, Collective *co
     file.WriteFields(EMf->getPyy(is),   "Pyy_" + s_is, grid->getNXN(), grid->getNYN(), grid->getNZN());
     file.WriteFields(EMf->getPyz(is),   "Pyz_" + s_is, grid->getNXN(), grid->getNYN(), grid->getNZN());
     file.WriteFields(EMf->getPzz(is),   "Pzz_" + s_is, grid->getNXN(), grid->getNYN(), grid->getNZN());
+
+    // Charge removed: interpolation from cells to nodes:
+    grid->interpC2N(EMf->getTmpX(), EMf->getQrem(is));
+    communicateNodeBC(grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getTmpX(), 0, 0, 0, 0, 0, 0, vct);
+    file.WriteFields(EMf->getTmpX(), "Qrem_" + s_is,   grid->getNXN(), grid->getNYN(), grid->getNZN());
   }
 
   file.CloseFieldsFile();

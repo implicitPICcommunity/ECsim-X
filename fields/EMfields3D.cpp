@@ -155,6 +155,8 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
 
   divE = newArr3(double, nxn, nyn, nzn);
 
+  Qrem = newArr4(double,ns, nxc, nyc, nzc);
+
   Jxs = newArr4(double, ns, nxn, nyn, nzn);
   Jys = newArr4(double, ns, nxn, nyn, nzn);
   Jzs = newArr4(double, ns, nxn, nyn, nzn);
@@ -244,7 +246,6 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
       damping = 1;
     }
   } 
-  printf("Damping: %d\n",damping);
 
   // Set to zero all the memory allocated
   setAllzero();
@@ -318,6 +319,7 @@ void EMfields3D::setAllzero()
    eqValue(0.0,rhons, ns, nxn, nyn, nzn);
    eqValue(0.0,rhocs, ns, nxc, nyc, nzc);
    eqValue(0.0,Nns, ns, nxn, nyn, nzn);
+   eqValue(0.0,Qrem,ns, nxc, nyc, nzc);
 
    eqValue(0.0, Bxc, nxc, nyc, nzc);
    eqValue(0.0, Byc, nxc, nyc, nzc);
@@ -1192,6 +1194,10 @@ getchar();
 
 }
 
+/*! add an amount of charge at cell X,Y,Z */
+void EMfields3D::addQrem(double val, int X, int Y, int Z, int is) {
+  Qrem[is][X][Y][Z] += val;
+}
 
 /*! add an amount of charge density to charge density field at node X,Y */
 void EMfields3D::addRho(double weight[][2][2], int X, int Y, int Z, int is) {
@@ -3541,6 +3547,14 @@ double*** EMfields3D::getDivE() {
   return divE;
 }
 
+double*** EMfields3D::getQrem(int is) {
+  return Qrem[is];
+}
+
+double*** EMfields3D::getTmpX() {
+  return tempX;
+}
+
 /*! SPECIES: get pressure tensor component XX defined on nodes */
 double ****EMfields3D::getpXXsn() {
   return (pXXsn);
@@ -3922,6 +3936,7 @@ EMfields3D::~EMfields3D() {
   delArr3(Byc, nxc, nyc);
   delArr3(Bzc, nxc, nyc);
   delArr3(rhoc, nxc, nyc);
+  delArr4(Qrem, ns, nxc, nyc);
   // various stuff needs to be deallocated too
   delArr3(tempXC, nxc, nyc);
   delArr3(tempYC, nxc, nyc);

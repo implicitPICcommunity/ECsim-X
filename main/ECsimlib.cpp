@@ -395,17 +395,17 @@ void c_Solver::InjectBoundaryParticles(int cycle){
     if (col->getCase()=="TwoCoils") {
        Qremoved[i] = part[i].ReturnToCenterCircle(col->getDelta());
        double dst_2 = col->getcoilSpacing()/2.0;
-       Qremoved[i] += part[i].deleteParticlesInsideTorus_XZ(col->getcoilD(), col->getcoilThickness(), col->getx_center(),col->gety_center()+dst_2,col->getz_center());
-       Qremoved[i] += part[i].deleteParticlesInsideTorus_XZ(col->getcoilD(), col->getcoilThickness(), col->getx_center(),col->gety_center()-dst_2,col->getz_center());
+       Qremoved[i] += part[i].deleteParticlesInsideTorus_XZ(EMf, col->getcoilD(), col->getcoilThickness(), col->getx_center(),col->gety_center()+dst_2,col->getz_center());
+       Qremoved[i] += part[i].deleteParticlesInsideTorus_XZ(EMf, col->getcoilD(), col->getcoilThickness(), col->getx_center(),col->gety_center()-dst_2,col->getz_center());
 
     } else if (col->getCase()=="SixCoils") {
        Qremoved[i] = part[i].ReturnToCenterCircle(col->getDelta());
 
     } else if (col->getCase()=="TwoCoilsINJ") {
-      Qremoved[i]  = part[i].deleteParticlesOutsideSphere(col->getDelta(),col->getx_center(),col->gety_center(),col->getz_center());
+      Qremoved[i]  = part[i].deleteParticlesOutsideSphere(EMf, col->getDelta(),col->getx_center(),col->gety_center(),col->getz_center());
       double dst_2 = col->getcoilSpacing()/2.0;
-      Qremoved[i] += part[i].deleteParticlesInsideTorus_XZ(col->getcoilD(), col->getcoilThickness(), col->getx_center(),col->gety_center()+dst_2,col->getz_center());
-      Qremoved[i] += part[i].deleteParticlesInsideTorus_XZ(col->getcoilD(), col->getcoilThickness(), col->getx_center(),col->gety_center()-dst_2,col->getz_center());
+      Qremoved[i] += part[i].deleteParticlesInsideTorus_XZ(EMf, col->getcoilD(), col->getcoilThickness(), col->getx_center(),col->gety_center()+dst_2,col->getz_center());
+      Qremoved[i] += part[i].deleteParticlesInsideTorus_XZ(EMf, col->getcoilD(), col->getcoilThickness(), col->getx_center(),col->gety_center()-dst_2,col->getz_center());
       if ((freqInj > 0) && (cycle > 0) && ((cycle-1) % freqInj == 0) && (col->getRHOinject(i)>0.0)) {
         if (col->getPartInj() == "mono") 
           part[i].inject_mono_sphere(grid,EMf,vct,col->getL_square_inj(i),col->getx_center_inj(i),col->gety_center_inj(i),col->getz_center_inj(i), 1.0);
@@ -414,7 +414,7 @@ void c_Solver::InjectBoundaryParticles(int cycle){
       }
 
     } else if (col->getCase()=="SixCoilsINJ") {
-      Qremoved[i]  = part[i].deleteParticlesOutsideSphere(col->getDelta(),col->getx_center(),col->gety_center(),col->getz_center());
+      Qremoved[i]  = part[i].deleteParticlesOutsideSphere(EMf, col->getDelta(),col->getx_center(),col->gety_center(),col->getz_center());
       if (col->getRHOinject(i)>0.0)
         if (col->getPartInj() == "mono") 
           part[i].inject_mono_sphere(grid,EMf,vct,col->getL_square_inj(i),col->getx_center_inj(i),col->gety_center_inj(i),col->getz_center_inj(i), 1.0);
@@ -422,10 +422,10 @@ void c_Solver::InjectBoundaryParticles(int cycle){
           part[i].inject_maxwell_sphere(grid,EMf,vct,col->getL_square_inj(i),col->getx_center_inj(i),col->gety_center_inj(i),col->getz_center_inj(i), 1.0);  // generated maxwellian in a box
 
     } else if (col->getCase()=="Mirror") {
-      Qremoved[i]  = part[i].deleteParticlesOutsideSphere(col->getDelta(),col->getx_center(),col->gety_center(),col->getz_center());
+      Qremoved[i]  = part[i].deleteParticlesOutsideSphere(EMf, col->getDelta(),col->getx_center(),col->gety_center(),col->getz_center());
       double dst_2 = col->getcoilSpacing()/2.0;
-      Qremoved[i] += part[i].deleteParticlesInsideTorus_XZ(col->getcoilD(), col->getcoilThickness(), col->getx_center(),col->gety_center()+dst_2,col->getz_center());
-      Qremoved[i] += part[i].deleteParticlesInsideTorus_XZ(col->getcoilD(), col->getcoilThickness(), col->getx_center(),col->gety_center()-dst_2,col->getz_center());
+      Qremoved[i] += part[i].deleteParticlesInsideTorus_XZ(EMf, col->getcoilD(), col->getcoilThickness(), col->getx_center(),col->gety_center()+dst_2,col->getz_center());
+      Qremoved[i] += part[i].deleteParticlesInsideTorus_XZ(EMf, col->getcoilD(), col->getcoilThickness(), col->getx_center(),col->gety_center()-dst_2,col->getz_center());
       if (col->getRHOinject(i)>0.0)
         if (col->getPartInj() == "mono") 
           part[i].inject_mono_sphere(grid,EMf,vct,col->getL_square_inj(i),col->getx_center_inj(i),col->gety_center_inj(i),col->getz_center_inj(i), 1.0);
@@ -433,11 +433,11 @@ void c_Solver::InjectBoundaryParticles(int cycle){
           part[i].inject_maxwell_sphere(grid,EMf,vct,col->getL_square_inj(i),col->getx_center_inj(i),col->gety_center_inj(i),col->getz_center_inj(i), 1.0);  // generated maxwellian in a box
           
     } else if (col->getCase()=="Dipole") {
-       Qremoved[i] = part[i].deleteParticlesInsideSphere(col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+       Qremoved[i] = part[i].deleteParticlesInsideSphere(EMf, col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
        //Qremoved[i] = part[i].deleteParticlesOuterFrame(2.0, 2.0, 0.0);
     } else if (col->getCase()=="HalfPlanet") {
-       Qremoved[i] = part[i].deleteParticlesInsideSphere(col->getL_square(),col->getLx(),col->gety_center(),col->getz_center());
-       Qremoved[i] = part[i].deleteParticlesOuterFrame(6.0, 6.0, 6.0);
+       Qremoved[i] = part[i].deleteParticlesInsideSphere(EMf, col->getL_square(),col->getLx(),col->gety_center(),col->getz_center());
+       Qremoved[i] = part[i].deleteParticlesOuterFrame(EMf, 6.0, 6.0, 6.0);
     }
   }
 }
