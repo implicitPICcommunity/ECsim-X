@@ -107,24 +107,27 @@ void Particles3Dcomm::allocate(int species, long long initnpmax, Collective * co
 
   c = col->getC();
 
+  if (TrackParticleID)
+    nVar = 9;
+  else
+    nVar = 7;
+
   // This if is necessary to restart with H5hut-io
   if (initnpmax==0){
-    long ncproc = int(col->getNxc()/col->getXLEN()) *
-                  int(col->getNyc()/col->getYLEN()) *
-                  int(col->getNzc()/col->getZLEN());
-    nop   = ncproc * npcel;
-    npmax = nop * col->getNpMaxNpRatio();
+    nop   = 0;
   } else {
-    npmax = initnpmax*col->getNpMaxNpRatio();
     nop   = initnpmax;
   }
+  long ncproc = int(col->getNxc()/col->getXLEN()) *
+                int(col->getNyc()/col->getYLEN()) *
+                int(col->getNzc()/col->getZLEN());
+  npmax = ncproc * npcel * col->getNpMaxNpRatio();
+
 
   if (col->getMemPartGb() != -1) {
 		double memGb = col->getMemPartGb();
 		double mem = memGb*(1000*1024*1024)/col->getNs();
-		nVar = 7;
 		double szpp = sizeof(double)*(nVar + 0.05*nVar*6/col->getNpMaxNpRatio());
-    //printf("Size per particle: %f \n", szpp);
 		double npmax_0 = mem/szpp;
 		//printf ("With %g Gb I can use %.0f particles\n", memGb, npmax_0);
 		if (vct->getCartesian_rank() == 0) {
@@ -132,7 +135,6 @@ void Particles3Dcomm::allocate(int species, long long initnpmax, Collective * co
                    "(npcelx * npcely * npcelz * number of cells)\n\n",memGb);
     }
 		npmax = (long long) npmax_0;
-    if (initnpmax==0) nop = npmax/col->getNpMaxNpRatio();
   }
 
   rhoINIT   = col->getRHOinit(species);
@@ -178,10 +180,6 @@ void Particles3Dcomm::allocate(int species, long long initnpmax, Collective * co
   // BUFFERS
   // the buffer size should be decided depending on number of particles
   // the buffer size should be decided depending on number of particles
-  if (TrackParticleID)
-    nVar = 9;
-  else
-    nVar = 7;
   buffer_size = (int) (.05 * npmax * nVar + 1); // max: 5% of the particles in the processors is going out
   buffer_size_small = (int) (.01 * npmax * nVar + 1); // max 1% not resizable 
 
