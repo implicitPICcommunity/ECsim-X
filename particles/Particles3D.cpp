@@ -232,6 +232,7 @@ void Particles3D::maxwellian(Grid * grid, Field * EMf, VirtualTopology3D * vct) 
 
               counter++;
             }
+  nop = counter;
 }
 #endif
 
@@ -280,6 +281,7 @@ void Particles3D::MaxwellianDoubleGEM(Grid * grid, Field * EMf, VirtualTopology3
               counter++;
             }
 
+  nop = counter;
 
 }
 
@@ -353,6 +355,7 @@ void Particles3D::MaxwellianTangentialDiscontinuity(Grid * grid, Field * EMf, Vi
             }
 
 
+  nop = counter;
 }
 
 
@@ -2744,5 +2747,5 @@ void Particles3D::tagParticles() {
       partRank[counter] = rank;
       npTracked++;
   }
-
 }
+
