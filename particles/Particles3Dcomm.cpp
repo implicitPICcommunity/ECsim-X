@@ -140,7 +140,7 @@ void Particles3Dcomm::allocate(bool test, int species, long long initnpmax, Coll
   npmax = ncproc * npcel * col->getNpMaxNpRatio();
 
 
-  if (col->getMemPartGb() != -1) {
+  if (!test && col->getMemPartGb() != -1) {
 		double memGb = col->getMemPartGb();
 		double mem = memGb*(1000*1024*1024)/col->getNs();
 		double szpp = sizeof(double)*(nVar + 0.05*nVar*6/col->getNpMaxNpRatio());
