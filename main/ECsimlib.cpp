@@ -28,6 +28,7 @@ int c_Solver::Init(int argc, char **argv) {
   RestartDirName = col->getRestartDirName();
   restart = col->getRestart_status();
   ns = col->getNs();            // get the number of particle species involved in simulation
+  TPns = col->getTP_Ns();          // get the number of test particle species involved in simulation
   first_cycle = col->getLast_cycle() + 1; // get the last cycle from the restart
 
   qom  = new double[ns];
@@ -136,7 +137,7 @@ int c_Solver::Init(int argc, char **argv) {
     }
   } else {
     for (int i = 0; i < ns; i++) {
-		  part[i].allocate(i, 0, col, vct, grid);
+		  part[i].allocate(false, i, 0, col, vct, grid);
   
       if      (col->getSolInit() && col->getPartInit() == "FromFieldFile")  part[i].MaxwellianFromFieldFile(grid, EMf, vct);
       else if (col->getCase()=="DoubleGEM")      part[i].MaxwellianDoubleGEM(grid, EMf, vct);
@@ -164,6 +165,31 @@ int c_Solver::Init(int argc, char **argv) {
       if (col->getLagrangian() == 1) part[i].setLagrangianFrame(true);
     }
   }
+
+  // Test particles
+  testpart = new Particles3D[TPns];
+  for (int i=0; i<TPns; i++) {
+		  testpart[i].allocate(true, i, 0, col, vct, grid);
+      if (col->getCase()=="DoubleGEM")           testpart[i].MaxwellianDoubleGEM(grid, EMf, vct);
+      else if (col->getCase()=="TD")             testpart[i].MaxwellianTangentialDiscontinuity(grid, EMf, vct);
+      else if (col->getCase()=="Dipole")         testpart[i].maxwellian(grid, EMf, vct);
+      else if (col->getCase()=="FluxRope")       testpart[i].maxwellian(grid, EMf, vct);
+      else if (col->getCase()=="TwoCoils" || col->getCase()=="SixCoils" || col->getCase()=="TwoCoilsINJ" || col->getCase()=="SixCoilsINJ"
+               || col->getCase()=="Mirror"){
+          if (col->getPartInit() == "mono") {
+            testpart[i].monoenergetic_sphere(grid,EMf,vct,col->getTP_L_square(i),col->getTP_x_center(i),col->getTP_y_center(i),col->getTP_z_center(i), 1.0);  // generated maxwellian in a box
+          } else {
+            testpart[i].maxwell_sphere(grid,EMf,vct, col->getTP_L_square(i),col->getTP_x_center(i),col->getTP_y_center(i),col->getTP_z_center(i) , 1.0);  // generated maxwellian in a box
+          }
+      } else testpart[i].maxwellian(grid, EMf, vct);
+      
+      if (col->getCylindrical() == 1) testpart[i].fixZcylindrical();
+  
+      if (col->getLagrangian() == 1) testpart[i].setLagrangianFrame(true);
+
+  }
+
+
   if (col->getLagrangian() == 1) EMf->setLagrangianFrame(vct, col, true);
 
 
@@ -321,9 +347,13 @@ bool c_Solver::ParticlesMover(int cycle) {
 #ifdef PC_MOVER
   for (int i = 0; i < ns; i++)  
   mem_avail = part[i].mover_PC_sub(grid, vct, EMf);
+  for (int i = 0; i < TPns; i++)  
+  mem_avail = testpart[i].mover_PC_sub(grid, vct, EMf);
 #else
-  for (int i = 0; i < ns; i++)  
+  for (int i = 0; i < ns; i++) 
     mem_avail = part[i].updateVelocity(grid, vct, EMf);
+  for (int i = 0; i < TPns; i++) 
+    mem_avail = testpart[i].updateVelocity(grid, vct, EMf);
 
   #ifdef  __JDOTE_TEST__
   double totK1 = 0;
@@ -339,6 +369,10 @@ bool c_Solver::ParticlesMover(int cycle) {
   for (int i = 0; i < ns; i++)  {
     mem_avail = part[i].updatePosition(grid, vct, EMf);
     part[i].fixPosition();
+  }
+  for (int i = 0; i < TPns; i++)  {
+    mem_avail = testpart[i].updatePosition(grid, vct, EMf);
+    testpart[i].fixPosition();
   }
 #endif
 
@@ -795,9 +829,10 @@ void c_Solver::WriteOutput(int cycle) {
       if (cycle == first_cycle || cycle%(col->getFieldOutputCycle())==0)        WriteFieldsH5hut(ns, grid, EMf,  col, vct, cycle);
 
     if (col->getParticlesOutputCycle() != 0) 
-      if (cycle == first_cycle || cycle%(col->getParticlesOutputCycle())==0)    WritePartclH5hut(ns, grid, part, col, vct, cycle);
-    //if (cycle%(col->getParticlesOutputCycle())==0 &&
-        //cycle!=col->getLast_cycle() && cycle!=0)      WritePartclH5hut(ns, grid, part, col, vct, cycle);
+      if (cycle == first_cycle || cycle%(col->getParticlesOutputCycle())==0)    WritePartclH5hut(ns, grid, part, col, vct, cycle, "");
+    
+    if (TPns > 0) 
+      if (cycle % col->getTestParticlesOutputCycle() == 0) WritePartclH5hut(TPns, grid, testpart, col, vct, cycle, "_Test");
 
   } else {
 

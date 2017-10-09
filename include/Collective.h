@@ -150,6 +150,45 @@ class Collective
     double getV0(int nspecies);
     /*! get Drift velocity - Direction Z */
     double getW0(int nspecies);
+
+    int getTP_Ns();
+    /*! Test particles: get the number of particles for different species */
+    long getTP_Np(int nspecies);
+    /*! Test particles: get the number of particles per cell */
+    int getTP_Npcel(int nspecies);
+    /*! Test particles: get the number of particles per cell - direction X */
+    int getTP_Npcelx(int nspecies);
+    /*! Test particles: get the number of particles per cell - direction Y */
+    int getTP_Npcely(int nspecies);
+    /*! Test particles: get the number of particles per cell - direction Z */
+    int getTP_Npcelz(int nspecies);
+    /*! Test particles: get maximum number of particles for different species */
+    long getTP_NpMax(int nspecies);
+    /*! Test particles: get charge to mass ratio for different species */
+    double getTP_QOM(int nspecies);
+    /*! Test particles: get background charge for GEM challenge */
+    double getTP_RHOinit(int nspecies);
+    /*! Test particles: get thermal velocity - X direction */
+    double getTP_Uth(int nspecies);
+    /*! Test particles: get thermal velocity - Y direction */
+    double getTP_Vth(int nspecies);
+    /*! Test particles: get thermal velocity - Z direction */
+    double getTP_Wth(int nspecies);
+    /*! Test particles: get Drift velocity - Direction X */
+    double getTP_U0(int nspecies);
+    /*! Test particles: get Drift velocity - Direction Y */
+    double getTP_V0(int nspecies);
+    /*! Test particles: get Drift velocity - Direction Z */
+    double getTP_W0(int nspecies);
+    /*! Test particles: Get object center - direction X */
+    double getTP_x_center(int is);
+    /*! Test particles: Get object center - direction Y */
+    double getTP_y_center(int is);
+    /*! Test particles: Get object center - direction Z */
+    double getTP_z_center(int is);
+    /*! Test particles: Get object size - cubic box */
+    double getTP_L_square(int is);
+
     /*! get the boolean value for TrackParticleID */
     bool getTrackParticleID(int nspecies);
     /*! get SaveDirName */
@@ -253,6 +292,8 @@ class Collective
     int getFieldOutputCycle();
     /*! output of particles */
     int getParticlesOutputCycle();
+    /*! output of test particles */
+    int getTestParticlesOutputCycle();
     /*! output of restart */
     int getRestartOutputCycle();
     /*! output of diagnostics */
@@ -375,6 +416,45 @@ class Collective
     /*! Drift velocity - Direction Z */
     double *w0;
 
+    /*! Test particles: number of species */
+    int TP_ns;
+    /*! Test particles: number of particles per cell */
+    int *TP_npcel;
+    /*! Test particles: number of particles per cell - X direction */
+    int *TP_npcelx;
+    /*! Test particles: number of particles per cell - Y direction */
+    int *TP_npcely;
+    /*! Test particles: number of particles per cell - Z direction */
+    int *TP_npcelz;
+    /*! Test particles: number of particles array for different species */
+    long *TP_np;
+    /*! Test particles: maximum number of particles array for different species */
+    long *TP_npMax;
+    /*! Test particles: charge to mass ratio array for different species */
+    double *TP_qom;
+    /*! Test particles: charge to mass ratio array for different species */
+    double *TP_rhoINIT;
+    /*! Test particles: thermal velocity - Direction X */
+    double *TP_uth;
+    /*! Test particles: thermal velocity - Direction Y */
+    double *TP_vth;
+    /*! Test particles: thermal velocity - Direction Z */
+    double *TP_wth;
+    /*! Test particles: Drift velocity - Direction X */
+    double *TP_u0;
+    /*! Test particles: Drift velocity - Direction Y */
+    double *TP_v0;
+    /*! Test particles: Drift velocity - Direction Z */
+    double *TP_w0;
+    /*! object center - X direction */
+    double *TP_x_center;
+    /*! object center - Y direction */
+    double *TP_y_center;
+    /*! object center - Z direction */
+    double *TP_z_center;
+    /*! object size - assuming a cubic box */
+    double *TP_L_square;
+
     /*! Case type */
     string Case;
     /*! Fields initialization type */
@@ -484,6 +564,8 @@ class Collective
     int FieldOutputCycle;
     /*! Output for particles */
     int ParticlesOutputCycle;
+    /*! Output for test particles */
+    int TestParticlesOutputCycle;
     /*! restart cycle */
     int RestartOutputCycle;
     /*! Output for diagnostics */

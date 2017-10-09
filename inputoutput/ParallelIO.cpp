@@ -201,13 +201,13 @@ void WriteFieldsH5hut(int nspec, Grid3DCU *grid, EMfields3D *EMf, Collective *co
 }
 
 /*! Function to write the particles using the H5hut library. */
-void WritePartclH5hut(int nspec, Grid3DCU *grid, Particles3Dcomm *part, Collective *col, VCtopology3D *vct, int cycle){
+void WritePartclH5hut(int nspec, Grid3DCU *grid, Particles3Dcomm *part, Collective *col, VCtopology3D *vct, int cycle, string subfolder){
 
 #ifdef USEH5HUT
 
   H5output file;
 
-  string filename = col->getSaveDirName() + "/" + col->getSimName();
+  string filename = col->getSaveDirName() + "/" + col->getSimName() + subfolder;
 
   file.SetNameCycle(filename, cycle);
 
@@ -267,7 +267,7 @@ void ReadPartclH5hut(int nspec, Particles3Dcomm *part, Collective *col, VCtopolo
                          vct->getDivisions(),  L,
                          vct->getComm());
 
-    part[s].allocate(s, infile.get_nops(), col, vct, grid);
+    part[s].allocate(false, s, infile.get_nops(), col, vct, grid);
 
     infile.LoadParticles(infile.get_nops(), vct->getCartesian_rank(),
                          vct->getNproc(),      s,

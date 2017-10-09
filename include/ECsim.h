@@ -58,6 +58,7 @@ namespace ECsim {
     Grid3DCU      *grid;
     EMfields3D    *EMf;
     Particles3D   *part;
+    Particles3D   *testpart;
     Probes        *probes;
     double        *Ke;
     double        *momentum;
@@ -78,6 +79,7 @@ namespace ECsim {
     int restart;
     int first_cycle;
     int ns;
+    int TPns;
     int nprocs;
     int myrank;
     int mem_avail;

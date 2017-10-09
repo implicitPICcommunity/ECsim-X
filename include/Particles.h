@@ -24,7 +24,7 @@ developers: Stefano Markidis, Giovanni Lapenta
 class Particles {
 public:
   /** allocate particles */
-  virtual void allocate(int species, long long initnpmax, Collective * col, VirtualTopology3D * vct, Grid * grid) = 0;
+  virtual void allocate(bool test, int species, long long initnpmax, Collective * col, VirtualTopology3D * vct, Grid * grid) = 0;
   /** interpolation Particle -> grid */
   virtual void computeMoments(Field * EMf, Grid * grid, VirtualTopology3D * vct) = 0;
 

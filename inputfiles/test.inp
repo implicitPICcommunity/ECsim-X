@@ -84,7 +84,7 @@ y_center_inj =   37.5  37.5 # OPTIONAL (default y_center) center of the injector
 z_center_inj =   0.05  0.05 # OPTIONAL (default z_center) center of the injector - z direction   
 L_square_inj =   14.4  14.4 # OPTIONAL (default L_square) diameter of the injector
 
-rhoINIT         =    0.2     0.2        # Initial density (make sure you are neutral)
+rhoINIT         =    1.0     1.0        # Initial density (make sure you are neutral)
 rhoINJECT       =    0.0     0.0        # Injected density 
 
 TrackParticleID =    0       0          # TrackParticleID[species] = 1=true, 0=false 
@@ -103,6 +103,38 @@ wth             =   0.01    0.0 1      # wth = thermal velocity for different sp
 u0              =   0.04    0.0         # u0 = drift velocity   - Direction X  
 v0              =   0.0     0.0         # v0 = drift velocity   - Direction Y 
 w0              =   0.0     0.0         # w0 = drift velocity   - Direction Z    
+
+# %%%%%%%%%%%%%% TEST PARTICLES %%%%%%%%%%%%%%%%%
+#  They are saved every time step
+#    TP_ns = number of species
+#    0 = electrons
+#    1 = protons
+#    2,3,4,5,... = ions
+#    if TP_ns = 0 all the values related with test particles (TP) are not needed
+TP_ns = 2
+
+TP_x_center =   37.5  37.5     # OPTIONAL (default x_center) center of the injector - x direction   
+TP_y_center =   37.5  37.5     # OPTIONAL (default y_center) center of the injector - y direction 
+TP_z_center =   0.05  0.05     # OPTIONAL (default z_center) center of the injector - z direction   
+TP_L_square =   14.4  14.4     # OPTIONAL (default L_square) diameter of the injector
+
+TP_rhoINIT         =    0.2     0.2  # Initial density (make sure you are neutral)
+
+TP_npcelx          =    1      1          # Particles per cell in X
+TP_npcely          =    1      1          # Particles per cell in Y
+TP_npcelz          =    1      1          # Particles per cell in Z
+
+TP_qom             =  -1.0     1.0       # qom = charge to mass ratio for different species 			
+TP_uth             =   0.01    0.01      # uth = thermal velocity for different species - Direction X 
+TP_vth             =   0.01    0.01      # vth = thermal velocity for different species - Direction Y 
+TP_wth             =   0.01    0.01      # wth = thermal velocity for different species - Direction Z
+  
+TP_u0              =   0.04    0.0         # u0 = drift velocity   - Direction X  
+TP_v0              =   0.0     0.0         # v0 = drift velocity   - Direction Y 
+TP_w0              =   0.0     0.0         # w0 = drift velocity   - Direction Z    
+
+TestParticlesOutputCycle = 1   # Output for test particles 
+
 
 # %%%%%%%%%%%% Periodicity in each direction %%%%%%%%%%%%%%%
 PERIODICX       = 1                  # In direction X (1=true, 0=false)

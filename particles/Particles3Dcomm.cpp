@@ -72,24 +72,42 @@ Particles3Dcomm::~Particles3Dcomm() {
   delete[]b_Z_LEFT;
 }
 /** constructors fo a single species*/
-void Particles3Dcomm::allocate(int species, long long initnpmax, Collective * col, VirtualTopology3D * vct, Grid * grid) {
+void Particles3Dcomm::allocate(bool test, int species, long long initnpmax, Collective * col, VirtualTopology3D * vct, Grid * grid) {
 
   /* initialize random generator with different seed on different processor */
   seed = vct->getCartesian_rank()+ 2;
 
   // info from collectiveIO
   ns = species;
-  npcel = col->getNpcel(species);
-  npcelx = col->getNpcelx(species);
-  npcely = col->getNpcely(species);
-  npcelz = col->getNpcelz(species);
-  qom = col->getQOM(species);
-  uth = col->getUth(species);
-  vth = col->getVth(species);
-  wth = col->getWth(species);
-  u0 = col->getU0(species);
-  v0 = col->getV0(species);
-  w0 = col->getW0(species);
+  if (test) {
+    npcel = col->getTP_Npcel(species);
+    npcelx = col->getTP_Npcelx(species);
+    npcely = col->getTP_Npcely(species);
+    npcelz = col->getTP_Npcelz(species);
+    qom = col->getTP_QOM(species);
+    uth = col->getTP_Uth(species);
+    vth = col->getTP_Vth(species);
+    wth = col->getTP_Wth(species);
+    u0 = col->getTP_U0(species);
+    v0 = col->getTP_V0(species);
+    w0 = col->getTP_W0(species);
+    TrackParticleID = 1;
+  } else {
+    npcel = col->getNpcel(species);
+    npcelx = col->getNpcelx(species);
+    npcely = col->getNpcely(species);
+    npcelz = col->getNpcelz(species);
+    qom = col->getQOM(species);
+    uth = col->getUth(species);
+    vth = col->getVth(species);
+    wth = col->getWth(species);
+    u0 = col->getU0(species);
+    v0 = col->getV0(species);
+    w0 = col->getW0(species);
+    TrackParticleID = col->getTrackParticleID(species);
+  }
+
+  npTracked = 0,
   dt = col->getDt();
   Lx = col->getLx();
   Ly = col->getLy();
@@ -102,8 +120,6 @@ void Particles3Dcomm::allocate(int species, long long initnpmax, Collective * co
   nzn = grid->getNZN();
   invVOL = 1.0/(dx*dy*dz);
   delta = col->getDelta();
-  TrackParticleID = col->getTrackParticleID(species);
-  npTracked = 0,
 
   c = col->getC();
 

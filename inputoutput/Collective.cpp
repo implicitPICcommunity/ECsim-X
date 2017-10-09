@@ -345,6 +345,157 @@ void Collective::ReadInput(string inputfile) {
       L_square_inj[5] = lsquinj.f;
     }
 
+    // Test particles
+    TP_ns = config.read < int >("TP_ns", 0);
+    if (TP_ns > 0) {
+      TestParticlesOutputCycle = config.read < int >("TestParticlesOutputCycle", 0);
+      TP_rhoINIT = new double[TP_ns];
+      array_double TP_rhoINIT0 = config.read < array_double > ("TP_rhoINIT");
+      TP_rhoINIT[0] = TP_rhoINIT0.a;
+      if (TP_ns > 1)
+        TP_rhoINIT[1] = TP_rhoINIT0.b;
+      if (TP_ns > 2)
+        TP_rhoINIT[2] = TP_rhoINIT0.c;
+      if (TP_ns > 3)
+        TP_rhoINIT[3] = TP_rhoINIT0.d;
+      if (TP_ns > 4)
+        TP_rhoINIT[4] = TP_rhoINIT0.e;
+      if (TP_ns > 5)
+        TP_rhoINIT[5] = TP_rhoINIT0.f;
+
+      TP_npcelx = new int[TP_ns];
+      TP_npcely = new int[TP_ns];
+      TP_npcelz = new int[TP_ns];
+      TP_qom = new double[TP_ns];
+      TP_uth = new double[TP_ns];
+      TP_vth = new double[TP_ns];
+      TP_wth = new double[TP_ns];
+      TP_u0 = new double[TP_ns];
+      TP_v0 = new double[TP_ns];
+      TP_w0 = new double[TP_ns];
+      TP_x_center = new double[TP_ns];
+      TP_y_center = new double[TP_ns];
+      TP_z_center = new double[TP_ns];
+      TP_L_square = new double[TP_ns];
+  
+      array_int TP_npcelx0 = config.read < array_int > ("TP_npcelx");
+      array_int TP_npcely0 = config.read < array_int > ("TP_npcely");
+      array_int TP_npcelz0 = config.read < array_int > ("TP_npcelz");
+      array_double TP_qom0 = config.read < array_double > ("TP_qom");
+      array_double TP_uth0 = config.read < array_double > ("TP_uth");
+      array_double TP_vth0 = config.read < array_double > ("TP_vth");
+      array_double TP_wth0 = config.read < array_double > ("TP_wth");
+      array_double TP_u00 = config.read < array_double > ("TP_u0");
+      array_double TP_v00 = config.read < array_double > ("TP_v0");
+      array_double TP_w00 = config.read < array_double > ("TP_w0");
+  
+      array_double TP_arrayX, TP_arrayY, TP_arrayZ, TP_arrayL;
+  		TP_arrayX.a = TP_arrayX.b = TP_arrayX.c = TP_arrayX.e = TP_arrayX.d = TP_arrayX.f = x_center;
+  		TP_arrayY.a = TP_arrayY.b = TP_arrayY.c = TP_arrayY.e = TP_arrayY.d = TP_arrayY.f = y_center;
+  		TP_arrayZ.a = TP_arrayZ.b = TP_arrayZ.c = TP_arrayZ.e = TP_arrayZ.d = TP_arrayZ.f = z_center;
+  		TP_arrayL.a = TP_arrayL.b = TP_arrayL.c = TP_arrayL.e = TP_arrayL.d = TP_arrayL.f = L_square;
+      array_double TP_xcen = config.read < array_double > ("TP_x_center", TP_arrayX);
+      array_double TP_ycen = config.read < array_double > ("TP_y_center", TP_arrayY);
+      array_double TP_zcen = config.read < array_double > ("TP_z_center", TP_arrayZ);
+      array_double TP_lsqu = config.read < array_double > ("TP_L_square", TP_arrayL);
+  
+      TP_npcelx[0] = TP_npcelx0.a;
+      TP_npcely[0] = TP_npcely0.a;
+      TP_npcelz[0] = TP_npcelz0.a;
+      TP_qom[0] = TP_qom0.a;
+      TP_uth[0] = TP_uth0.a;
+      TP_vth[0] = TP_vth0.a;
+      TP_wth[0] = TP_wth0.a;
+      TP_u0[0] = TP_u00.a;
+      TP_v0[0] = TP_v00.a;
+      TP_w0[0] = TP_w00.a;
+      TP_x_center[0] = TP_xcen.a;
+      TP_y_center[0] = TP_ycen.a;
+      TP_z_center[0] = TP_zcen.a;
+      TP_L_square[0] = TP_lsqu.a;
+  
+      if (TP_ns > 1) {
+        TP_npcelx[1] = TP_npcelx0.b;
+        TP_npcely[1] = TP_npcely0.b;
+        TP_npcelz[1] = TP_npcelz0.b;
+        TP_qom[1] = TP_qom0.b;
+        TP_uth[1] = TP_uth0.b;
+        TP_vth[1] = TP_vth0.b;
+        TP_wth[1] = TP_wth0.b;
+        TP_u0[1] = TP_u00.b;
+        TP_v0[1] = TP_v00.b;
+        TP_w0[1] = TP_w00.b;
+        TP_x_center[1] = TP_xcen.b;
+        TP_y_center[1] = TP_ycen.b;
+        TP_z_center[1] = TP_zcen.b;
+        TP_L_square[1] = TP_lsqu.b;
+      }
+      if (TP_ns > 2) {
+        TP_npcelx[2] = TP_npcelx0.c;
+        TP_npcely[2] = TP_npcely0.c;
+        TP_npcelz[2] = TP_npcelz0.c;
+        TP_qom[2] = TP_qom0.c;
+        TP_uth[2] = TP_uth0.c;
+        TP_vth[2] = TP_vth0.c;
+        TP_wth[2] = TP_wth0.c;
+        TP_u0[2] = TP_u00.c;
+        TP_v0[2] = TP_v00.c;
+        TP_w0[2] = TP_w00.c;
+        TP_x_center[2] = TP_xcen.c;
+        TP_y_center[2] = TP_ycen.c;
+        TP_z_center[2] = TP_zcen.c;
+        TP_L_square[2] = TP_lsqu.c;
+      }
+      if (TP_ns > 3) {
+        TP_npcelx[3] = TP_npcelx0.d;
+        TP_npcely[3] = TP_npcely0.d;
+        TP_npcelz[3] = TP_npcelz0.d;
+        TP_qom[3] = TP_qom0.d;
+        TP_uth[3] = TP_uth0.d;
+        TP_vth[3] = TP_vth0.d;
+        TP_wth[3] = TP_wth0.d;
+        TP_u0[3] = TP_u00.d;
+        TP_v0[3] = TP_v00.d;
+        TP_w0[3] = TP_w00.d;
+        TP_x_center[3] = TP_xcen.d;
+        TP_y_center[3] = TP_ycen.d;
+        TP_z_center[3] = TP_zcen.d;
+        TP_L_square[3] = TP_lsqu.d;
+      }
+      if (TP_ns > 4) {
+        TP_npcelx[4] = TP_npcelx0.e;
+        TP_npcely[4] = TP_npcely0.e;
+        TP_npcelz[4] = TP_npcelz0.e;
+        TP_qom[4] = TP_qom0.e;
+        TP_uth[4] = TP_uth0.e;
+        TP_vth[4] = TP_vth0.e;
+        TP_wth[4] = TP_wth0.e;
+        TP_u0[4] = TP_u00.e;
+        TP_v0[4] = TP_v00.e;
+        TP_w0[4] = TP_w00.e;
+        TP_x_center[4] = TP_xcen.e;
+        TP_y_center[4] = TP_ycen.e;
+        TP_z_center[4] = TP_zcen.e;
+        TP_L_square[4] = TP_lsqu.e;
+      }
+      if (TP_ns > 5) {
+        TP_npcelx[5] = TP_npcelx0.f;
+        TP_npcely[5] = TP_npcely0.f;
+        TP_npcelz[5] = TP_npcelz0.f;
+        TP_qom[5] = TP_qom0.f;
+        TP_uth[5] = TP_uth0.f;
+        TP_vth[5] = TP_vth0.f;
+        TP_wth[5] = TP_wth0.f;
+        TP_u0[5] = TP_u00.f;
+        TP_v0[5] = TP_v00.f;
+        TP_w0[5] = TP_w00.f;
+        TP_x_center[5] = TP_xcen.f;
+        TP_y_center[5] = TP_ycen.f;
+        TP_z_center[5] = TP_zcen.f;
+        TP_L_square[5] = TP_lsqu.f;
+      }
+    }
+
     u_bulk = u0[0];
     v_bulk = v0[0];
     w_bulk = w0[0];
@@ -749,6 +900,21 @@ Collective::Collective(int argc, char **argv) {
     npMax[i] = (long) (NpMaxNpRatio * np[i]);
   }
 
+  if (TP_ns > 0) {
+    TP_npcel = new int[TP_ns];
+    /*! np = number of particles of different species */
+    TP_np = new long[TP_ns];
+    /*! npMax = maximum number of particles of different species */
+    TP_npMax = new long[TP_ns];
+
+  }
+
+  for (int i = 0; i < TP_ns; i++) {
+    TP_npcel[i] = TP_npcelx[i] * TP_npcely[i] * TP_npcelz[i];
+    TP_np[i] = TP_npcel[i] * (nxc/XLEN) * (nyc/YLEN) * (nzc/ZLEN);
+    TP_npMax[i] = (long) (NpMaxNpRatio * TP_np[i]);
+  }
+
 
 
 }
@@ -910,6 +1076,23 @@ double Collective::getz_center() {
 double Collective::getL_square() {
   return (L_square);
 }
+
+/*!Test Particles: get x_center */
+double Collective::getTP_x_center(int is) {
+  return (TP_x_center[is]);
+}
+/*!Test Particles: get y_center */
+double Collective::getTP_y_center(int is) {
+  return (TP_y_center[is]);
+}
+/*!Test Particles: get z_center */
+double Collective::getTP_z_center(int is) {
+  return (TP_z_center[is]);
+}
+/*!Test Particles: get L_square */
+double Collective::getTP_L_square(int is) {
+  return (TP_L_square[is]);
+}
 /*! get x_center */
 double Collective::getx_center_inj(int ind) {
   return (x_center_inj[ind]);
@@ -1048,6 +1231,67 @@ double Collective::getV0(int nspecies) {
 /*! get beam velocity - Direction Z */
 double Collective::getW0(int nspecies) {
   return (w0[nspecies]);
+}
+
+/*! Test particles: get the number of species */
+int Collective::getTP_Ns() {
+  return (TP_ns);
+}
+/*! Test particles: get the number of particles per cell for species nspecies */
+int Collective::getTP_Npcel(int nspecies) {
+  return (TP_npcel[nspecies]);
+}
+/*! Test particles: get the number of particles per cell for species nspecies - direction X */
+int Collective::getTP_Npcelx(int nspecies) {
+  return (TP_npcelx[nspecies]);
+}
+/*! Test particles: get the number of particles per cell for species nspecies - direction Y */
+int Collective::getTP_Npcely(int nspecies) {
+  return (TP_npcely[nspecies]);
+}
+/*! Test particles: get the number of particles per cell for species nspecies - direction Z */
+int Collective::getTP_Npcelz(int nspecies) {
+  return (TP_npcelz[nspecies]);
+}
+/*! Test particles: get the number of particles for different species */
+long Collective::getTP_Np(int nspecies) {
+  return (TP_np[nspecies]);
+}
+/*! Test particles: get maximum number of particles for different species */
+long Collective::getTP_NpMax(int nspecies) {
+  return (TP_npMax[nspecies]);
+}
+/*! Test particles: get charge to mass ratio for different species */
+double Collective::getTP_QOM(int nspecies) {
+  return (TP_qom[nspecies]);
+}
+/*! Test particles: get the background density for GEM challenge */
+double Collective::getTP_RHOinit(int nspecies) {
+  return (TP_rhoINIT[nspecies]);
+}
+/*! Test particles: get thermal velocity - Direction X */
+double Collective::getTP_Uth(int nspecies) {
+  return (TP_uth[nspecies]);
+}
+/*! Test particles: get thermal velocity - Direction Y */
+double Collective::getTP_Vth(int nspecies) {
+  return (TP_vth[nspecies]);
+}
+/*! Test particles: get thermal velocity - Direction Z */
+double Collective::getTP_Wth(int nspecies) {
+  return (TP_wth[nspecies]);
+}
+/*! Test particles: get beam velocity - Direction X */
+double Collective::getTP_U0(int nspecies) {
+  return (TP_u0[nspecies]);
+}
+/*! Test particles: get beam velocity - Direction Y */
+double Collective::getTP_V0(int nspecies) {
+  return (TP_v0[nspecies]);
+}
+/*! Test particles: get beam velocity - Direction Z */
+double Collective::getTP_W0(int nspecies) {
+  return (TP_w0[nspecies]);
 }
 /*! get Boundary Condition Particles: FaceXright */
 int Collective::getBcPfaceXright() {
@@ -1233,6 +1477,10 @@ int Collective::getFieldOutputCycle() {
 /*! output of particles */
 int Collective::getParticlesOutputCycle() {
   return (ParticlesOutputCycle);
+}
+/*! output of test particles */
+int Collective::getTestParticlesOutputCycle() {
+  return (TestParticlesOutputCycle);
 }
 /*! restart cycle */
 int Collective::getRestartOutputCycle() {
