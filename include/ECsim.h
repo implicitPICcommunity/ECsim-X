@@ -16,6 +16,7 @@
 #include "ParallelIO.h"
 #include "PetscSolver.h"
 #include "Probes.h"
+#include "FilePartID.h"
 
 #include <iostream>
 #include <fstream>

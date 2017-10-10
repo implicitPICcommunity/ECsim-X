@@ -496,6 +496,8 @@ void Collective::ReadInput(string inputfile) {
       }
     }
 
+    testIDfile = config.read<string>("TestIDfile", "no");
+
     u_bulk = u0[0];
     v_bulk = v0[0];
     w_bulk = w0[0];
@@ -1441,6 +1443,10 @@ string Collective::getPoissonCorrection() {
 /*! get probes file name */
 string Collective::getProbesFile() {
   return (probesFile);
+}
+/*! get test ID file name */
+string Collective::getTestIDfile() {
+  return (testIDfile);
 }
 /*! get initial solution flag */
 bool Collective::getSolInit() {

@@ -3,6 +3,7 @@
 #include "MyClock.h"
 #include "Memory.h"
 #include "Probes.h"
+#include "FilePartID.h"
 
 using namespace ECsim;
 
@@ -168,25 +169,33 @@ int c_Solver::Init(int argc, char **argv) {
 
   // Test particles
   testpart = new Particles3D[TPns];
-  for (int i=0; i<TPns; i++) {
-		  testpart[i].allocate(true, i, 0, col, vct, grid);
-      if (col->getCase()=="DoubleGEM")           testpart[i].MaxwellianDoubleGEM(grid, EMf, vct);
-      else if (col->getCase()=="TD")             testpart[i].MaxwellianTangentialDiscontinuity(grid, EMf, vct);
-      else if (col->getCase()=="Dipole")         testpart[i].maxwellian(grid, EMf, vct);
-      else if (col->getCase()=="FluxRope")       testpart[i].maxwellian(grid, EMf, vct);
-      else if (col->getCase()=="TwoCoils" || col->getCase()=="SixCoils" || col->getCase()=="TwoCoilsINJ" || col->getCase()=="SixCoilsINJ"
-               || col->getCase()=="Mirror"){
-          if (col->getPartInit() == "mono") {
-            testpart[i].monoenergetic_sphere(grid,EMf,vct,col->getTP_L_square(i),col->getTP_x_center(i),col->getTP_y_center(i),col->getTP_z_center(i), 1.0);  // generated maxwellian in a box
-          } else {
-            testpart[i].maxwell_sphere(grid,EMf,vct, col->getTP_L_square(i),col->getTP_x_center(i),col->getTP_y_center(i),col->getTP_z_center(i) , 1.0);  // generated maxwellian in a box
-          }
-      } else testpart[i].maxwellian(grid, EMf, vct);
-      
-      if (col->getCylindrical() == 1) testpart[i].fixZcylindrical();
-  
-      if (col->getLagrangian() == 1) testpart[i].setLagrangianFrame(true);
+  if (col->getTestIDfile() == "no") {
+    for (int i=0; i<TPns; i++) {
+  		  testpart[i].allocate(true, i, 0, col, vct, grid);
+        if (col->getCase()=="DoubleGEM")           testpart[i].MaxwellianDoubleGEM(grid, EMf, vct);
+        else if (col->getCase()=="TD")             testpart[i].MaxwellianTangentialDiscontinuity(grid, EMf, vct);
+        else if (col->getCase()=="Dipole")         testpart[i].maxwellian(grid, EMf, vct);
+        else if (col->getCase()=="FluxRope")       testpart[i].maxwellian(grid, EMf, vct);
+        else if (col->getCase()=="TwoCoils" || col->getCase()=="SixCoils" || col->getCase()=="TwoCoilsINJ" || col->getCase()=="SixCoilsINJ"
+                 || col->getCase()=="Mirror"){
+            if (col->getPartInit() == "mono") {
+              testpart[i].monoenergetic_sphere(grid,EMf,vct,col->getTP_L_square(i),col->getTP_x_center(i),col->getTP_y_center(i),col->getTP_z_center(i), 1.0);  // generated maxwellian in a box
+            } else {
+              testpart[i].maxwell_sphere(grid,EMf,vct, col->getTP_L_square(i),col->getTP_x_center(i),col->getTP_y_center(i),col->getTP_z_center(i) , 1.0);  // generated maxwellian in a box
+            }
+        } else testpart[i].maxwellian(grid, EMf, vct);
+        
+        if (col->getCylindrical() == 1) testpart[i].fixZcylindrical();
+    
+        if (col->getLagrangian() == 1) testpart[i].setLagrangianFrame(true);
+    }
+  } else {
+    FilePartID* fileID = new FilePartID(col);
+    for (int i=0; i<TPns; i++) {
+      testpart[i].initFromIDfile(i, fileID, part, col, vct, grid);
+    }
 
+    delete fileID;
   }
 
 

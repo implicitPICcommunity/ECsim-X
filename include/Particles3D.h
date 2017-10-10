@@ -98,6 +98,7 @@ class Particles3D:public Particles3Dcomm {
     int  updateLagrangianFrame(VirtualTopology3D * vct);
     void setLagrangianFrame(bool mode); 
     void tagParticles();
+    int initFromIDfile(int _ns, FilePartID* fileID, Particles3D* part, Collective * col, VirtualTopology3D * vct, Grid * grid);
 
 };
 

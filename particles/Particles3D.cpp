@@ -2749,3 +2749,60 @@ void Particles3D::tagParticles() {
   }
 }
 
+/* Init the particles from a file with the IDs and a list of particles. 
+ * This routine was specially created for the test particles 
+ * IMPORTANT: allocation is done inside this routine
+ * */
+
+int Particles3D::initFromIDfile(int _ns, FilePartID *fileID, Particles3D* part, Collective * col, VirtualTopology3D * vct, Grid * grid) {
+  
+  ns = _ns;
+  if (!col->getTrackParticleID(ns)) {
+    if (vct->getCartesian_rank() == 0) {
+      printf("WARNING Test particles: Specie %d cannot be generated from ID file, the specie %d has not tags\n", ns, ns);
+    }
+		return 0;
+  }
+
+  int  file_ns   = fileID->getNS();
+  int* file_spec = fileID->getSpec();
+  for (int i=0; i<file_ns; i++) {
+    if (file_spec[i] == ns) {
+      int np_f = fileID->getNP(i);
+      long long np_p = part[ns].getNOP();
+      allocate(true, ns, np_f, col, vct, grid);
+      nop = 0;
+      long long *tR_f = fileID->getTagR(i);
+      long long *tP_f = fileID->getTagP(i);
+      long long *tR_p = part[ns].getParticleRankall();
+      long long *tP_p = part[ns].getParticleIDall();
+      const double *x_p = part[ns].getXall();
+      const double *y_p = part[ns].getYall();
+      const double *z_p = part[ns].getZall();
+      const double *u_p = part[ns].getUall();
+      const double *v_p = part[ns].getVall();
+      const double *w_p = part[ns].getWall();
+      const double *q_p = part[ns].getQall();
+      for (int j=0; j<np_f; j++) {
+        for (int k=0; k<np_p; k++) {
+				  //printf("ns=%d nop=%6d tagR=%6d tagP=%6d pos=(%g %g %g) \n",ns, nop,tR_p[k], tP_p[k],  x[nop], y[nop], z[nop]);
+          if (tR_f[j] == tR_p[k] && tP_f[j] == tP_p[k]) {
+		        x[nop] = x_p[k];
+		        y[nop] = y_p[k];
+		        z[nop] = z_p[k];
+		        u[nop] = u_p[k];
+		        v[nop] = v_p[k];
+		        w[nop] = w_p[k];
+		        q[nop] = q_p[k];
+						partRank[nop] = tR_p[k];
+						partID[nop]   = tP_p[k];
+            nop++;
+          }
+        }
+      }
+printf("rank = %d [%d] nop=%d  np_f = %d\n",vct->getCartesian_rank(), ns, nop, np_f);
+      break;
+    }
+  }
+  return nop;
+}

@@ -212,6 +212,8 @@ class Collective
     string getProbesFile();
     /*! get poisson correction flag */
     string getPoissonCorrection();
+    /*! get test ID file name */
+    string getTestIDfile();
 
     /*! get initial solution flag */
     bool getSolInit();
@@ -591,6 +593,9 @@ class Collective
     
     /** Lambda damping */
     string LambdaDamping;
+
+    /**File with IDs of test particles */
+    string testIDfile;
 };
 
 #endif

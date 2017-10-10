@@ -111,7 +111,12 @@ w0              =   0.0     0.0         # w0 = drift velocity   - Direction Z
 #    1 = protons
 #    2,3,4,5,... = ions
 #    if TP_ns = 0 all the values related with test particles (TP) are not needed
+#
+#
 TP_ns = 2
+#TestIDfile = no # OPTIONAL (default no). File with the IDs of the particles to create.
+                 # If a file is provided, only the number of particles per cell (for memory allocation)
+                 # are used
 
 TP_x_center =   37.5  37.5     # OPTIONAL (default x_center) center of the injector - x direction   
 TP_y_center =   37.5  37.5     # OPTIONAL (default y_center) center of the injector - y direction 

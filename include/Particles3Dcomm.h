@@ -9,6 +9,7 @@ developers: Stefano Markidis, Giovanni Lapenta, Diego Gonzalez
 
 #include "Particles.h"
 #include "NeighboringNodes.h"
+#include "FilePartID.h"
 
 /**
  * 
