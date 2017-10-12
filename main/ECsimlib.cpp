@@ -469,11 +469,12 @@ void c_Solver::InjectBoundaryParticles(int cycle){
       double dst_2 = col->getcoilSpacing()/2.0;
       Qremoved[i] += part[i].deleteParticlesInsideTorus_XZ(EMf, col->getcoilD(), col->getcoilThickness(), col->getx_center(),col->gety_center()+dst_2,col->getz_center());
       Qremoved[i] += part[i].deleteParticlesInsideTorus_XZ(EMf, col->getcoilD(), col->getcoilThickness(), col->getx_center(),col->gety_center()-dst_2,col->getz_center());
-      if (col->getRHOinject(i)>0.0)
+      if ((freqInj > 0) && (cycle > 0) && ((cycle-1) % freqInj == 0) && (col->getRHOinject(i)>0.0)) {
         if (col->getPartInj() == "mono") 
           part[i].inject_mono_sphere(grid,EMf,vct,col->getL_square_inj(i),col->getx_center_inj(i),col->gety_center_inj(i),col->getz_center_inj(i), 1.0);
         else
           part[i].inject_maxwell_sphere(grid,EMf,vct,col->getL_square_inj(i),col->getx_center_inj(i),col->gety_center_inj(i),col->getz_center_inj(i), 1.0);  // generated maxwellian in a box
+      }
           
     } else if (col->getCase()=="Dipole") {
        Qremoved[i] = part[i].deleteParticlesInsideSphere(EMf, col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
