@@ -63,7 +63,7 @@ Particles3D::Particles3D() {
 
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   long long seed = (rank+1)*20 + ns;
-  //long long seed = time(NULL) + (rank+1)*20 + ns;
+  //long long seed = (rank+1)*20 + ns +time(NULL);
   srand(seed);
   srand48(seed);
 
@@ -2805,4 +2805,67 @@ printf("rank = %d [%d] nop=%d  np_f = %d\n",vct->getCartesian_rank(), ns, nop, n
     }
   }
   return nop;
+}
+
+/* Routine to modify the particle velocity to obtain a given kinetic energy 
+ * It is a recursive algorithm. In the first iteration only the particles for which
+ * the correction is smaller than of its velocity/fac are fixed. In the next iteration
+ * the threshold is reduce to 2% and so on. 
+ * It only acts over np particles starting from np0
+ */
+void Particles3D::fixKineticEnergy(double Kref, double K, long long np0, long long np1, double fac)
+{
+  double tol = 1e-6;
+  long np = np1 - np0;
+  double DK = Kref - K;
+  double DKp = DK/np;
+  double res = 0;
+  double VEL_MIN = 1e-15;
+  double nK = 0;
+  double KK = 0;
+  if (fabs(nK - Kref)/Kref < tol) return;
+
+  for (long i=np0; i<np1; i++) {
+    double m = q[i]/qom;
+    double vel2, vel, Td, v2_Td;
+    double delta = (2.0*DKp)/(m*3.0);
+
+    vel2 = u[i]*u[i];
+    vel = sqrt(vel2);
+    Td = delta + res;
+    v2_Td = vel2 +Td;
+    if (v2_Td > 0 && vel > VEL_MIN && vel2 > fabs(Td*fac)) {
+      u[i] = (u[i]/fabs(u[i]))*sqrt(v2_Td);
+ 
+      res = 0;
+    } else res += delta;
+
+    vel2 = v[i]*v[i];
+    vel = sqrt(vel2);
+    Td = delta + res;
+    v2_Td = vel2 +Td;
+    if (v2_Td > 0 && vel > VEL_MIN && vel2 > fabs(Td*fac)) {
+      v[i] = (v[i]/fabs(v[i]))*sqrt(v2_Td);
+      res = 0;
+    } else res += delta;
+
+    vel2 = w[i]*w[i];
+    vel = sqrt(vel2);
+    Td = delta + res;
+    v2_Td = vel2 +Td;
+    if (v2_Td > 0 && vel > VEL_MIN && vel2 > fabs(Td*fac)) {
+      w[i] = (w[i]/fabs(w[i]))*sqrt(v2_Td);
+      res = 0;
+    } else res += delta;
+    double k = 0.5*m*(u[i]*u[i] + v[i]*v[i] + w[i]*w[i]);
+    nK += k;
+  }
+
+  DK = Kref - nK;
+  DKp = DK/np;
+  //printf("  NEW DK=%g (%g)   DKp=%g\n",DK, DK/Kref, DKp);
+  if (fabs(nK - Kref)/Kref > tol) {
+    if (fac < 1.0) return;
+    fixKineticEnergy(Kref, nK, np0, np1, fac/2) ;
+  }
 }

@@ -167,6 +167,22 @@ int c_Solver::Init(int argc, char **argv) {
     }
   }
 
+  // Fix the kinetic energy of species (it is done locally)
+  if ((col->getRHOinit(0) > 0.0)) {
+    if (col->getSameKineticEnergy() == "yes"){
+      if (myrank == 0) printf("ALL SPECIES WITH THE SAME KINETIC ENERGY: Fixing velocities\n");
+      long long np1 = part[0].getNOP();
+      double Kref = part[0].getLocalKe(0, np1);
+      for (int i=1; i<ns; i++) {
+        if (col->getRHOinit(i) > 0.0) {
+          long long np1 = part[i].getNOP();
+          double K = part[i].getLocalKe(0, np1);
+          part[i].fixKineticEnergy(Kref, K, 0, np1, 100);
+        }
+      }
+    }
+  }
+
   // Test particles
   testpart = new Particles3D[TPns];
   if (col->getTestIDfile() == "no") {
@@ -197,6 +213,7 @@ int c_Solver::Init(int argc, char **argv) {
 
     delete fileID;
   }
+
 
 
   if (col->getLagrangian() == 1) EMf->setLagrangianFrame(vct, col, true);
@@ -426,7 +443,10 @@ bool c_Solver::ParticlesMover(int cycle) {
 
 void c_Solver::InjectBoundaryParticles(int cycle){
 
+  int np0[ns];
+
   for (int i=0; i < ns; i++) {
+    np0[i] = part[i].getNOP();
     if (col->getRHOinject(i)>0.0){
       if (col->getCase()=="HalfPlanet") 
          part[i].injector_rand_box_mono(grid,vct,EMf, col->getx_center(),col->gety_center(),col->getz_center(), col->getL_square());
@@ -482,6 +502,22 @@ void c_Solver::InjectBoundaryParticles(int cycle){
     } else if (col->getCase()=="HalfPlanet") {
        Qremoved[i] = part[i].deleteParticlesInsideSphere(EMf, col->getL_square(),col->getLx(),col->gety_center(),col->getz_center());
        Qremoved[i] = part[i].deleteParticlesOuterFrame(EMf, 6.0, 6.0, 6.0);
+    }
+  }
+
+  // Fix the kinetic energy of species (it is done locally)
+  if ((freqInj > 0) && (cycle > 0) && ((cycle-1) % freqInj == 0) && (col->getRHOinject(0)>0.0)) {
+    if (col->getSameKineticEnergy() == "yes"){
+      if (myrank== 0) printf("ALL SPECIES WITH THE SAME KINETIC ENERGY: Fixing velocities\n");
+      long long np1 = part[0].getNOP();
+      double Kref = part[0].getLocalKe(np0[0], np1);
+      for (int i=1; i<ns; i++) {
+        if (col->getRHOinject(i)>0.0) {
+          long long np1 = part[i].getNOP();
+          double K = part[i].getLocalKe(np0[i], np1);
+          part[i].fixKineticEnergy(Kref, K, np0[i], np1, 100.0);
+        }
+      }
     }
   }
 }

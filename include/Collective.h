@@ -214,6 +214,8 @@ class Collective
     string getPoissonCorrection();
     /*! get test ID file name */
     string getTestIDfile();
+    /*! get sameKineticEnergy */
+    string getSameKineticEnergy();
 
     /*! get initial solution flag */
     bool getSolInit();
@@ -596,6 +598,9 @@ class Collective
 
     /**File with IDs of test particles */
     string testIDfile;
+
+    /** Exact same kinetic energy for all species */
+    string sameKineticEnergy;
 };
 
 #endif

@@ -23,6 +23,8 @@ ProbesFile = no        # OPTIONAL (degault no) File with probes coordinates.
 
 LambdaDamping = yes    # OPTIONAL (default yes) It enables/disables the Lambda damping (if it is enabled in the Case used, otherwise it has
                        #                        no effect).
+                       
+SameKineticEnergy = yes # OTIONAL (default no) It forces to all the species to have the same kinetic energy
 
 #  %%%%%%%%%%%%%%%%%%% Magnetic Reconnection %%%%%%%%%%%%%%%%%%
 B0x = 0.0   # OPTIONAL (default 0)

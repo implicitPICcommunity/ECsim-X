@@ -213,6 +213,8 @@ void Collective::ReadInput(string inputfile) {
     coilSpacing = config.read<double>( "CoilSpacing", 0.0);
     coilThickness = config.read<double>( "CoilThickness", 0.0);
 
+    sameKineticEnergy = config.read<string>("SameKineticEnergy", "no");
+
     npcelx = new int[ns];
     npcely = new int[ns];
     npcelz = new int[ns];
@@ -1447,6 +1449,10 @@ string Collective::getProbesFile() {
 /*! get test ID file name */
 string Collective::getTestIDfile() {
   return (testIDfile);
+}
+/*! get test ID file name */
+string Collective::getSameKineticEnergy(){
+  return (sameKineticEnergy);
 }
 /*! get initial solution flag */
 bool Collective::getSolInit() {

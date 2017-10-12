@@ -1236,6 +1236,25 @@ double Particles3Dcomm::getKe() {
   MPI_Allreduce(&localKe, &totalKe, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
   return (totalKe);
 }
+
+/** return the Kinetic energy */
+double Particles3Dcomm::getLocalKe(int np0, int np1) {
+  double localKe = 0.0;
+  if (Lagrangian == 0) {
+    for (register long long i = np0; i < np1; i++) {
+      localKe += .5 * (q[i] / qom) * (u[i] * u[i] + v[i] * v[i] + w[i] * w[i]);
+    }
+  } else {
+    for (register long long i = np0; i < np1; i++) {
+      double vx = u[i] + u_bulk;
+      double vy = v[i] + v_bulk;
+      double vz = w[i] + w_bulk;
+      localKe += .5 * (q[i] / qom) * (vx*vx + vy*vy + vz*vz);
+    }
+
+  }
+  return (localKe);
+}
 /** return the total momentum */
 double Particles3Dcomm::getP() {
   double localP = 0.0;

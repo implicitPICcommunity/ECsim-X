@@ -118,6 +118,8 @@ public:
   long long getNOP() const;
   /** return the Kinetic energy */
   double getKe();
+  /** return the local Kinetic energy of the particles between np0 and np1*/
+  double getLocalKe(int np0, int np1);
   /** return the Kinetic energy removed from the system*/
   double getKremoved();
   /** return the maximum kinetic energy */
