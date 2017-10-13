@@ -160,7 +160,9 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid) {
   Jxs = newArr4(double, ns, nxn, nyn, nzn);
   Jys = newArr4(double, ns, nxn, nyn, nzn);
   Jzs = newArr4(double, ns, nxn, nyn, nzn);
-
+  EFxs = newArr4(double, ns, nxn, nyn, nzn);
+  EFys = newArr4(double, ns, nxn, nyn, nzn);
+  EFzs = newArr4(double, ns, nxn, nyn, nzn);
 
   Mxx = newArr4(double, NE_MASS, nxn, nyn, nzn);
   Mxy = newArr4(double, NE_MASS, nxn, nyn, nzn);
@@ -289,6 +291,9 @@ void EMfields3D::setAllzero()
    eqValue(0.0, Jxs, ns, nxn, nyn, nzn);
    eqValue(0.0, Jys, ns, nxn, nyn, nzn);
    eqValue(0.0, Jzs, ns, nxn, nyn, nzn);
+   eqValue(0.0, EFxs, ns, nxn, nyn, nzn);
+   eqValue(0.0, EFys, ns, nxn, nyn, nzn);
+   eqValue(0.0, EFzs, ns, nxn, nyn, nzn);
    eqValue(0.0, Mxx, NE_MASS, nxn, nyn, nzn);
    eqValue(0.0, Mxy, NE_MASS, nxn, nyn, nzn);
    eqValue(0.0, Mxz, NE_MASS, nxn, nyn, nzn);
@@ -1131,6 +1136,10 @@ void EMfields3D::communicateGhostP2G_JP(VirtualTopology3D * vct) {
     communicateInterp(nxn, nyn, nzn, i, Jys, 0, 0, 0, 0, 0, 0, vct);
     communicateInterp(nxn, nyn, nzn, i, Jzs, 0, 0, 0, 0, 0, 0, vct);
 
+    communicateInterp(nxn, nyn, nzn, i, EFxs, 0, 0, 0, 0, 0, 0, vct);
+    communicateInterp(nxn, nyn, nzn, i, EFys, 0, 0, 0, 0, 0, 0, vct);
+    communicateInterp(nxn, nyn, nzn, i, EFzs, 0, 0, 0, 0, 0, 0, vct);
+
     communicateInterp(nxn, nyn, nzn, i, pXXsn, 0, 0, 0, 0, 0, 0, vct);
     communicateInterp(nxn, nyn, nzn, i, pXYsn, 0, 0, 0, 0, 0, 0, vct);
     communicateInterp(nxn, nyn, nzn, i, pXZsn, 0, 0, 0, 0, 0, 0, vct);
@@ -1144,6 +1153,11 @@ void EMfields3D::communicateGhostP2G_JP(VirtualTopology3D * vct) {
     communicateNode_P(nxn, nyn, nzn, Jxs, i, vct);
     communicateNode_P(nxn, nyn, nzn, Jys, i, vct);
     communicateNode_P(nxn, nyn, nzn, Jzs, i, vct);
+
+    communicateNode_P(nxn, nyn, nzn, EFxs, i, vct);
+    communicateNode_P(nxn, nyn, nzn, EFys, i, vct);
+    communicateNode_P(nxn, nyn, nzn, EFzs, i, vct);
+
 
     communicateNode_P(nxn, nyn, nzn, pXXsn, i, vct);
     communicateNode_P(nxn, nyn, nzn, pXYsn, i, vct);
@@ -1275,6 +1289,28 @@ void EMfields3D::addJz(double weight[][2][2], int X, int Y, int Z, int ns) {
       }
 }
 
+/*! add an amount of charge energy to EF density - direction X to EF density field on the node */
+void EMfields3D::addEFx(double weight[][2][2], int X, int Y, int Z, int is) {
+  for (int i = 0; i < 2; i++)
+    for (int j = 0; j < 2; j++)
+      for (int k = 0; k < 2; k++)
+        EFxs[is][X - i][Y - j][Z - k] += weight[i][j][k] * invVOLn[X - i][Y - j][Z - k];
+}
+/*! add an amount of  energy flyx to EF  - direction Y to EF density field on the node */
+void EMfields3D::addEFy(double weight[][2][2], int X, int Y, int Z, int is) {
+  for (int i = 0; i < 2; i++)
+    for (int j = 0; j < 2; j++)
+      for (int k = 0; k < 2; k++)
+        EFys[is][X - i][Y - j][Z - k] += weight[i][j][k] * invVOLn[X - i][Y - j][Z - k];
+}
+/*! add an amount of energy flux to EF  - direction Z to EF density field on the node */
+void EMfields3D::addEFz(double weight[][2][2], int X, int Y, int Z, int is) {
+  for (int i = 0; i < 2; i++)
+    for (int j = 0; j < 2; j++)
+      for (int k = 0; k < 2; k++)
+        EFzs[is][X - i][Y - j][Z - k] += weight[i][j][k] * invVOLn[X - i][Y - j][Z - k];
+}
+
 /** add an amount of current density to mass matrix field at node X,Y */
 void EMfields3D::addMass(double val[3][3], int X, int Y, int Z, int ind) {
   Mxx[ind][X][Y][Z] += val[0][0];
@@ -1363,6 +1399,9 @@ void EMfields3D::setZeroDensities() {
           Jxhs[kk][i][j][k] = 0.0;
           Jyhs[kk][i][j][k] = 0.0;
           Jzhs[kk][i][j][k] = 0.0;
+          EFxs  [kk][i][j][k] = 0.0;
+          EFys  [kk][i][j][k] = 0.0;
+          EFzs  [kk][i][j][k] = 0.0;
           pXXsn[kk][i][j][k] = 0.0;
           pXYsn[kk][i][j][k] = 0.0;
           pXZsn[kk][i][j][k] = 0.0;
@@ -3696,6 +3735,18 @@ double EMfields3D::getJzcs (int i,int j,int k,int is) {
   return ret;
 }
 
+/*! get the Energy Fluxes */
+double ***& EMfields3D::getEFxs(int is) {
+  return (EFxs[is]);
+}
+double ***& EMfields3D::getEFys(int is) {
+  return (EFys[is]);
+}
+double ***& EMfields3D::getEFzs(int is) {
+  return (EFzs[is]);
+}
+
+
 /*! get the electric field energy */
 double EMfields3D::getEenergy(void) {
   double localEenergy = 0.0;
@@ -3901,9 +3952,6 @@ EMfields3D::~EMfields3D() {
   delArr3(Ex, nxn, nyn);
   delArr3(Ey, nxn, nyn);
   delArr3(Ez, nxn, nyn);
-  //delArr3(Ex_prev, nxn, nyn);
-  //delArr3(Ey_prev, nxn, nyn);
-  //delArr3(Ez_prev, nxn, nyn);
   delArr3(Exth, nxn, nyn);
   delArr3(Eyth, nxn, nyn);
   delArr3(Ezth, nxn, nyn);
@@ -3917,6 +3965,9 @@ EMfields3D::~EMfields3D() {
   delArr4(Jxs, nxn, nyn, nzn);
   delArr4(Jys, nxn, nyn, nzn);
   delArr4(Jzs, nxn, nyn, nzn);
+  delArr4(EFxs, nxn, nyn, nzn);
+  delArr4(EFys, nxn, nyn, nzn);
+  delArr4(EFzs, nxn, nyn, nzn);
   delArr4(Mxx, NE_MASS, nxn, nyn);
   delArr4(Mxy, NE_MASS, nxn, nyn);
   delArr4(Mxz, NE_MASS, nxn, nyn);

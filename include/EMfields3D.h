@@ -135,6 +135,12 @@ class EMfields3D                // :public Field
     void addJy(double weight[][2][2], int X, int Y, int Z, int ns);
     void addJz(double weight[][2][2], int X, int Y, int Z, int ns);
 
+    /*! add an amount of EF - direction X  at node X,Y,Z */
+    void addEFx(double weight[][2][2], int X, int Y, int Z, int is);
+    /*! add an amount of EF - direction Y at node X,Y,Z */
+    void addEFy(double weight[][2][2], int X, int Y, int Z, int is);
+    /*! add an amount of EF - direction Z at node X,Y,Z */
+    void addEFz(double weight[][2][2], int X, int Y, int Z, int is);
     
     /*! add an amount of pressure density - direction XX to current density field at node X,Y,Z */
     void addPxx(double weight[][2][2], int X, int Y, int Z, int is);
@@ -327,6 +333,12 @@ class EMfields3D                // :public Field
     double ****getJzs();
     double ***getJzs(int is);
     double ***getJz_ext();
+
+    /*! SPECIES: get Energy Fluxes  */
+    double ***&getEFxs(int is);
+    double ***&getEFys(int is);
+    double ***&getEFzs(int is);
+
    
     double getJxcs (int i,int j,int k, int is);
     double getJycs (int i,int j,int k, int is);
@@ -521,6 +533,13 @@ class EMfields3D                // :public Field
     double ****Jzs;
     /*! SPECIES: number of particles, defined on nodes */
     double ****Nns;
+    /*! SPECIES: Energy Flux density component-X for species, defined on nodes */
+    double ****EFxs;
+    /*! SPECIES: Energy Flux density component-Y for species, defined on nodes */
+    double ****EFys;
+    /*! SPECIES: Energy Flux component-Z for species, defined on nodes */
+    double ****EFzs;
+
 
     /** Divergence of E */
     double ***divE;

@@ -609,6 +609,25 @@ void Particles3Dcomm::computeCurrent(Field * EMf, Grid * grid, VirtualTopology3D
             temp[ii][jj][kk] = q[ip] * w[ip] * w[ip] * weight[ii][jj][kk];
       EMf->addPzz(temp, ix, iy, iz, ns);
 
+      // add energy flux density - X
+      for (int ii = 0; ii < 2; ii++)
+        for (int jj = 0; jj < 2; jj++)
+          for (int kk = 0; kk < 2; kk++)
+            temp[ii][jj][kk] = u[ip] * 0.5 * (q[ip]/qom) * (u[ip]*u[ip] +v[ip]*v[ip]+w[ip]*w[ip]) * weight[ii][jj][kk];
+      EMf->addEFx(temp, ix, iy, iz, ns);
+      // add energy flux density - Y
+      for (int ii = 0; ii < 2; ii++)
+        for (int jj = 0; jj < 2; jj++)
+          for (int kk = 0; kk < 2; kk++)
+            temp[ii][jj][kk] = v[ip] * 0.5 * (q[ip]/qom) *(u[ip]*u[ip] +v[ip]*v[ip]+w[ip]*w[ip]) * weight[ii][jj][kk];
+      EMf->addEFy(temp, ix, iy, iz, ns);
+      // add energy flux density - Z
+      for (int ii = 0; ii < 2; ii++)
+        for (int jj = 0; jj < 2; jj++)
+          for (int kk = 0; kk < 2; kk++)
+            temp[ii][jj][kk] = w[ip] * 0.5 * (q[ip]/qom) *(u[ip]*u[ip] +v[ip]*v[ip]+w[ip]*w[ip]) * weight[ii][jj][kk];
+      EMf->addEFz(temp, ix, iy, iz, ns);
+
     }
   }
 }
