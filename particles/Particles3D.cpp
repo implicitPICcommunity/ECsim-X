@@ -363,7 +363,6 @@ void Particles3D::MaxwellianIonCyclotron(Grid * grid, Field * EMf, VirtualTopolo
 
   const double coarsedx = grid->getDX();
   double globalx;
-  double uthp, vthp, wthp;
   
   double prob, theta, sign;
   long long counter = 0;
@@ -393,13 +392,13 @@ void Particles3D::MaxwellianIonCyclotron(Grid * grid, Field * EMf, VirtualTopolo
               // u
               prob = sqrt(-2.0 * log(1.0 - .999999 * Drand48(seed)));
               theta = 2.0 * M_PI * Drand48(seed);
-              u[counter] = u0 + uthp * prob * cos(theta);
+              u[counter] = u0 + uth * prob * cos(theta);
               // v
-              v[counter] = v0 + (k02 - om02 - om02 * k02 * de2)/(k0 * om02) * eps * sin(k0 * x[counter]) + vthp * prob * sin(theta);
+              v[counter] = v0 + (k02 - om02 - om02 * k02 * de2)/(k0 * om02) * eps * sin(k0 * x[counter]) + vth * prob * sin(theta);
               // w
               prob = sqrt(-2.0 * log(1.0 - .999999 * Drand48(seed)));
               theta = 2.0 * M_PI * Drand48(seed);
-              w[counter] = w0 - k0/sqrt(om02) * eps * cos(k0 * y[counter]) + wthp * prob * cos(theta);
+              w[counter] = w0 - k0/sqrt(om02) * eps * cos(k0 * x[counter]) + wth * prob * cos(theta);
               if (TrackParticleID) {
                 partID[counter]   = npTracked;
                 partRank[counter] = rank;

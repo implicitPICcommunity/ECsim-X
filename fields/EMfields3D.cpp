@@ -2155,11 +2155,13 @@ void EMfields3D::ion_cyclotron(VirtualTopology3D * vct, Grid * grid, Collective 
     // initialize
     if (vct->getCartesian_rank() == 0) {
       cout << "------------------------------------------" << endl;
-      cout << "Initialize TD "                         << endl;
+      cout << "Initialize ion cyclotron "                         << endl;
       cout << "------------------------------------------" << endl;
       cout << "B0x                              = " << B0x << endl;
       cout << "B0y                              = " << B0y << endl;
-      cout << "B0z                              = " << B0z << endl;
+      cout << "B0z                              = " << B0z << endl; 
+      cout << "k0                              =  " << k0 << endl;
+      cout << "om0                              = " << sqrt(om02) << endl;
       cout << "-------------------------" << endl;
     }
     for (int i = 0; i < nxn; i++)
