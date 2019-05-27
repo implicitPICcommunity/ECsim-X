@@ -2131,6 +2131,96 @@ void EMfields3D::tangential_discontinuity(VirtualTopology3D * vct, Grid * grid, 
   }
 }
 
+// Initilaize field for ion cyclotron with Valentini's perturbation
+void EMfields3D::ion_cyclotron(VirtualTopology3D * vct, Grid * grid, Collective *col) {
+ 
+  double globalx;
+  double globaly;
+  double globalz;
+
+  const double coarsedx= grid->getDX();
+  const double coarsedy= grid->getDY();  
+  const double coarsedz= grid->getDZ();
+  
+  double k0 = 2*(4*atan(1.0))/Lx;
+  double k02 = k0 * k0; 
+  double de2 = 1./1836;
+  double om02 = 0.5 * (k02 /(1+k02*de2) * (2 + k02/(1 + k02*de2)) 
+                       + sqrt(k02 * k02/((1+k02 *de2)*(1+k02 *de2)*(1+k02 *de2)) 
+                               * (4 * k02 + k02 * k02/(1+k02 *de2))  ));
+
+  double eps = 0.01;
+
+  if (restart1 == 0) {
+    // initialize
+    if (vct->getCartesian_rank() == 0) {
+      cout << "------------------------------------------" << endl;
+      cout << "Initialize TD "                         << endl;
+      cout << "------------------------------------------" << endl;
+      cout << "B0x                              = " << B0x << endl;
+      cout << "B0y                              = " << B0y << endl;
+      cout << "B0z                              = " << B0z << endl;
+      cout << "-------------------------" << endl;
+    }
+    for (int i = 0; i < nxn; i++)
+      for (int j = 0; j < nyn; j++)
+        for (int k = 0; k < nzn; k++) {
+	  globalx= grid->getXN(i, j, k) + coarsedx;
+	  globaly= grid->getYN(i, j, k) + coarsedy;
+	  globalz= grid->getZN(i, j, k) + coarsedz;
+            
+              
+          // initialize the density for species
+          for (int is = 0; is < ns; is++) 
+              {
+                rhons[is][i][j][k] = rhoINIT[is]/FourPI;
+              }
+
+          // electric field
+          Ex[i][j][k] = 0.0;
+          Ey[i][j][k] = 0.0;
+          Ez[i][j][k] = 0.0;
+          // Magnetic field
+          Bxn[i][j][k] = B0x;
+          Byn[i][j][k] = B0y + (-k02 + om02 + om02 * k02 * de2)/(k02 * sqrt(om02)) * eps * sin(k0 * globalx);
+          Bzn[i][j][k] = B0z + eps * cos(k0 * globalx);
+      	  Bx_ext[i][j][k] = 0;
+	  By_ext[i][j][k] = 0;
+	  Bz_ext[i][j][k] = 0;
+        }
+    // communicate ghost
+    communicateNodeBC(nxn, nyn, nzn, Bxn, col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5], vct);
+    communicateNodeBC(nxn, nyn, nzn, Byn, col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5], vct);
+    communicateNodeBC(nxn, nyn, nzn, Bzn, col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct);
+    // initialize B on centers
+    // initialize B on centers
+	grid->interpN2C(Bxc,Bxn);
+	grid->interpN2C(Byc,Byn);
+	grid->interpN2C(Bzc,Bzn);
+    // communicate ghost
+    communicateCenterBC(nxc, nyc, nzc, Bxc, col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5], vct);
+    communicateCenterBC(nxc, nyc, nzc, Byc, col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5], vct);
+    communicateCenterBC(nxc, nyc, nzc, Bzc, col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct);
+    for (int is = 0; is < ns; is++)
+      grid->interpN2C(rhocs, is, rhons);
+  }
+  else {
+    init(vct, grid, col);            // use the fields from restart file
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 //Initializes the vacuum fields for EMC2.
 void EMfields3D::initWB8(VirtualTopology3D *vct, Grid *grid, Collective *col){
   if (vct->getCartesian_rank() == 0) {

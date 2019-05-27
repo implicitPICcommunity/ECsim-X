@@ -358,6 +358,67 @@ void Particles3D::MaxwellianTangentialDiscontinuity(Grid * grid, Field * EMf, Vi
   nop = counter;
 }
 
+/** Maxellian random velocity with perturbation and uniform spatial distribution, goes with Ion Cyclotron*/
+void Particles3D::MaxwellianIonCyclotron(Grid * grid, Field * EMf, VirtualTopology3D * vct) {
+
+  const double coarsedx = grid->getDX();
+  double globalx;
+  double uthp, vthp, wthp;
+  
+  double prob, theta, sign;
+  long long counter = 0;
+
+  double k0 = 2*(4*atan(1.0))/Lx;
+  double k02 = k0 * k0; 
+  double de2 = 1./1836;
+  double om02 = 0.5 * (k02 /(1+k02*de2) * (2 + k02/(1 + k02*de2)) 
+                       + sqrt(k02 * k02/((1+k02 *de2)*(1+k02 *de2)*(1+k02 *de2)) 
+                               * (4 * k02 + k02 * k02/(1+k02 *de2))  ));
+  double eps = 0.01;
+
+  for (int i = 1; i < grid->getNXC() - 1; i++)
+    for (int j = 1; j < grid->getNYC() - 1; j++)
+      for (int k = 1; k < grid->getNZC() - 1; k++)
+        for (int ii = 0; ii < npcelx; ii++)
+          for (int jj = 0; jj < npcely; jj++)
+            for (int kk = 0; kk < npcelz; kk++) {
+	      
+	      globalx= grid->getXN(i,j,k)+ coarsedx;
+	      
+              x[counter] = (ii + .5) * (dx / npcelx) + grid->getXN(i, j, k);  
+              y[counter] = (jj + .5) * (dy / npcely) + grid->getYN(i, j, k);
+              z[counter] = (kk + .5) * (dz / npcelz) + grid->getZN(i, j, k);
+              // q = charge
+              q[counter] = (qom / fabs(qom)) * (fabs(EMf->getRHOcs(i, j, k, ns)) / npcel) * (1.0 / grid->getInvVOLc(i,j,k));
+              // u
+              prob = sqrt(-2.0 * log(1.0 - .999999 * Drand48(seed)));
+              theta = 2.0 * M_PI * Drand48(seed);
+              u[counter] = u0 + uthp * prob * cos(theta);
+              // v
+              v[counter] = v0 + (k02 - om02 - om02 * k02 * de2)/(k0 * om02) * eps * sin(k0 * x[counter]) + vthp * prob * sin(theta);
+              // w
+              prob = sqrt(-2.0 * log(1.0 - .999999 * Drand48(seed)));
+              theta = 2.0 * M_PI * Drand48(seed);
+              w[counter] = w0 - k0/sqrt(om02) * eps * cos(k0 * y[counter]) + wthp * prob * cos(theta);
+              if (TrackParticleID) {
+                partID[counter]   = npTracked;
+                partRank[counter] = rank;
+                npTracked++;
+              }
+
+
+              counter++;
+            }
+
+
+  nop = counter;
+}
+
+
+
+
+
+
 
 
 

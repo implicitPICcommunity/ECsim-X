@@ -39,6 +39,8 @@ class Particles3D:public Particles3Dcomm {
     void MaxwellianDoubleGEM(Grid * grid, Field * EMf, VirtualTopology3D * vct) ;
     /** Maxellian random velocity and uniform spatial distribution, goes with Tangential Discontinuity*/
     void MaxwellianTangentialDiscontinuity(Grid * grid, Field * EMf, VirtualTopology3D * vct);
+    /** Maxellian random velocity with pwertubation and uniform spatial distribution, goes with Ion Cyclotron*/
+    void MaxwellianIonCyclotron(Grid * grid, Field * EMf, VirtualTopology3D * vct);
     /** Initial condition: localised in a box and monoenergetic in velocity */
     int monoenergetic_box(Grid* grid,Field* EMf, VirtualTopology3D* vct, double L_square, double x_center, double y_center, double z_center, double multiple=1.0);
     int maxwell_box(Grid* grid,Field* EMf,VirtualTopology3D* vct, double L_square, double x_center, double y_center, double z_center, double multiple);
