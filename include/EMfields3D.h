@@ -67,6 +67,7 @@ class EMfields3D                // :public Field
     void initHalfPlanet(VirtualTopology3D *vct, Grid *grid, Collective *col);
     void initPulse(VirtualTopology3D * vct, Grid * grid, Collective *col);
     void initFluxRope(VirtualTopology3D *vct, Grid *grid, Collective *col);
+    void slabs_instability(VirtualTopology3D * vct, Grid * grid, Collective *col);
 
     /* Fix boundary conditions in cylindrical coordinate */
     void fixGhostB();

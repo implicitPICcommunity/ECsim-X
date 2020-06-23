@@ -100,6 +100,7 @@ int c_Solver::Init(int argc, char **argv) {
     else if (col->getCase()=="DoubleGEM")   EMf->initDoubleGEM(vct, grid,col);
     else if (col->getCase()=="DoubleHarris")EMf->initDoublePeriodicHarrisWithGaussianHumpPerturbation(vct,grid,col);
     else if (col->getCase()=="TD")          EMf->tangential_discontinuity(vct,grid,col); 
+    else if (col->getCase()=="SI")          EMf->slabs_instability(vct,grid,col);
     else if (col->getCase()=="IC")          EMf->ion_cyclotron(vct,grid,col);
     else if (col->getCase()=="Whistler")    EMf->initDoublePeriodicHarrisWithGaussianHumpPerturbation(vct,grid,col);
     else if (col->getCase()=="TwoCoils" || col->getCase()=="TwoCoilsINJ")    EMf->initWB8(vct,grid,col);
@@ -144,6 +145,7 @@ int c_Solver::Init(int argc, char **argv) {
       if      (col->getSolInit() && col->getPartInit() == "FromFieldFile")  part[i].MaxwellianFromFieldFile(grid, EMf, vct);
       else if (col->getCase()=="DoubleGEM")      part[i].MaxwellianDoubleGEM(grid, EMf, vct);
       else if (col->getCase()=="TD")             part[i].MaxwellianTangentialDiscontinuity(grid, EMf, vct);
+      else if (col->getCase()=="SI")             part[i].MaxwellianSlabInstability(grid, EMf, vct);
       else if (col->getCase()=="IC")             part[i].MaxwellianIonCyclotron(grid, EMf, vct);
       else if (col->getCase()=="Dipole")         part[i].maxwellian(grid, EMf, vct);
       else if (col->getCase()=="FluxRope")       part[i].maxwellian(grid, EMf, vct);
@@ -192,6 +194,7 @@ int c_Solver::Init(int argc, char **argv) {
   		  testpart[i].allocate(true, i, 0, col, vct, grid);
         if (col->getCase()=="DoubleGEM")           testpart[i].MaxwellianDoubleGEM(grid, EMf, vct);
         else if (col->getCase()=="TD")             testpart[i].MaxwellianTangentialDiscontinuity(grid, EMf, vct);
+        else if (col->getCase()=="SI")             testpart[i].MaxwellianSlabInstability(grid, EMf, vct);
         else if (col->getCase()=="IC")             testpart[i].MaxwellianIonCyclotron(grid, EMf, vct);
         else if (col->getCase()=="Dipole")         testpart[i].maxwellian(grid, EMf, vct);
         else if (col->getCase()=="FluxRope")       testpart[i].maxwellian(grid, EMf, vct);
