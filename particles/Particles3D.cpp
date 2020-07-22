@@ -285,6 +285,74 @@ void Particles3D::MaxwellianDoubleGEM(Grid * grid, Field * EMf, VirtualTopology3
 
 }
 
+/** Maxellian distribution depending on space, goes with Force Free */
+void Particles3D::Maxwellianspacedist(Collective * col, Grid * grid, Field * EMf, VirtualTopology3D * vct) {
+
+  ;const double coarsedy = grid->getDY();
+  const double B0x = col->getB0x();
+  const double B0z = col->getB0z();
+
+  double yp;
+  double u0p, v0p, w0p;
+  double ypB, ypT, ypBd, ypTd;
+  
+  double prob, theta, sign;
+  long long counter = 0;
+  for (int i = 1; i < grid->getNXC() - 1; i++)
+    for (int j = 1; j < grid->getNYC() - 1; j++)
+      for (int k = 1; k < grid->getNZC() - 1; k++)
+        for (int ii = 0; ii < npcelx; ii++)
+          for (int jj = 0; jj < npcely; jj++)
+            for (int kk = 0; kk < npcelz; kk++) {
+	      
+              x[counter] = (ii + .5) * (dx / npcelx) + grid->getXN(i, j, k);  
+              yp = (jj + .5) * (dy / npcely) + grid->getYN(i, j, k);
+              y[counter] = yp;
+              z[counter] = (kk + .5) * (dz / npcelz) + grid->getZN(i, j, k);
+              // q = charge
+              q[counter] = (qom / fabs(qom)) * (fabs(EMf->getRHOcs(i, j, k, ns)) / npcel) * (1.0 / grid->getInvVOLc(i,j,k));
+              
+              //ypB = grid->getYN(i, j, k) - .25 * Ly;
+              //ypT = grid->getYN(i, j, k) - .75 * Ly;
+              ypB = yp - 0.25 * Ly;
+              ypT = yp - 0.75 * Ly;
+              ypBd = ypB / delta;
+              ypTd = ypT / delta;
+              
+              if (u0 > 0) {
+              // u
+              u0p = (qom / fabs(qom)) *  (-B0x * ( 1/cosh(ypBd) * 1/cosh(ypBd) * tanh(ypBd) + 1/cosh(ypTd) * 1/cosh(ypTd) * tanh(ypTd) )/( delta * sqrt( B0z * B0z + 1/cosh(ypBd) * 1/cosh(ypBd) +  1/cosh(ypTd) * 1/cosh(ypTd) ) ) );
+              }
+              else {
+              u0p = u0;
+              }
+              prob = sqrt(-2.0 * log(1.0 - .999999 * Drand48(seed)));
+              theta = 2.0 * M_PI * Drand48(seed);
+              u[counter] = u0p + uth * prob * cos(theta);
+              // v
+              v0p = vp;
+              v[counter] = v0p + vth * prob * sin(theta);
+              // w
+              if (u0 > 0) {
+              w0p = ( qom / fabs(qom) ) * (B0x * (- 1/cosh(ypBd) * 1/cosh(ypBd) +  1/cosh(ypTd) * 1/cosh(ypTd) ) / delta);
+              }
+              else {
+              w0p = w0;
+              }
+              prob = sqrt(-2.0 * log(1.0 - .999999 * Drand48(seed)));
+              theta = 2.0 * M_PI * Drand48(seed);
+              w[counter] = w0p + wth * prob * cos(theta);
+              if (TrackParticleID) {
+                partID[counter]   = npTracked;
+                partRank[counter] = rank;
+                npTracked++;
+              }
+              counter++;
+            }
+
+  nop = counter;
+
+}
 
 /**Bi_Maxellian velocity spatial distribution, goes with Slabs Instability*/
 void Particles3D::MaxwellianSlabInstability(Grid * grid, Field * EMf, VirtualTopology3D * vct) {
