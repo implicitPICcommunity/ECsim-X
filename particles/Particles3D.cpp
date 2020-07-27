@@ -330,7 +330,7 @@ void Particles3D::Maxwellianspacedist(Collective * col, Grid * grid, Field * EMf
               theta = 2.0 * M_PI * Drand48(seed);
               u[counter] = u0p + uth * prob * cos(theta);
               // v
-              v0p = vp;
+              v0p = v0;
               v[counter] = v0p + vth * prob * sin(theta);
               // w
               if (u0 > 0) {
