@@ -1,2 +1,0 @@
-/Library/Developer/CommandLineTools/usr/bin/ar qc lib/libH5hut-io.a  CMakeFiles/H5hut-io.dir/src/H5hut-io.cpp.o
-/Library/Developer/CommandLineTools/usr/bin/ranlib lib/libH5hut-io.a
