@@ -1971,11 +1971,14 @@ void EMfields3D::initDoublePeriodicHarrisWithGaussianHumpPerturbation(VirtualTop
 }
 
 void EMfields3D::initForceFree(VirtualTopology3D * vct, Grid * grid, Collective *col) {
+
+double globalX, globalY;
+
 if (restart1 == 0) {
     // initialize
     if (vct->getCartesian_rank() == 0) {
       cout << "------------------------------------------" << endl;
-      cout << "Initialize Force Free with no perturbation" << endl;
+      cout << "Initialize Force Free with perturbation on half CS" << endl;
       cout << "------------------------------------------" << endl;
       cout << "B0x                              = " << B0x << endl;
       cout << "B0y                              = " << B0y << endl;
@@ -1993,10 +1996,14 @@ if (restart1 == 0) {
     for (int i = 0; i < nxn; i++)
       for (int j = 0; j < nyn; j++)
         for (int k = 0; k < nzn; k++) {
-           double yB = grid->getYN(i, j, k) - .25 * Ly;
-           double yT = grid->getYN(i, j, k) - .75 * Ly;
+           globalY = grid->getYN(i, j, k);
+           globalX = grid->getXN(i, j, k);
+           double yB = globalY - .25 * Ly;
+           double yT = globalY - .75 * Ly;
            double yBd = yB / delta;
            double yTd = yT / delta;
+           double yB4d = yB / (4 * delta);
+           double xB = globalX - .25 * Lx;
           // initialize the density for species
           for (int is = 0; is < ns; is++) {
              rhons[is][i][j][k] = rhoINIT[is] / FourPI;
@@ -2010,6 +2017,10 @@ if (restart1 == 0) {
           Byn[i][j][k] = 0.0;
           Bzn[i][j][k] = B0x * sqrt( (1/cosh(yBd) * 1/cosh(yBd) ) + ( 1/cosh(yTd) * 1/cosh(yTd) ) + B0z * B0z );
 
+          if (globalY <= 0.5 * Ly){
+             Bxn[i][j][k] -= B0x/10 * M_PI/Ly * cos( 2 * M_PI * xB / Lx ) * sin ( M_PI * yB / Ly ) * exp( - yB4d * yB4d ); 
+             Byn[i][j][k] += B0x/10 * 2 * M_PI/Lx * sin ( 2 * M_PI * xB / Lx ) * cos ( M_PI * yB / Ly) * exp( - yB4d * yB4d );
+          }
 	  Bx_ext[i][j][k] = 0;
 	  By_ext[i][j][k] = 0;
 	  Bz_ext[i][j][k] = 0;
