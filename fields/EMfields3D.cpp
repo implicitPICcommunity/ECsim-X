@@ -2208,8 +2208,97 @@ void EMfields3D::tangential_discontinuity(VirtualTopology3D * vct, Grid * grid, 
   }
 }
 
+// Initilaize field for magnetized KHI
+void EMfields3D::mag_KHI(VirtualTopology3D * vct, Grid * grid, Collective *col) {
 
+  double globalx;
+  double globaly;
+  double globalz;
 
+  const double coarsedx= grid->getDX();
+  const double coarsedy= grid->getDY();
+  const double coarsedz= grid->getDZ();
+
+  if (restart1 == 0) {
+    // initialize
+    if (vct->getCartesian_rank() == 0) {
+      cout << "------------------------------------------" << endl;
+      cout << "Initialize magnetized KHI "                         << endl;
+      cout << "------------------------------------------" << endl;
+      cout << "B0x                              = " << B0x << endl;
+      cout << "B0y                              = " << B0y << endl;
+      cout << "B0z                              = " << B0z << endl;
+      cout << "-------------------------" << endl;
+    }
+    for (int i = 0; i < nxn; i++)
+      for (int j = 0; j < nyn; j++)
+        for (int k = 0; k < nzn; k++) {
+          globalx= grid->getXN(i, j, k) + coarsedx;
+          globaly= grid->getYN(i, j, k) + coarsedy;
+          globalz= grid->getZN(i, j, k) + coarsedz;
+
+          double yB = globaly - .25 * Ly;
+          double yT = globaly - .75 * Ly;
+          double yBd = yB / delta;
+          double yTd = yT / delta;
+         
+
+                double u0 = col->getU0(0);
+                if (vct->getCartesian_rank() == 0) {
+                   cout << "u0 = " << u0  << endl;
+                }  
+ 
+
+          // initialize the density for species
+          for (int is = 0; is < ns; is++)
+              {
+               if (qom[is] > 0)
+               {
+                rhons[is][i][j][k] = rhoINIT[is]/FourPI;
+               }
+               else
+               {
+                double sech_yBd = 1. / cosh(yBd);
+                double sech_yTd = 1. / cosh(-yTd);
+                ;rhons[is][i][j][k] = rhoINIT[is]/FourPI - 0.1*B0z/delta * ( - sech_yBd*sech_yBd + sech_yTd*sech_yTd);
+               rhons[is][i][j][k] = rhoINIT[is]/FourPI - 1/FourPI * u0*B0z/delta * ( sech_yBd*sech_yBd - sech_yTd*sech_yTd);
+               }
+              }
+
+          // electric field
+          Ex[i][j][k] = 0.0;
+          Ey[i][j][k] = u0 * B0z * (-1 + tanh(yBd) + tanh(-yTd));
+          Ez[i][j][k] = 0.0;
+          // Magnetic field
+          Bxn[i][j][k] = 0.0;
+          Byn[i][j][k] = 0.0;
+          Bzn[i][j][k] = B0z;
+
+          Bx_ext[i][j][k] = 0;
+          By_ext[i][j][k] = 0;
+          Bz_ext[i][j][k] = 0;
+        }
+
+    // communicate ghost
+    communicateNodeBC(nxn, nyn, nzn, Bxn, col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5], vct);
+    communicateNodeBC(nxn, nyn, nzn, Byn, col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5], vct);
+    communicateNodeBC(nxn, nyn, nzn, Bzn, col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct);
+    // initialize B on centers
+    // initialize B on centers
+        grid->interpN2C(Bxc,Bxn);
+        grid->interpN2C(Byc,Byn);
+        grid->interpN2C(Bzc,Bzn);
+    // communicate ghost
+    communicateCenterBC(nxc, nyc, nzc, Bxc, col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5], vct);
+    communicateCenterBC(nxc, nyc, nzc, Byc, col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5], vct);
+    communicateCenterBC(nxc, nyc, nzc, Bzc, col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct);
+    for (int is = 0; is < ns; is++)
+      grid->interpN2C(rhocs, is, rhons);
+  }
+  else {
+    init(vct, grid, col);            // use the fields from restart file
+  }
+}
 
 // Initilaize field for slabs instability 
 void EMfields3D::slabs_instability(VirtualTopology3D * vct, Grid * grid, Collective *col) {

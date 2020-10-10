@@ -56,6 +56,7 @@ class EMfields3D                // :public Field
     void initDoublePeriodicHarrisWithGaussianHumpPerturbation(VirtualTopology3D * vct, Grid * grid, Collective *col);
     void initForceFree(VirtualTopology3D * vct, Grid * grid, Collective *col);
     void tangential_discontinuity(VirtualTopology3D * vct, Grid * grid, Collective *col); 
+    void mag_KHI(VirtualTopology3D * vct, Grid * grid, Collective *col);
     void ion_cyclotron(VirtualTopology3D * vct, Grid * grid, Collective *col);
     void initWB8(VirtualTopology3D *vct, Grid *grid, Collective *col);
     void initMirror(VirtualTopology3D *vct, Grid *grid, Collective *col);

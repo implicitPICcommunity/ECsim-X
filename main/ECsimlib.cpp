@@ -101,6 +101,7 @@ int c_Solver::Init(int argc, char **argv) {
     else if (col->getCase()=="DoubleHarris")EMf->initDoublePeriodicHarrisWithGaussianHumpPerturbation(vct,grid,col);
     else if (col->getCase()=="FF")          EMf->initForceFree(vct,grid,col);
     else if (col->getCase()=="TD")          EMf->tangential_discontinuity(vct,grid,col); 
+    else if (col->getCase()=="mKHI")        EMf->mag_KHI(vct,grid,col);
     else if (col->getCase()=="SI")          EMf->slabs_instability(vct,grid,col);
     else if (col->getCase()=="IC")          EMf->ion_cyclotron(vct,grid,col);
     else if (col->getCase()=="Whistler")    EMf->initDoublePeriodicHarrisWithGaussianHumpPerturbation(vct,grid,col);
@@ -147,6 +148,7 @@ int c_Solver::Init(int argc, char **argv) {
       else if (col->getCase()=="DoubleGEM")      part[i].MaxwellianDoubleGEM(grid, EMf, vct);
       else if (col->getCase()=="FF")             part[i].Maxwellianspacedist(col, grid, EMf, vct);
       else if (col->getCase()=="TD")             part[i].MaxwellianTangentialDiscontinuity(grid, EMf, vct);
+      else if (col->getCase()=="mKHI")           part[i].Maxwellian_magKHI(grid, EMf, vct);
       else if (col->getCase()=="SI")             part[i].MaxwellianSlabInstability(grid, EMf, vct);
       else if (col->getCase()=="IC")             part[i].MaxwellianIonCyclotron(grid, EMf, vct);
       else if (col->getCase()=="Dipole")         part[i].maxwellian(grid, EMf, vct);

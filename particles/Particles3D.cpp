@@ -404,10 +404,6 @@ void Particles3D::MaxwellianSlabInstability(Grid * grid, Field * EMf, VirtualTop
   nop = counter;
 }
 
-
-
-
-
 /** Maxellian random velocity and uniform spatial distribution, goes with Tangential Discontinuity*/
 void Particles3D::MaxwellianTangentialDiscontinuity(Grid * grid, Field * EMf, VirtualTopology3D * vct) {
 
@@ -467,6 +463,75 @@ void Particles3D::MaxwellianTangentialDiscontinuity(Grid * grid, Field * EMf, Vi
               prob = sqrt(-2.0 * log(1.0 - .999999 * Drand48(seed)));
               theta = 2.0 * M_PI * Drand48(seed);
               w[counter] = w0 + wthp * prob * cos(theta);
+              if (TrackParticleID) {
+                partID[counter]   = npTracked;
+                partRank[counter] = rank;
+                npTracked++;
+              }
+
+
+              counter++;
+            }
+
+
+  nop = counter;
+}
+
+/** Particle initialization for magnetized KHI*/
+void Particles3D::Maxwellian_magKHI(Grid * grid, Field * EMf, VirtualTopology3D * vct) {
+
+  double  FourPI =16*atan(1.0);
+
+  const double coarsedx= grid->getDX();
+  const double coarsedy= grid->getDY();
+  const double coarsedz= grid->getDZ();
+
+  double globalx;
+  double globaly;
+  double globalz;
+
+  double u0p, v0p, w0p;
+
+  double prob, theta, sign;
+  long long counter = 0;
+  for (int i = 1; i < grid->getNXC() - 1; i++)
+    for (int j = 1; j < grid->getNYC() - 1; j++)
+      for (int k = 1; k < grid->getNZC() - 1; k++)
+        for (int ii = 0; ii < npcelx; ii++)
+          for (int jj = 0; jj < npcely; jj++)
+            for (int kk = 0; kk < npcelz; kk++) {
+
+              globalx= grid->getXN(i,j,k)+ coarsedx;
+              globaly= grid->getYN(i, j, k) + coarsedy;
+              globalz= grid->getZN(i, j, k) + coarsedz;
+
+              double yB = globaly - .25 * Ly;
+              double yT = globaly - .75 * Ly;
+              double yBd = yB / delta;
+              double yTd = yT / delta;
+
+
+              x[counter] = (ii + .5) * (dx / npcelx) + grid->getXN(i, j, k);
+              y[counter] = (jj + .5) * (dy / npcely) + grid->getYN(i, j, k);
+              z[counter] = (kk + .5) * (dz / npcelz) + grid->getZN(i, j, k);
+              // q = charge
+              q[counter] = (qom / fabs(qom)) * (fabs(EMf->getRHOcs(i, j, k, ns)) / npcel) * (1.0 / grid->getInvVOLc(i,j,k));
+              // u
+              prob = sqrt(-2.0 * log(1.0 - .999999 * Drand48(seed)));
+              theta = 2.0 * M_PI * Drand48(seed);
+              u0p = u0 * (-1 + tanh(yBd) - tanh(yTd));
+
+              v0p = v0 + 0.01 * u0 * sin(0.5*FourPI*globalx/Lx) * (exp(-abs(yBd)) + exp(-abs(yTd))) ;
+
+              w0p = w0;
+
+              u[counter] = u0p + uth * prob * cos(theta);
+              // v
+              v[counter] = v0p + vth * prob * sin(theta);
+              // w
+              prob = sqrt(-2.0 * log(1.0 - .999999 * Drand48(seed)));
+              theta = 2.0 * M_PI * Drand48(seed);
+              w[counter] = w0p + wth * prob * cos(theta);
               if (TrackParticleID) {
                 partID[counter]   = npTracked;
                 partRank[counter] = rank;
