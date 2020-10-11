@@ -490,7 +490,9 @@ void Particles3D::Maxwellian_magKHI(Grid * grid, Field * EMf, VirtualTopology3D 
   double globaly;
   double globalz;
 
+  double xp, yp;
   double u0p, v0p, w0p;
+  double ypB, ypT, ypBd, ypTd;
 
   double prob, theta, sign;
   long long counter = 0;
@@ -505,44 +507,46 @@ void Particles3D::Maxwellian_magKHI(Grid * grid, Field * EMf, VirtualTopology3D 
               globaly= grid->getYN(i, j, k) + coarsedy;
               globalz= grid->getZN(i, j, k) + coarsedz;
 
-              double yB = globaly - .25 * Ly;
-              double yT = globaly - .75 * Ly;
-              double yBd = yB / delta;
-              double yTd = yT / delta;
+              if ( fabs( EMf->getRHOcs(i,j,k,ns) ) >0 ) 
+                 {
+                  xp = (ii + .5) * (dx / npcelx) + grid->getXN(i, j, k);
+                  x[counter] = xp;
+                  yp = (jj + .5) * (dy / npcely) + grid->getYN(i, j, k);
+                  y[counter] = yp;
+                  z[counter] = (kk + .5) * (dz / npcelz) + grid->getZN(i, j, k);
+                  // q = charge
+                  q[counter] = (qom / fabs(qom)) * (fabs(EMf->getRHOcs(i, j, k, ns)) / npcel) * (1.0 / grid->getInvVOLc(i,j,k));
+                  // u
+                  prob = sqrt(-2.0 * log(1.0 - .999999 * Drand48(seed)));
+                  theta = 2.0 * M_PI * Drand48(seed);
+              
+                  ypB = yp - 0.25 * Ly;
+                  ypT = yp - 0.75 * Ly;
+                  ypBd = ypB / delta;
+                  ypTd = ypT / delta;
 
+                  u0p = u0 * (-1 + tanh(ypBd) - tanh(ypTd));
 
-              x[counter] = (ii + .5) * (dx / npcelx) + grid->getXN(i, j, k);
-              y[counter] = (jj + .5) * (dy / npcely) + grid->getYN(i, j, k);
-              z[counter] = (kk + .5) * (dz / npcelz) + grid->getZN(i, j, k);
-              // q = charge
-              q[counter] = (qom / fabs(qom)) * (fabs(EMf->getRHOcs(i, j, k, ns)) / npcel) * (1.0 / grid->getInvVOLc(i,j,k));
-              // u
-              prob = sqrt(-2.0 * log(1.0 - .999999 * Drand48(seed)));
-              theta = 2.0 * M_PI * Drand48(seed);
-              u0p = u0 * (-1 + tanh(yBd) - tanh(yTd));
+                  v0p = v0 + 0.01 * u0 * sin(0.5*FourPI*xp/Lx) * (exp(-abs(ypBd)) + exp(-abs(ypTd))) ;
 
-              v0p = v0 + 0.01 * u0 * sin(0.5*FourPI*globalx/Lx) * (exp(-abs(yBd)) + exp(-abs(yTd))) ;
+                  w0p = w0;
 
-              w0p = w0;
-
-              u[counter] = u0p + uth * prob * cos(theta);
-              // v
-              v[counter] = v0p + vth * prob * sin(theta);
-              // w
-              prob = sqrt(-2.0 * log(1.0 - .999999 * Drand48(seed)));
-              theta = 2.0 * M_PI * Drand48(seed);
-              w[counter] = w0p + wth * prob * cos(theta);
-              if (TrackParticleID) {
-                partID[counter]   = npTracked;
-                partRank[counter] = rank;
-                npTracked++;
-              }
-
-
-              counter++;
+                  u[counter] = u0p + uth * prob * cos(theta);
+                  // v
+                  v[counter] = v0p + vth * prob * sin(theta);
+                  // w
+                  prob = sqrt(-2.0 * log(1.0 - .999999 * Drand48(seed)));
+                  theta = 2.0 * M_PI * Drand48(seed);
+                  w[counter] = w0p + wth * prob * cos(theta);
+                  if (TrackParticleID) 
+                     {
+                      partID[counter]   = npTracked;
+                      partRank[counter] = rank;
+                      npTracked++;
+                     }
+                  counter++;
+                 }
             }
-
-
   nop = counter;
 }
 
