@@ -2288,7 +2288,7 @@ void EMfields3D::mag_KHI(VirtualTopology3D * vct, Grid * grid, Collective *col) 
                         if (globaly <= 0.25 * Ly || globaly >= 0.75 * Ly)
                            {
                             ;rhons[is][i][j][k] = rhoINIT[is]/FourPI - 0.1*B0z/delta * ( - sech_yBd*sech_yBd + sech_yTd*sech_yTd);
-                            rhons[is][i][j][k] = rhoINIT[is]/FourPI - 1/FourPI * u0*B0z/delta * ( sech_yBd*sech_yBd - sech_yTd*sech_yTd);
+                            rhons[is][i][j][k] = rhoINIT[is]/FourPI - 1/FourPI * fabs(u0)*B0z/delta * ( sech_yBd*sech_yBd - sech_yTd*sech_yTd);
                            }
                         else
                            {
@@ -2299,7 +2299,7 @@ void EMfields3D::mag_KHI(VirtualTopology3D * vct, Grid * grid, Collective *col) 
                        {
                          if (globaly > 0.25 * Ly && globaly < 0.75 * Ly)
                           {
-                           rhons[is][i][j][k] = rhoINIT[is]/FourPI - 1/FourPI * u0*B0z/delta * ( sech_yBd*sech_yBd - sech_yTd*sech_yTd);
+                           rhons[is][i][j][k] = rhoINIT[is]/FourPI - 1/FourPI * fabs(u0) *B0z/delta * ( sech_yBd*sech_yBd - sech_yTd*sech_yTd);
                           }
                        else
                           {
