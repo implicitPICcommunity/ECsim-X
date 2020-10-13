@@ -525,7 +525,7 @@ void Particles3D::Maxwellian_magKHI(Grid * grid, Field * EMf, VirtualTopology3D 
                   ypBd = ypB / delta;
                   ypTd = ypT / delta;
 
-                  u0p = u0 * (-1 + tanh(ypBd) - tanh(ypTd));
+                  u0p = fabs(u0) * (-1 + tanh(ypBd) - tanh(ypTd));
 
                   v0p = v0 + 2 * 0.1 * u0 * sin(0.5*FourPI*xp/Lx) * (exp(-abs(ypBd)) + exp(-abs(ypTd))) ;
 
