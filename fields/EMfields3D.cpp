@@ -2003,7 +2003,7 @@ if (restart1 == 0) {
            double yBd = yB / delta;
            double yTd = yT / delta;
            double yB4d = yB / (4 * delta);
-           double xB = globalX - .25 * Lx;
+           double xB = globalX - 0.5 * Lx;
           // initialize the density for species
           for (int is = 0; is < ns; is++) {
              rhons[is][i][j][k] = rhoINIT[is] / FourPI;
