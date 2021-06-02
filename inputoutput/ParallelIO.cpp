@@ -205,11 +205,14 @@ void WriteFieldsH5hut(int nspec, Grid3DCU *grid, EMfields3D *EMf, Collective *co
 }
 
 /*! Function to write the particles using the H5hut library. */
-void WritePartclH5hut(int nspec, Grid3DCU *grid, Particles3Dcomm *part, Collective *col, VCtopology3D *vct, int cycle, string subfolder){
+void WritePartclH5hut(int nspec, Grid3DCU *grid, Particles3Dcomm *part, Collective *col, VCtopology3D *vct, int cycle, bool test){
 
 #ifdef USEH5HUT
 
   H5output file;
+
+  string subfolder = "";
+  if (test) subfolder = "_Test";
 
   string filename = col->getSaveDirName() + "/" + col->getSimName() + subfolder;
 
@@ -220,11 +223,32 @@ void WritePartclH5hut(int nspec, Grid3DCU *grid, Particles3Dcomm *part, Collecti
   /* ------------------- */
 
   file.OpenPartclFile(nspec, vct->getComm());
-  for (int i=0; i<nspec; i++){
-	  if (col->getTrackParticleID(i)) {
+        if (test) {
+    for (int i=0; i<nspec; i++){
+        file.WriteTestParticles(i, part[i].getNOP(),
+                               part[i].getParticleRankall(),
+                               part[i].getParticleIDall(),
+                               part[i].getQall(),
+                               part[i].getXall(),
+                               part[i].getYall(),
+                               part[i].getZall(),
+                               part[i].getUall(),
+                               part[i].getVall(),
+                               part[i].getWall(),
+                               //part[i].getExall(),
+                               //part[i].getEyall(),
+                               //part[i].getEzall(),
+                               //part[i].getBxall(),
+                               //part[i].getByall(),
+                               //part[i].getBzall(),
+                               vct->getComm());
+    }
+  } else {
+    for (int i=0; i<nspec; i++){
+      if (col->getTrackParticleID(i)) {
         file.WriteParticles(i, part[i].getNOP(),
-                               part[i].getParticleRankall(), 
-                               part[i].getParticleIDall(), 
+                               part[i].getParticleRankall(),
+                               part[i].getParticleIDall(),
                                part[i].getQall(),
                                part[i].getXall(),
                                part[i].getYall(),
@@ -233,7 +257,7 @@ void WritePartclH5hut(int nspec, Grid3DCU *grid, Particles3Dcomm *part, Collecti
                                part[i].getVall(),
                                part[i].getWall(),
                                vct->getComm());
-    } else {
+      } else {
         file.WriteParticles(i, part[i].getNOP(),
                                part[i].getQall(),
                                part[i].getXall(),
@@ -243,6 +267,7 @@ void WritePartclH5hut(int nspec, Grid3DCU *grid, Particles3Dcomm *part, Collecti
                                part[i].getVall(),
                                part[i].getWall(),
                                vct->getComm());
+      }
     }
   }
   file.ClosePartclFile();

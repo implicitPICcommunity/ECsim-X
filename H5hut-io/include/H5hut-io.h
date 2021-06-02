@@ -22,7 +22,9 @@ class H5output{
     void OpenPartclFile(int nspec, MPI_Comm CART_COMM);
     void WriteParticles(int ispec, long long np, double *q, double *x, double *y, double *z, double *u, double *v, double *w, MPI_Comm CART_COMM);
     void WriteParticles(int ispec, long long np, long long* rank, long long *id, double *q, double *x, double *y, double *z, double *u, double *v, double *w, MPI_Comm CART_COMM);
-    void ClosePartclFile();
+//    void WriteTestParticles(int ispec, long long np, long long *rank, long long* id,  double *q, double *x, double *y, double *z, double *u, double *v, double *w, double* Exl, double* Eyl, double* Ezl, double* Bxl, double *Byl, double* Bzl, MPI_Comm CART_COMM); 
+    void WriteTestParticles(int ispec, long long np, long long *rank, long long* id,  double *q, double *x, double *y, double *z, double *u, double *v, double *w, MPI_Comm CART_COMM);
+  void ClosePartclFile();
     
   private:
     int         cycle;

@@ -197,7 +197,7 @@ int c_Solver::Init(int argc, char **argv) {
     for (int i=0; i<TPns; i++) {
   		  testpart[i].allocate(true, i, 0, col, vct, grid);
         if (col->getCase()=="DoubleGEM")           testpart[i].MaxwellianDoubleGEM(grid, EMf, vct);
-        else if (col->getCase()=="FF")             part[i].Maxwellianspacedist(col, grid, EMf, vct);
+        else if (col->getCase()=="FF")             testpart[i].Maxwellianspacedist(col, grid, EMf, vct);
         else if (col->getCase()=="TD")             testpart[i].MaxwellianTangentialDiscontinuity(grid, EMf, vct);
         else if (col->getCase()=="SI")             testpart[i].MaxwellianSlabInstability(grid, EMf, vct);
         else if (col->getCase()=="IC")             testpart[i].MaxwellianIonCyclotron(grid, EMf, vct);
@@ -886,10 +886,10 @@ void c_Solver::WriteOutput(int cycle) {
       if (cycle == first_cycle || cycle%(col->getFieldOutputCycle())==0)        WriteFieldsH5hut(ns, grid, EMf,  col, vct, cycle);
 
     if (col->getParticlesOutputCycle() != 0) 
-      if (cycle == first_cycle || cycle%(col->getParticlesOutputCycle())==0)    WritePartclH5hut(ns, grid, part, col, vct, cycle, "");
+      if (cycle == first_cycle || cycle%(col->getParticlesOutputCycle())==0)    WritePartclH5hut(ns, grid, part, col, vct, cycle, false);
     
     if (TPns > 0) 
-      if (cycle % col->getTestParticlesOutputCycle() == 0) WritePartclH5hut(TPns, grid, testpart, col, vct, cycle, "_Test");
+      if (cycle % col->getTestParticlesOutputCycle() == 0) WritePartclH5hut(TPns, grid, testpart, col, vct, cycle, true);
 
   } else {
 

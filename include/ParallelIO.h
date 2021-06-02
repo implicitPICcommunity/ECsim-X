@@ -22,7 +22,7 @@
 #include "ComNodes3D.h"
 
 void WriteFieldsH5hut(int nspec, Grid3DCU *grid, EMfields3D *EMf, Collective *col, VCtopology3D *vct, int cycle);
-void WritePartclH5hut(int nspec, Grid3DCU *grid, Particles3Dcomm *part, Collective *col, VCtopology3D *vct, int cycle, string subfolder);
+void WritePartclH5hut(int nspec, Grid3DCU *grid, Particles3Dcomm *part, Collective *col, VCtopology3D *vct, int cycle, bool test);
 
 void ReadPartclH5hut(int nspec, Particles3Dcomm *part, Collective *col, VCtopology3D *vct, Grid3DCU *grid);
 void ReadFieldsH5hut(int nspec, bool readext, bool readBc, EMfields3D *EMf,       Collective *col, VCtopology3D *vct, Grid3DCU *grid);
