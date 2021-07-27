@@ -29,8 +29,10 @@ class H5output{
   private:
     int         cycle;
     std::string basename;
-    h5_file_t   *partfile;
-    h5_file_t   *fldsfile;
+    //h5_file_t   *partfile;
+    //h5_file_t   *fldsfile;
+    h5_file_t   partfile;
+    h5_file_t   fldsfile;
 };
 
 class H5input{
@@ -39,7 +41,7 @@ class H5input{
 
     // Field read functions:
     int  OpenFieldsFile(std::string dtype, int nspec, int ntx, int nty, int ntz, int *coord, int *pdims, MPI_Comm CART_COMM);
-    void ReadFields(double ***field, std::string fname, int nx, int ny, int nz, int rank=-1);
+    int ReadFields(double ***field, std::string fname, int nx, int ny, int nz, int rank=-1);
     void CloseFieldsFile();
 
     // Particle read functions:
@@ -57,8 +59,9 @@ class H5input{
     std::string basename;
 
     // Field input:
-    h5_file_t   *fldsfile;
-
+    //h5_file_t   *fldsfile;
+    h5_file_t   fldsfile;
+    
     // Particle input PHDF5:
     unsigned int *inproc;
     double       *i_q;
