@@ -91,6 +91,11 @@ if(IPIC_XEONPHI)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 endif()
 
+option(GPU "Compile options for GPU" OFF)
+if(GPU)
+   add_definitions( -DGPU )
+endif()
+
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Chose the type of build, options
 are: None, Debug, Release, RelWithDebInfo, MinSizeRel" FORCE)

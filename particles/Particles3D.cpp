@@ -1450,6 +1450,23 @@ void Particles3D::get_El(const double weights[2][2][2], int ix, int iy, int iz, 
 
 }
 
+void Particles3D::get_Ethl(const double weights[2][2][2], int ix, int iy, int iz, double& Exl, double& Eyl, double& Ezl, double*** Exth, double*** Eyth, double*** Ezth, double*** Ex_ext, double*** Ey_ext, double*** Ez_ext, double Fext){
+
+  Exl = 0.0;
+  Eyl = 0.0;
+  Ezl = 0.0;
+
+  int l = 0;
+  for (int i=0; i<=1; i++)
+    for (int j=0; j<=1; j++)
+      for (int k=0; k<=1; k++) {
+        Exl += weights[i][j][k] * (Exth[ix-i][iy-j][iz-k] + Fext*Ex_ext[ix-i][iy-j][iz-k]);
+        Eyl += weights[i][j][k] * (Eyth[ix-i][iy-j][iz-k] + Fext*Ey_ext[ix-i][iy-j][iz-k]);
+        Ezl += weights[i][j][k] * (Ezth[ix-i][iy-j][iz-k] + Fext*Ez_ext[ix-i][iy-j][iz-k]);
+        l = l + 1;
+      }
+}
+
 void Particles3D::get_Bl(const double weights[2][2][2], int ix, int iy, int iz, double& Bxl, double& Byl, double& Bzl, double*** Bx, double*** By, double*** Bz, double*** Bx_ext, double*** By_ext, double*** Bz_ext, double Fext){
 
   Bxl = 0.0;
@@ -1467,6 +1484,76 @@ void Particles3D::get_Bl(const double weights[2][2][2], int ix, int iy, int iz, 
       }
 }
 
+void Particles3D::get_Bl_1Dacc(const double weights[2][2][2], int ix, int iy, int iz, double& Bxl, double& Byl, double& Bzl, double*** Bx, double*** By, double*** Bz, double*** Bx_ext, double*** By_ext, double*** Bz_ext, double Fext){
+   
+  Bxl = 0.0;
+  Byl = 0.0;
+  Bzl = 0.0;
+
+  double *Bx_1D = new double[nxn * nyn * nzn]; 
+  double *By_1D = new double[nxn * nyn * nzn];
+  double *Bz_1D = new double[nxn * nyn * nzn];
+  double *Bx_ext_1D = new double[nxn * nyn * nzn];
+  double *By_ext_1D = new double[nxn * nyn * nzn];
+  double *Bz_ext_1D = new double[nxn * nyn * nzn];
+  
+  Bx_1D = Bx[0][0];
+  By_1D = By[0][0];
+  Bz_1D = Bz[0][0];
+  Bx_ext_1D = Bx_ext[0][0];
+  By_ext_1D = By_ext[0][0];
+  Bz_ext_1D = Bz_ext[0][0];
+
+  int l = 0;
+  int INDEX;
+  for (int i=0; i<=1; i++)
+    for (int j=0; j<=1; j++)
+      for (int k=0; k<=1; k++) {
+	INDEX = (ix -i) * nzn * nyn + (iy - j) * nzn + (iz - k);      
+        Bxl += weights[i][j][k] * (Bx_1D[INDEX] + Fext*Bx_ext_1D[INDEX]);
+        Byl += weights[i][j][k] * (By_1D[INDEX] + Fext*By_ext_1D[INDEX]);
+        Bzl += weights[i][j][k] * (Bz_1D[INDEX] + Fext*Bz_ext_1D[INDEX]);
+        l = l + 1;
+      }
+  return;
+}	
+
+void Particles3D::get_Ethl_1Dacc(const double weights[2][2][2], int ix, int iy, int iz, double& Exl, double& Eyl, double& Ezl, double*** Exth, double*** Eyth, double*** Ezth, double*** Ex_ext, double*** Ey_ext, double*** Ez_ext, double Fext){
+   
+  Exl = 0.0;
+  Eyl = 0.0;
+  Ezl = 0.0;
+
+  double *Exth_1D = new double[nxn * nyn * nzn]; 
+  double *Eyth_1D = new double[nxn * nyn * nzn];
+  double *Ezth_1D = new double[nxn * nyn * nzn];
+  double *Ex_ext_1D = new double[nxn * nyn * nzn];
+  double *Ey_ext_1D = new double[nxn * nyn * nzn];
+  double *Ez_ext_1D = new double[nxn * nyn * nzn];
+  
+  Exth_1D = Exth[0][0];
+  Eyth_1D = Eyth[0][0];
+  Ezth_1D = Ezth[0][0];
+  Ex_ext_1D = Ex_ext[0][0];
+  Ey_ext_1D = Ey_ext[0][0];
+  Ez_ext_1D = Ez_ext[0][0];
+
+  int l = 0;
+  int INDEX;
+  for (int i=0; i<=1; i++)
+    for (int j=0; j<=1; j++)
+      for (int k=0; k<=1; k++) {
+	INDEX = (ix -i) * nzn * nyn + (iy - j) * nzn + (iz - k);      
+        Exl += weights[i][j][k] * (Exth_1D[INDEX] + Fext*Ex_ext_1D[INDEX]);
+        Eyl += weights[i][j][k] * (Eyth_1D[INDEX] + Fext*Ey_ext_1D[INDEX]);
+        Ezl += weights[i][j][k] * (Ezth_1D[INDEX] + Fext*Ez_ext_1D[INDEX]);
+        l = l + 1;
+      }
+
+  return;
+}	
+
+
 // Particles mover for the ECIMM algorithm
 int Particles3D::updateVelocity(Grid * grid, VirtualTopology3D * vct, Field * EMf) {
   if (vct->getCartesian_rank() == 0) {
@@ -1474,9 +1561,13 @@ int Particles3D::updateVelocity(Grid * grid, VirtualTopology3D * vct, Field * EM
     //cout << "*** ECSIM MOVER species " << ns << "( " << nop << " part ) ***"<< endl;
   }
   double start_mover_PC = MPI_Wtime();
+  
+  double weights[2][2][2];
+ 
   double ***Exth= asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getExth());
   double ***Eyth= asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getEyth());
   double ***Ezth= asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getEzth());
+  //cout << "Ezth[0][0]" << Ezth[0][0] << " ***" << endl;
   double ***Ex_ext = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getEx_ext());
   double ***Ey_ext = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getEy_ext());
   double ***Ez_ext = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getEz_ext());
@@ -1528,6 +1619,16 @@ int Particles3D::updateVelocity(Grid * grid, VirtualTopology3D * vct, Field * EM
     double Byl = 0.0;
     double Bzl = 0.0;
 
+    get_weights(grid, xp, yp, zp, ix, iy, iz, weights);
+    
+#ifdef GPU
+    get_Bl_1Dacc(weights, ix, iy, iz, Bxl, Byl, Bzl, Bx, By, Bz, Bx_ext, By_ext, Bz_ext, Fext);
+    get_Ethl_1Dacc(weights, ix, iy, iz, Exl, Eyl, Ezl, Exth, Eyth, Ezth, Ex_ext, Ey_ext, Ez_ext, Fext);
+#else
+    get_Bl(weights, ix, iy, iz, Bxl, Byl, Bzl, Bx, By, Bz, Bx_ext, By_ext, Bz_ext, Fext);
+    get_Ethl(weights, ix, iy, iz, Exl, Eyl, Ezl, Exth, Eyth, Ezth, Ex_ext, Ey_ext, Ez_ext, Fext);
+#endif
+
     // MIC refuses to vectorize this ...
     // 
     // double weight[2][2][2];
@@ -1546,15 +1647,9 @@ int Particles3D::updateVelocity(Grid * grid, VirtualTopology3D * vct, Field * EM
     // const double Bzlp = weight[ii][jj][kk] * Bz.get(ix - ii, iy - jj, iz - kk);
     // Exl += Exlp;
     // Eyl += Eylp;
-    // Ezl += Ezlp;
-    // Bxl += Bxlp;
-    // Byl += Bylp;
-    // Bzl += Bzlp;
-    // }
-
     // ... so we expand things out instead
     // 
-    const double weight000 = xi[0] * eta[0] * zeta[0] * invVOL;
+    /* const double weight000 = xi[0] * eta[0] * zeta[0] * invVOL;
     const double weight001 = xi[0] * eta[0] * zeta[1] * invVOL;
     const double weight010 = xi[0] * eta[1] * zeta[0] * invVOL;
     const double weight011 = xi[0] * eta[1] * zeta[1] * invVOL;
@@ -1616,6 +1711,7 @@ int Particles3D::updateVelocity(Grid * grid, VirtualTopology3D * vct, Field * EM
     Ezl += weight101 * (Ezth[ix - 1][iy][iz - 1]     + Fext*Ez_ext[ix - 1][iy][iz - 1]);
     Ezl += weight110 * (Ezth[ix - 1][iy - 1][iz]     + Fext*Ez_ext[ix - 1][iy - 1][iz]);
     Ezl += weight111 * (Ezth[ix - 1][iy - 1][iz - 1] + Fext*Ez_ext[ix - 1][iy - 1][iz - 1]);
+    */
 
     // 
     // End of interpolation
@@ -1711,8 +1807,7 @@ int Particles3D::updatePosition(Grid * grid, VirtualTopology3D * vct, Field * EM
       return (-1);
     MPI_Barrier(MPI_COMM_WORLD);
   }
-  // timeTasks.addto_communicate();
-  
+  // timeTasks.addto_communicate(); 
  
   return (0);                   // exit succcesfully (hopefully) 
 }

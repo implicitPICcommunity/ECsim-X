@@ -3,6 +3,7 @@
 #define ALLOC_H
 
 #include <stdlib.h>
+#include <stdio.h>
 
 /*! The allocator for 4D array */
 template < class type > type **** _new_4_array(int sz1, int sz2, int sz3, int sz4) {
@@ -85,9 +86,16 @@ template < class type > type *** _new_3_array(int sz1, int sz2, int sz3) {
     result[i] = all_y;
     for (int j = 0; j < sz2; j++, all_z += sz3) {
       result[i][j] = all_z;
+      if (i == 0 and j == 0){
+	 printf("i = 0 e j = 0 all_z \n");     
+         printf("_new_3_array, all_z = %p \n", all_z);
+      }
     }
   }
 
+  //uncommet this to verify the mapping from 3D to 1D array
+  //printf("_new_3_array, result[0][0] = %p \n", result[0][0]);
+  //printf("_new_3_array, result = %p \n", result);
   return result;
 
 }
@@ -111,7 +119,7 @@ template < class type > type *** _assign_3_array(int sz1, int sz2, int sz3, type
       result[i][j] = all_z;
     }
   }
-
+  
   return result;
 }
 
