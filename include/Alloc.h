@@ -87,8 +87,8 @@ template < class type > type *** _new_3_array(int sz1, int sz2, int sz3) {
     for (int j = 0; j < sz2; j++, all_z += sz3) {
       result[i][j] = all_z;
       if (i == 0 and j == 0){
-	 printf("i = 0 e j = 0 all_z \n");     
-         printf("_new_3_array, all_z = %p \n", all_z);
+	 //printf("i = 0 e j = 0 all_z \n");     
+         //printf("_new_3_array, all_z = %p \n", all_z);
       }
     }
   }
