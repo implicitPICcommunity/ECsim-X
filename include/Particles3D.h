@@ -113,8 +113,6 @@ class Particles3D:public Particles3Dcomm {
     void tagParticles();
     int initFromIDfile(int _ns, FilePartID* fileID, Particles3D* part, Collective * col, VirtualTopology3D * vct, Grid * grid);
     void fixKineticEnergy(double Kref, double K, long long np0, long long np1, double fac);
-
-
 };
 
 

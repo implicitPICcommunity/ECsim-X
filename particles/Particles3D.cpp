@@ -1490,12 +1490,12 @@ void Particles3D::get_Bl_1Dacc(const double weights[2][2][2], int ix, int iy, in
   Byl = 0.0;
   Bzl = 0.0;
 
-  double *Bx_1D = new double[nxn * nyn * nzn]; 
+  /*double *Bx_1D = new double[nxn * nyn * nzn]; 
   double *By_1D = new double[nxn * nyn * nzn];
   double *Bz_1D = new double[nxn * nyn * nzn];
   double *Bx_ext_1D = new double[nxn * nyn * nzn];
   double *By_ext_1D = new double[nxn * nyn * nzn];
-  double *Bz_ext_1D = new double[nxn * nyn * nzn];
+  double *Bz_ext_1D = new double[nxn * nyn * nzn];*/
   
   Bx_1D = Bx[0][0];
   By_1D = By[0][0];
@@ -1524,12 +1524,12 @@ void Particles3D::get_Ethl_1Dacc(const double weights[2][2][2], int ix, int iy, 
   Eyl = 0.0;
   Ezl = 0.0;
 
-  double *Exth_1D = new double[nxn * nyn * nzn]; 
+  /*double *Exth_1D = new double[nxn * nyn * nzn]; 
   double *Eyth_1D = new double[nxn * nyn * nzn];
   double *Ezth_1D = new double[nxn * nyn * nzn];
   double *Ex_ext_1D = new double[nxn * nyn * nzn];
   double *Ey_ext_1D = new double[nxn * nyn * nzn];
-  double *Ez_ext_1D = new double[nxn * nyn * nzn];
+  double *Ez_ext_1D = new double[nxn * nyn * nzn];*/
   
   Exth_1D = Exth[0][0];
   Eyth_1D = Eyth[0][0];

@@ -141,6 +141,12 @@ public:
   void Write_vDist3D(string SaveDirName);
 
   double *ubar, *vbar, *wbar;
+  double *Bx_1D, *By_1D, *Bz_1D;
+  double *Bx_ext_1D, *By_ext_1D, *Bz_ext_1D;
+  double *Exth_1D, *Eyth_1D, *Ezth_1D;
+  double *Ex_ext_1D, *Ey_ext_1D, *Ez_ext_1D;
+
+
 protected:
   /** number of species */
   int ns;

@@ -70,6 +70,21 @@ Particles3Dcomm::~Particles3Dcomm() {
   delete[]b_Y_LEFT;
   delete[]b_Z_RIGHT;
   delete[]b_Z_LEFT;
+  // deallocate 1D arrays
+  #ifdef GPU
+  delete[]Bx_1D;
+  delete[]By_1D;
+  delete[]Bz_1D;
+  delete[]Bx_ext_1D;
+  delete[]By_ext_1D;
+  delete[]Bz_ext_1D;
+  delete[]Exth_1D;
+  delete[]Eyth_1D;
+  delete[]Ezth_1D;
+  delete[]Ex_ext_1D;
+  delete[]Ey_ext_1D;
+  delete[]Ez_ext_1D;
+  #endif
 }
 /** constructors fo a single species*/
 void Particles3Dcomm::allocate(bool test, int species, long long initnpmax, Collective * col, VirtualTopology3D * vct, Grid * grid) {
@@ -233,6 +248,23 @@ void Particles3Dcomm::allocate(bool test, int species, long long initnpmax, Coll
     partID   = new long long[npmax];
     partRank = new long long[npmax];
   }
+  
+  #ifdef GPU
+  Bx_1D = new double[nxn * nyn * nzn];
+  By_1D = new double[nxn * nyn * nzn];
+  Bz_1D = new double[nxn * nyn * nzn];
+  Bx_ext_1D = new double[nxn * nyn * nzn];
+  By_ext_1D = new double[nxn * nyn * nzn];
+  Bz_ext_1D = new double[nxn * nyn * nzn];
+  Exth_1D = new double[nxn * nyn * nzn];
+  Eyth_1D = new double[nxn * nyn * nzn];
+  Ezth_1D = new double[nxn * nyn * nzn];
+  Ex_ext_1D = new double[nxn * nyn * nzn];
+  Ey_ext_1D = new double[nxn * nyn * nzn];
+  Ez_ext_1D = new double[nxn * nyn * nzn];
+  #endif
+
+
 
   b_X_RIGHT = new double[buffer_size];
   b_X_RIGHT_ptr = b_X_RIGHT;    // alias to make the resize
