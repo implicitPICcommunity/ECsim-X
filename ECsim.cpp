@@ -1,6 +1,8 @@
 #include <iomanip>
 #include "ECsim.h"
 #include "MyClock.h"
+#include "nvtx.h"
+
 
 MyClock *clocks;
 
@@ -32,28 +34,36 @@ int main(int argc, char **argv) {
     /* 2- Calculate fields and move particles                */
     /*    Exit if there is a memory issue with the particles */
     /* ----------------------------------------------------- */
+    mynvtxstart_("momentGathering");
     clocks->start(1);
     KCode.GatherMoments();
     clocks->stop(1);
+    mynvtxstop_();
 
+    mynvtxstart_("fields");
     clocks->start(2);
     KCode.CalculateField();
     clocks->stop(2);
+    mynvtxstop_();
 
+    mynvtxstart_("particleMover");
     clocks->start(3);
     b_err = KCode.ParticlesMover(i);
     clocks->stop(3);
+    mynvtxstop_();
 
     if ( b_err) i = KCode.LastCycle() + 1;
 
     /* --------------- */
     /* 3- Output files */
     /* --------------- */
+    mynvtxstart_("IO");
     clocks->start(4);
     KCode.WriteOutput(i);
     KCode.WriteConserved(i);
     KCode.WriteRestart(i);
     clocks->stop(4);
+    mynvtxstop_();
   }
 
 

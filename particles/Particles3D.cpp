@@ -25,6 +25,8 @@ developers: Stefano Markidis, Giovanni Lapenta
 #include "hdf5.h"
 #include <complex>
 
+#include "nvtx.h"
+
 using std::cout;
 using std::cerr;
 using std::endl;
@@ -1579,6 +1581,9 @@ int Particles3D::updateVelocity(Grid * grid, VirtualTopology3D * vct, Field * EM
   double ***Bz_ext = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBz_ext());
   double Fext = EMf->getFext();
 
+
+
+  
   const double inv_dx = 1.0 / dx, inv_dy = 1.0 / dy, inv_dz = 1.0 / dz;
   // don't bother trying to push any particles simultaneously;
   // MIC already does vectorization automatically, and trying
@@ -1752,8 +1757,11 @@ int Particles3D::updateVelocity(Grid * grid, VirtualTopology3D * vct, Field * EM
 
 int Particles3D::updatePosition(Grid * grid, VirtualTopology3D * vct, Field * EMf) {
 
+
+  mynvtxstart_("updatePositionloop");
 #pragma omp parallel for
-#pragma simd                    // this just slows things down (why?)
+#pragma simd                    // this just slows things down (why?
+  
   for (long long rest = 0; rest < nop; rest++) {
     double xp = x[rest];
     double yp = y[rest];
@@ -1788,6 +1796,8 @@ int Particles3D::updatePosition(Grid * grid, VirtualTopology3D * vct, Field * EM
      w[rest] = wp;
   }                             // END OF ALL THE PARTICLES
 
+  mynvtxstop_();
+  
   fixPosition();
 
 
@@ -2997,6 +3007,8 @@ void Particles3D::fixZcylindrical()
 /*! Set to zero the corresponding components of the position of the particles for 1D and 2D cases */
 void Particles3D::fixPosition()
 {
+
+  mynvtxstart_("fixPosition");
   if (ndim == 1) {
     for (int i=0; i<nop; i++) {
       z[i] = 0;
@@ -3005,6 +3017,7 @@ void Particles3D::fixPosition()
   } else if (ndim == 2) {
     for (int i=0; i<nop; i++) z[i] = 0;
   }
+  mynvtxstop_();
 }
 
 

@@ -5,6 +5,8 @@
 #include "Probes.h"
 #include "FilePartID.h"
 
+#include "nvtx.h"
+
 using namespace ECsim;
 
 extern MyClock *clocks;
@@ -403,14 +405,19 @@ bool c_Solver::ParticlesMover(int cycle) {
   EMf->testJdotE(grid, deltaK);
   #endif
 
+  mynvtxstart_("position_np");
   for (int i = 0; i < ns; i++)  {
     mem_avail = part[i].updatePosition(grid, vct, EMf);
     part[i].fixPosition();
   }
+  mynvtxstop_();
+
+  mynvtxstart_("position_TP");
   for (int i = 0; i < TPns; i++)  {
     mem_avail = testpart[i].updatePosition(grid, vct, EMf);
     testpart[i].fixPosition();
   }
+   mynvtxstop_();
 #endif
 
   if (mem_avail < 0) {          // not enough memory space allocated for particles: stop the simulation
