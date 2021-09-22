@@ -389,11 +389,24 @@ bool c_Solver::ParticlesMover(int cycle) {
   for (int i = 0; i < TPns; i++)  
   mem_avail = testpart[i].mover_PC_sub(grid, vct, EMf);
 #else
+#ifdef NSIGHT_PROFILING
+  mynvtxstart_("updateVelocity_np");
+#endif //NSIGHT_PROFILING 
   for (int i = 0; i < ns; i++) 
     mem_avail = part[i].updateVelocity(grid, vct, EMf);
+#ifdef NSIGHT_PROFILING
+  mynvtxstop_();
+#endif //NSIGHT_PROFILING
+
+#ifdef NSIGHT_PROFILING
+  mynvtxstart_("updateVelocity_TP");
+#endif //NSIGHT_PROFILING  
   for (int i = 0; i < TPns; i++) 
     mem_avail = testpart[i].updateVelocity(grid, vct, EMf);
-
+#ifdef NSIGHT_PROFILING
+  mynvtxstop_();
+#endif //NSIGHT_PROFILING 
+  
   #ifdef  __JDOTE_TEST__
   double totK1 = 0;
   for (int i = 0; i < ns; i++) {
@@ -405,19 +418,28 @@ bool c_Solver::ParticlesMover(int cycle) {
   EMf->testJdotE(grid, deltaK);
   #endif
 
+#ifdef NSIGHT_PROFILING
   mynvtxstart_("position_np");
+#endif //NSIGHT_PROFILING
   for (int i = 0; i < ns; i++)  {
     mem_avail = part[i].updatePosition(grid, vct, EMf);
     part[i].fixPosition();
   }
+#ifdef NSIGHT_PROFILING
   mynvtxstop_();
+#endif //NSIGHT_PROFILING 
 
+#ifdef NSIGHT_PROFILING
   mynvtxstart_("position_TP");
+#endif //NSIGHT_PROFILING 
   for (int i = 0; i < TPns; i++)  {
     mem_avail = testpart[i].updatePosition(grid, vct, EMf);
     testpart[i].fixPosition();
   }
+#ifdef NSIGHT_PROFILING
    mynvtxstop_();
+#endif //NSIGHT_PROFILING 
+   
 #endif
 
   if (mem_avail < 0) {          // not enough memory space allocated for particles: stop the simulation

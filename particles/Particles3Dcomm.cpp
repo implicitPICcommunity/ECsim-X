@@ -28,6 +28,7 @@ developers: Stefano Markidis, Giovanni Lapenta.
 #include <vector>
 #include <complex>
 
+#include "nvtx.h"
 using std::cout;
 using std::cerr;
 using std::endl;
@@ -734,6 +735,10 @@ int Particles3Dcomm::communicate(VirtualTopology3D * ptVCT) {
   npExitXright = 0, npExitXleft = 0, npExitYright = 0, npExitYleft = 0, npExitZright = 0, npExitZleft = 0, npExit = 0, rightDomain = 0;
   long long np_current = 0, nplast = nop - 1;
 
+#ifdef NSIGHT_PROFILING
+    mynvtxstart_("particleBC");
+#endif
+  
   while (np_current < nplast+1){
 
     // BC on particles
@@ -859,6 +864,10 @@ int Particles3Dcomm::communicate(VirtualTopology3D * ptVCT) {
 
   }
 
+#ifdef NSIGHT_PROFILING
+    mynvtxstop_();
+#endif
+  
   nop = nplast + 1;
   npExitingMax = 0;
   // calculate the maximum number of particles exiting from this domain

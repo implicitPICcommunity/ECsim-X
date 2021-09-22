@@ -96,6 +96,13 @@ if(GPU)
    add_definitions( -DGPU )
 endif()
 
+option(NSIGHT_PROFILING "Compile options for GPU" OFF)
+if (NSIGHT_PROFILING)
+   add_definitions( -DNSIGHT_PROFILING )
+   find_package(CUDA REQUIRED)
+   set (-cuda -acc -gpu=cc70,managed,lineinfo -Minfo=accel)
+endif()
+
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Chose the type of build, options
 are: None, Debug, Release, RelWithDebInfo, MinSizeRel" FORCE)
@@ -112,6 +119,7 @@ include_directories(
         ${HDF5_INCLUDE_DIRS}
         ${MPI_INCLUDE_PATH}
         ${PETSC_INCLUDES}
+	${CUDA_INCLUDES}
 )
 
 link_directories(
@@ -137,4 +145,5 @@ target_link_libraries(
          ECsimlib
          ${H5HUTIO_LIBRARIES}
          ${PETSC_LIBRARIES}
+	 ${CUDA_nvToolsExt_LIBRARY}
 )

@@ -13,14 +13,11 @@ project(ECsim)
 find_package(HDF5 COMPONENTS HL C REQUIRED)
 find_package(MPI REQUIRED)
 
-#find_package(CUDA_NVTX_LIBRARY REQUIRED)
 # Find PETSc
 #
 list (APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake-modules")
 
-## NSIGHTS
-##set (CMAKE_CXX_FLAGS "-cuda")
-set (CMAKE_CXX_FLAGS "-cuda -acc -gpu=cc70,managed,lineinfo -Minfo=accel")
+
 
 #-Minfo=accel: info on compilation of parallel region
 #lineinfo: compare GPU assembly and code-- profiling, kernel levle
@@ -55,6 +52,7 @@ if(NOT CMAKE_BUILD_TYPE)
 are: None, Debug, Release, RelWithDebInfo, MinSizeRel" FORCE)
 endif()
 
+
 #
 # Include sub-directories
 #
@@ -66,7 +64,7 @@ include_directories(
     ${MPI_INCLUDE_PATH}
     ${HDF5_INCLUDE_DIRS}
     ${PETSC_INCLUDES}
-    /home/sw-hackathons/opt/spack/linux-ubuntu18.04-broadwell/gcc-7.5.0/cuda-11.2.2-jfcwf7pdscjm6ep3t4i4fhrrqrinzu6u/include
+    ${CUDA_INCLUDE_DIRS}
 )
 
 add_definitions(
@@ -94,7 +92,7 @@ target_link_libraries(
     ${HDF5_LIBRARIES}
     ${HDF5_HL_LIBRARIES}
     ${PETSC_LIBRARIES}
-    /home/sw-hackathons/opt/spack/linux-ubuntu18.04-broadwell/gcc-7.5.0/cuda-11.2.2-jfcwf7pdscjm6ep3t4i4fhrrqrinzu6u/lib64/libnvToolsExt.so
+    ${CUDA_nvToolsExt_LIBRARY}
 )
 
 #

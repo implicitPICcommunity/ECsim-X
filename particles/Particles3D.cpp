@@ -1757,8 +1757,10 @@ int Particles3D::updateVelocity(Grid * grid, VirtualTopology3D * vct, Field * EM
 
 int Particles3D::updatePosition(Grid * grid, VirtualTopology3D * vct, Field * EMf) {
 
-
+#ifdef NSIGHT_PROFILING
   mynvtxstart_("updatePositionloop");
+#endif //NSIGHT_PROFILING
+  
 #pragma omp parallel for
 #pragma simd                    // this just slows things down (why?
   
@@ -1796,7 +1798,9 @@ int Particles3D::updatePosition(Grid * grid, VirtualTopology3D * vct, Field * EM
      w[rest] = wp;
   }                             // END OF ALL THE PARTICLES
 
+#ifdef NSIGHT_PROFILING
   mynvtxstop_();
+#endif //NSIGHT_PROFILING
   
   fixPosition();
 
@@ -3008,7 +3012,9 @@ void Particles3D::fixZcylindrical()
 void Particles3D::fixPosition()
 {
 
+#ifdef NSIGHT_PROFILING
   mynvtxstart_("fixPosition");
+#endif //NSIGHT_PROFILING
   if (ndim == 1) {
     for (int i=0; i<nop; i++) {
       z[i] = 0;
@@ -3017,7 +3023,9 @@ void Particles3D::fixPosition()
   } else if (ndim == 2) {
     for (int i=0; i<nop; i++) z[i] = 0;
   }
+#ifdef NSIGHT_PROFILING
   mynvtxstop_();
+#endif //NSIGHT_PROFILING
 }
 
 

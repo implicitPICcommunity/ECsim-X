@@ -34,36 +34,52 @@ int main(int argc, char **argv) {
     /* 2- Calculate fields and move particles                */
     /*    Exit if there is a memory issue with the particles */
     /* ----------------------------------------------------- */
+#ifdef NSIGHT_PROFILING
     mynvtxstart_("momentGathering");
+#endif
     clocks->start(1);
     KCode.GatherMoments();
     clocks->stop(1);
+#ifdef NSIGHT_PROFILING 
     mynvtxstop_();
+#endif
 
+#ifdef NSIGHT_PROFILING	
     mynvtxstart_("fields");
+#endif
     clocks->start(2);
     KCode.CalculateField();
     clocks->stop(2);
+#ifdef NSIGHT_PROFILING
     mynvtxstop_();
+#endif
 
+#ifdef NSIGHT_PROFILING
     mynvtxstart_("particleMover");
+#endif
     clocks->start(3);
     b_err = KCode.ParticlesMover(i);
     clocks->stop(3);
+#ifdef NSIGHT_PROFILING
     mynvtxstop_();
+#endif
 
     if ( b_err) i = KCode.LastCycle() + 1;
 
     /* --------------- */
     /* 3- Output files */
     /* --------------- */
+#ifdef NSIGHT_PROFILING    
     mynvtxstart_("IO");
+#endif    
     clocks->start(4);
     KCode.WriteOutput(i);
     KCode.WriteConserved(i);
     KCode.WriteRestart(i);
     clocks->stop(4);
+#ifdef NSIGHT_PROFILING    
     mynvtxstop_();
+#endif
   }
 
 

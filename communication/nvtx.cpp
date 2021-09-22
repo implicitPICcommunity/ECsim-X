@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include "nvtx.h"
+
+#ifdef GPU
+#ifdef NSIGHT_PROFILING
 void mynvtxstart_(const char *name) {
    int hash = 0;
    int color_id = 0x00C0C0C0; // very simple, all NVTX has same color (silver)
@@ -20,4 +23,5 @@ void mynvtxstop_() {
 
 }
 
-
+#endif
+#endif
