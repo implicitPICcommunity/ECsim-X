@@ -1559,8 +1559,8 @@ void Particles3D::get_Ethl_1Dacc(const double weights[2][2][2], int ix, int iy, 
 // Particles mover for the ECIMM algorithm
 int Particles3D::updateVelocity(Grid * grid, VirtualTopology3D * vct, Field * EMf) {
   if (vct->getCartesian_rank() == 0) {
-    cout << "*** ECSIM MOVER species " << "***" << endl;
-    //cout << "*** ECSIM MOVER species " << ns << "( " << nop << " part ) ***"<< endl;
+    //cout << "*** ECSIM MOVER species " << "***" << endl;
+    cout << "*** ECSIM updateVelocity species " << ns << "( " << nop << " part ) ***"<< endl;
   }
   double start_mover_PC = MPI_Wtime();
   
@@ -1757,14 +1757,22 @@ int Particles3D::updateVelocity(Grid * grid, VirtualTopology3D * vct, Field * EM
 
 int Particles3D::updatePosition(Grid * grid, VirtualTopology3D * vct, Field * EMf) {
 
+ if (vct->getCartesian_rank() == 0) {
+    //cout << "*** ECSIM MOVER species " << "***" << endl;
+    cout << "*** ECSIM updatePosition species " << ns << "( " << nop << " part ) ***"<< endl;
+  }
+ 
 #ifdef NSIGHT_PROFILING
   mynvtxstart_("updatePositionloop");
 #endif //NSIGHT_PROFILING
   
-#pragma omp parallel for
-#pragma simd                    // this just slows things down (why?
-  
-  for (long long rest = 0; rest < nop; rest++) {
+//#pragma omp parallel for
+//#pragma simd                    // this just slows things down (why?
+
+//#ifdef gpu
+//   #pragma acc parallel loop gang worker vector //create(xp,yp,zp,up,vp,wp) copy(x[0:nop],y[0:nop],z[0:nop],up[0:nop],vp[0:nop],wp[0:nop])  
+//#endif
+for (long long rest = 0; rest < nop; rest++) {
     double xp = x[rest];
     double yp = y[rest];
     double zp = z[rest];
@@ -1802,6 +1810,11 @@ int Particles3D::updatePosition(Grid * grid, VirtualTopology3D * vct, Field * EM
   mynvtxstop_();
 #endif //NSIGHT_PROFILING
   
+  if (vct->getCartesian_rank() == 0) {
+    //cout << "*** ECSIM MOVER species " << "***" << endl;
+    cout << "*** ECSIM fix Position " << ns << "( " << nop << " part ) ***"<< endl;
+  }
+ 
   fixPosition();
 
 
@@ -3016,12 +3029,18 @@ void Particles3D::fixPosition()
   mynvtxstart_("fixPosition");
 #endif //NSIGHT_PROFILING
   if (ndim == 1) {
-    for (int i=0; i<nop; i++) {
-      z[i] = 0;
-      y[i] = 0;
+//#ifdef GPU
+#pragma acc parallel loop copy(this->z[0:nop]) copy(this->y[0:nop])
+//#endif 
+    for (long long i=0; i<nop; i++) {
+      this->z[i] = 0;
+      this->y[i] = 0;
     }
   } else if (ndim == 2) {
-    for (int i=0; i<nop; i++) z[i] = 0;
+//#ifdef GPU
+#pragma acc parallel loop copy(this->z[0:nop])
+//#endif    
+    for (long long i=0; i<nop; i++) this->z[i] = 0;
   }
 #ifdef NSIGHT_PROFILING
   mynvtxstop_();
