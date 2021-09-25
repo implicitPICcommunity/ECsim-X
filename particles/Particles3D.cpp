@@ -1581,15 +1581,29 @@ int Particles3D::updateVelocity(Grid * grid, VirtualTopology3D * vct, Field * EM
   double ***Bz_ext = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBz_ext());
   double Fext = EMf->getFext();
 
+#ifdef GPU
+  Bx_1D = Bx[0][0];
+  By_1D = By[0][0];
+  Bz_1D = Bz[0][0];
+  Bx_ext_1D = Bx_ext[0][0];
+  By_ext_1D = By_ext[0][0];
+  Bz_ext_1D = Bz_ext[0][0];
 
-
+  Exth_1D = Exth[0][0];
+  Eyth_1D = Eyth[0][0];
+  Ezth_1D = Ezth[0][0];
+  Ex_ext_1D = Ex_ext[0][0];
+  Ey_ext_1D = Ey_ext[0][0];
+  Ez_ext_1D = Ez_ext[0][0];
+#endif
   
   const double inv_dx = 1.0 / dx, inv_dy = 1.0 / dy, inv_dz = 1.0 / dz;
   // don't bother trying to push any particles simultaneously;
   // MIC already does vectorization automatically, and trying
   // to do it by hand only hurts performance.
-#pragma omp parallel for
-#pragma simd                    // this just slows things down (why?)
+  //#pragma omp parallel for
+  //#pragma simd                    // this just slows things down (why?)
+#pragma parallel loop //copy(u[0:nop], v[0:nop], w[0:nop], Bx_1D[0:nxn*nyn*nzn], By_1D[0:nxn*nyn*nzn], Bz_1D[0:nxn*nyn*nzn], Bx_ext_1D[0:nxn*nyn*nzn], By_ext_1D[0:nxn*nyn*nzn], Bz_ext_1D[0:nxn*nyn*nzn])  
   for (long long rest = 0; rest < nop; rest++) {
     // Copy the velocities
     double up = u[rest];
@@ -1609,13 +1623,8 @@ int Particles3D::updateVelocity(Grid * grid, VirtualTopology3D * vct, Field * EM
     int ix = 2 + int (ixd);
     int iy = 2 + int (iyd);
     int iz = 2 + int (izd);
-    double xi[2], eta[2], zeta[2];
-    xi  [0] = xp - grid->getXN(ix-1,iy  ,iz  );
-    eta [0] = yp - grid->getYN(ix  ,iy-1,iz  );
-    zeta[0] = zp - grid->getZN(ix  ,iy  ,iz-1);
-    xi  [1] = grid->getXN(ix,iy,iz) - xp;
-    eta [1] = grid->getYN(ix,iy,iz) - yp;
-    zeta[1] = grid->getZN(ix,iy,iz) - zp;
+
+    
 
     double Exl = 0.0;
     double Eyl = 0.0;
@@ -1624,99 +1633,106 @@ int Particles3D::updateVelocity(Grid * grid, VirtualTopology3D * vct, Field * EM
     double Byl = 0.0;
     double Bzl = 0.0;
 
-    get_weights(grid, xp, yp, zp, ix, iy, iz, weights);
+
     
 #ifdef GPU
-    get_Bl_1Dacc(weights, ix, iy, iz, Bxl, Byl, Bzl, Bx, By, Bz, Bx_ext, By_ext, Bz_ext, Fext);
-    get_Ethl_1Dacc(weights, ix, iy, iz, Exl, Eyl, Ezl, Exth, Eyth, Ezth, Ex_ext, Ey_ext, Ez_ext, Fext);
+
+    double xi_0=xp - grid->getXN(ix-1,iy  ,iz  );
+    double xi_1=grid->getXN(ix,iy,iz) - xp;
+    double eta_0=yp - grid->getYN(ix  ,iy-1,iz  );
+    double eta_1=grid->getYN(ix,iy,iz) - yp;
+    double zeta_0=zp - grid->getZN(ix  ,iy  ,iz-1);
+    double zeta_1=grid->getZN(ix,iy,iz) - zp;
+
+    double weight000 = xi_0 * eta_0 * zeta_0 * invVOL;
+    double weight001 = xi_0 * eta_0 * zeta_1 * invVOL;
+    double weight010 = xi_0 * eta_1 * zeta_0 * invVOL;
+    double weight011 = xi_0 * eta_1 * zeta_1 * invVOL;
+    double weight100 = xi_1 * eta_0 * zeta_0 * invVOL;  
+    double weight101 = xi_1 * eta_0 * zeta_1 * invVOL;
+    double weight110 = xi_1 * eta_1 * zeta_0 * invVOL;   
+    double weight111 = xi_1 * eta_1 * zeta_1 * invVOL;
+    
+    //get_Bl_1Dacc(weights, ix, iy, iz, Bxl, Byl, Bzl, Bx, By, Bz, Bx_ext, By_ext, Bz_ext, Fext);
+    //get_Ethl_1Dacc(weights, ix, iy, iz, Exl, Eyl, Ezl, Exth, Eyth, Ezth, Ex_ext, Ey_ext, Ez_ext, Fext);
+
+    int INDEX000 = (ix -0) * nzn * nyn + (iy - 0) * nzn + (iz - 0);
+    int INDEX001 = (ix -0) * nzn * nyn + (iy - 0) * nzn + (iz - 1);
+    int INDEX010 = (ix -0) * nzn * nyn + (iy - 1) * nzn + (iz - 0);
+    int INDEX011 = (ix -0) * nzn * nyn + (iy - 1) * nzn + (iz - 1);
+    int INDEX100 = (ix -1) * nzn * nyn + (iy - 0) * nzn + (iz - 0);
+    int INDEX101 = (ix -1) * nzn * nyn + (iy - 0) * nzn + (iz - 1);
+    int INDEX110 = (ix -1) * nzn * nyn + (iy - 1) * nzn + (iz - 0);
+    int INDEX111 = (ix -1) * nzn * nyn + (iy - 1) * nzn + (iz - 1);
+
+    Bxl += weight000 * (Bx_1D[INDEX000] + Fext*Bx_ext_1D[INDEX000]);
+    Bxl += weight001 * (Bx_1D[INDEX001] + Fext*Bx_ext_1D[INDEX001]);
+    Bxl += weight010 * (Bx_1D[INDEX010] + Fext*Bx_ext_1D[INDEX010]);
+    Bxl += weight011 * (Bx_1D[INDEX011] + Fext*Bx_ext_1D[INDEX011]);
+    Bxl += weight100 * (Bx_1D[INDEX100] + Fext*Bx_ext_1D[INDEX100]);
+    Bxl += weight101 * (Bx_1D[INDEX101] + Fext*Bx_ext_1D[INDEX101]);
+    Bxl += weight110 * (Bx_1D[INDEX110] + Fext*Bx_ext_1D[INDEX110]);
+    Bxl += weight111 * (Bx_1D[INDEX111] + Fext*Bx_ext_1D[INDEX111]);
+
+    Byl += weight000 * (By_1D[INDEX000] + Fext*By_ext_1D[INDEX000]);
+    Byl += weight001 * (By_1D[INDEX001] + Fext*By_ext_1D[INDEX001]);
+    Byl += weight010 * (By_1D[INDEX010] + Fext*By_ext_1D[INDEX010]);
+    Byl += weight011 * (By_1D[INDEX011] + Fext*By_ext_1D[INDEX011]);
+    Byl += weight100 * (By_1D[INDEX100] + Fext*By_ext_1D[INDEX100]);
+    Byl += weight101 * (By_1D[INDEX101] + Fext*By_ext_1D[INDEX101]);
+    Byl += weight110 * (By_1D[INDEX110] + Fext*By_ext_1D[INDEX110]);
+    Byl += weight111 * (By_1D[INDEX111] + Fext*By_ext_1D[INDEX111]);
+
+    Bzl += weight000 * (Bz_1D[INDEX000] + Fext*Bz_ext_1D[INDEX000]);
+    Bzl += weight001 * (Bz_1D[INDEX001] + Fext*Bz_ext_1D[INDEX001]);
+    Bzl += weight010 * (Bz_1D[INDEX010] + Fext*Bz_ext_1D[INDEX010]);
+    Bzl += weight011 * (Bz_1D[INDEX011] + Fext*Bz_ext_1D[INDEX011]);
+    Bzl += weight100 * (Bz_1D[INDEX100] + Fext*Bz_ext_1D[INDEX100]);
+    Bzl += weight101 * (Bz_1D[INDEX101] + Fext*Bz_ext_1D[INDEX101]);
+    Bzl += weight110 * (Bz_1D[INDEX110] + Fext*Bz_ext_1D[INDEX110]);
+    Bzl += weight111 * (Bz_1D[INDEX111] + Fext*Bz_ext_1D[INDEX111]);
+
+    Exl += weight000 * (Exth_1D[INDEX000] + Fext*Ex_ext_1D[INDEX000]);
+    Exl += weight001 * (Exth_1D[INDEX001] + Fext*Ex_ext_1D[INDEX001]);
+    Exl += weight010 * (Exth_1D[INDEX010] + Fext*Ex_ext_1D[INDEX010]);
+    Exl += weight011 * (Exth_1D[INDEX011] + Fext*Ex_ext_1D[INDEX011]);
+    Exl += weight100 * (Exth_1D[INDEX100] + Fext*Ex_ext_1D[INDEX100]);
+    Exl += weight101 * (Exth_1D[INDEX101] + Fext*Ex_ext_1D[INDEX101]);
+    Exl += weight110 * (Exth_1D[INDEX110] + Fext*Ex_ext_1D[INDEX110]);
+    Exl += weight111 * (Exth_1D[INDEX111] + Fext*Ex_ext_1D[INDEX111]);
+
+    Eyl += weight000 * (Eyth_1D[INDEX000] + Fext*Ey_ext_1D[INDEX000]);
+    Eyl += weight001 * (Eyth_1D[INDEX001] + Fext*Ey_ext_1D[INDEX001]);
+    Eyl += weight010 * (Eyth_1D[INDEX010] + Fext*Ey_ext_1D[INDEX010]);
+    Eyl += weight011 * (Eyth_1D[INDEX011] + Fext*Ey_ext_1D[INDEX011]);
+    Eyl += weight100 * (Eyth_1D[INDEX100] + Fext*Ey_ext_1D[INDEX100]);
+    Eyl += weight101 * (Eyth_1D[INDEX101] + Fext*Ey_ext_1D[INDEX101]);
+    Eyl += weight110 * (Eyth_1D[INDEX110] + Fext*Ey_ext_1D[INDEX110]);
+    Eyl += weight111 * (Eyth_1D[INDEX111] + Fext*Ey_ext_1D[INDEX111]);
+
+    Ezl += weight000 * (Ezth_1D[INDEX000] + Fext*Ez_ext_1D[INDEX000]);
+    Ezl += weight001 * (Ezth_1D[INDEX001] + Fext*Ez_ext_1D[INDEX001]);
+    Ezl += weight010 * (Ezth_1D[INDEX010] + Fext*Ez_ext_1D[INDEX010]);
+    Ezl += weight011 * (Ezth_1D[INDEX011] + Fext*Ez_ext_1D[INDEX011]);
+    Ezl += weight100 * (Ezth_1D[INDEX100] + Fext*Ez_ext_1D[INDEX100]);
+    Ezl += weight101 * (Ezth_1D[INDEX101] + Fext*Ez_ext_1D[INDEX101]);
+    Ezl += weight110 * (Ezth_1D[INDEX110] + Fext*Ez_ext_1D[INDEX110]);
+    Ezl += weight111 * (Ezth_1D[INDEX111] + Fext*Ez_ext_1D[INDEX111]);
+    
 #else
+    double xi[2], eta[2], zeta[2];
+    xi  [0] = xp - grid->getXN(ix-1,iy  ,iz  );
+    eta [0] = yp - grid->getYN(ix  ,iy-1,iz  );
+    zeta[0] = zp - grid->getZN(ix  ,iy  ,iz-1);
+    xi  [1] = grid->getXN(ix,iy,iz) - xp;
+    eta [1] = grid->getYN(ix,iy,iz) - yp;
+    zeta[1] = grid->getZN(ix,iy,iz) - zp;
+    
+    get_weights(grid, xp, yp, zp, ix, iy, iz, weights);
     get_Bl(weights, ix, iy, iz, Bxl, Byl, Bzl, Bx, By, Bz, Bx_ext, By_ext, Bz_ext, Fext);
     get_Ethl(weights, ix, iy, iz, Exl, Eyl, Ezl, Exth, Eyth, Ezth, Ex_ext, Ey_ext, Ez_ext, Fext);
 #endif
 
-    // MIC refuses to vectorize this ...
-    // 
-    // double weight[2][2][2];
-    // for (int ii = 0; ii < 2; ii++)
-    // for (int jj = 0; jj < 2; jj++)
-    // for (int kk = 0; kk < 2; kk++)
-    // weight[ii][jj][kk] = xi[ii] * eta[jj] * zeta[kk] * invVOL;
-    // for (int ii = 0; ii < 2; ii++)
-    // for (int jj = 0; jj < 2; jj++)
-    // for (int kk = 0; kk < 2; kk++) {
-    // const double Exlp = weight[ii][jj][kk] * Ex.get(ix - ii, iy - jj, iz - kk);
-    // const double Eylp = weight[ii][jj][kk] * Ey.get(ix - ii, iy - jj, iz - kk);
-    // const double Ezlp = weight[ii][jj][kk] * Ez.get(ix - ii, iy - jj, iz - kk);
-    // const double Bxlp = weight[ii][jj][kk] * Bx.get(ix - ii, iy - jj, iz - kk);
-    // const double Bylp = weight[ii][jj][kk] * By.get(ix - ii, iy - jj, iz - kk);
-    // const double Bzlp = weight[ii][jj][kk] * Bz.get(ix - ii, iy - jj, iz - kk);
-    // Exl += Exlp;
-    // Eyl += Eylp;
-    // ... so we expand things out instead
-    // 
-    /* const double weight000 = xi[0] * eta[0] * zeta[0] * invVOL;
-    const double weight001 = xi[0] * eta[0] * zeta[1] * invVOL;
-    const double weight010 = xi[0] * eta[1] * zeta[0] * invVOL;
-    const double weight011 = xi[0] * eta[1] * zeta[1] * invVOL;
-    const double weight100 = xi[1] * eta[0] * zeta[0] * invVOL;
-    const double weight101 = xi[1] * eta[0] * zeta[1] * invVOL;
-    const double weight110 = xi[1] * eta[1] * zeta[0] * invVOL;
-    const double weight111 = xi[1] * eta[1] * zeta[1] * invVOL;
-    // 
-    Bxl += weight000 * (Bx[ix][iy][iz]             + Fext*Bx_ext[ix][iy][iz]);
-    Bxl += weight001 * (Bx[ix][iy][iz - 1]         + Fext*Bx_ext[ix][iy][iz-1]);
-    Bxl += weight010 * (Bx[ix][iy - 1][iz]         + Fext*Bx_ext[ix][iy-1][iz]);
-    Bxl += weight011 * (Bx[ix][iy - 1][iz - 1]     + Fext*Bx_ext[ix][iy-1][iz-1]);
-    Bxl += weight100 * (Bx[ix - 1][iy][iz]         + Fext*Bx_ext[ix-1][iy][iz]);
-    Bxl += weight101 * (Bx[ix - 1][iy][iz - 1]     + Fext*Bx_ext[ix-1][iy][iz-1]);
-    Bxl += weight110 * (Bx[ix - 1][iy - 1][iz]     + Fext*Bx_ext[ix-1][iy-1][iz]);
-    Bxl += weight111 * (Bx[ix - 1][iy - 1][iz - 1] + Fext*Bx_ext[ix-1][iy-1][iz-1]);
-    // 
-    Byl += weight000 * (By[ix][iy][iz]             + Fext*By_ext[ix][iy][iz]);
-    Byl += weight001 * (By[ix][iy][iz - 1]         + Fext*By_ext[ix][iy][iz-1]);
-    Byl += weight010 * (By[ix][iy - 1][iz]         + Fext*By_ext[ix][iy-1][iz]);
-    Byl += weight011 * (By[ix][iy - 1][iz - 1]     + Fext*By_ext[ix][iy-1][iz-1]);
-    Byl += weight100 * (By[ix - 1][iy][iz]         + Fext*By_ext[ix-1][iy][iz]);
-    Byl += weight101 * (By[ix - 1][iy][iz - 1]     + Fext*By_ext[ix-1][iy][iz-1]);
-    Byl += weight110 * (By[ix - 1][iy - 1][iz]     + Fext*By_ext[ix-1][iy-1][iz]);
-    Byl += weight111 * (By[ix - 1][iy - 1][iz - 1] + Fext*By_ext[ix-1][iy-1][iz-1]);
-    // 
-    Bzl += weight000 * (Bz[ix][iy][iz]             + Fext*Bz_ext[ix][iy][iz]);
-    Bzl += weight001 * (Bz[ix][iy][iz - 1]         + Fext*Bz_ext[ix][iy][iz-1]);
-    Bzl += weight010 * (Bz[ix][iy - 1][iz]         + Fext*Bz_ext[ix][iy-1][iz]);
-    Bzl += weight011 * (Bz[ix][iy - 1][iz - 1]     + Fext*Bz_ext[ix][iy-1][iz-1]);
-    Bzl += weight100 * (Bz[ix - 1][iy][iz]         + Fext*Bz_ext[ix-1][iy][iz]);
-    Bzl += weight101 * (Bz[ix - 1][iy][iz - 1]     + Fext*Bz_ext[ix-1][iy][iz-1]);
-    Bzl += weight110 * (Bz[ix - 1][iy - 1][iz]     + Fext*Bz_ext[ix-1][iy-1][iz]);
-    Bzl += weight111 * (Bz[ix - 1][iy - 1][iz - 1] + Fext*Bz_ext[ix-1][iy-1][iz-1]);
-    // 
-    Exl += weight000 * (Exth[ix][iy][iz]             + Fext*Ex_ext[ix][iy][iz]);
-    Exl += weight001 * (Exth[ix][iy][iz - 1]         + Fext*Ex_ext[ix][iy][iz - 1]);
-    Exl += weight010 * (Exth[ix][iy - 1][iz]         + Fext*Ex_ext[ix][iy - 1][iz]);
-    Exl += weight011 * (Exth[ix][iy - 1][iz - 1]     + Fext*Ex_ext[ix][iy - 1][iz - 1]);
-    Exl += weight100 * (Exth[ix - 1][iy][iz]         + Fext*Ex_ext[ix - 1][iy][iz]);
-    Exl += weight101 * (Exth[ix - 1][iy][iz - 1]     + Fext*Ex_ext[ix - 1][iy][iz - 1]);
-    Exl += weight110 * (Exth[ix - 1][iy - 1][iz]     + Fext*Ex_ext[ix - 1][iy - 1][iz]);
-    Exl += weight111 * (Exth[ix - 1][iy - 1][iz - 1] + Fext*Ex_ext[ix - 1][iy - 1][iz - 1]);
-    //                                                                                    
-    Eyl += weight000 * (Eyth[ix][iy][iz]             + Fext*Ey_ext[ix][iy][iz]);
-    Eyl += weight001 * (Eyth[ix][iy][iz - 1]         + Fext*Ey_ext[ix][iy][iz - 1]);
-    Eyl += weight010 * (Eyth[ix][iy - 1][iz]         + Fext*Ey_ext[ix][iy - 1][iz]);
-    Eyl += weight011 * (Eyth[ix][iy - 1][iz - 1]     + Fext*Ey_ext[ix][iy - 1][iz - 1]);
-    Eyl += weight100 * (Eyth[ix - 1][iy][iz]         + Fext*Ey_ext[ix - 1][iy][iz]);
-    Eyl += weight101 * (Eyth[ix - 1][iy][iz - 1]     + Fext*Ey_ext[ix - 1][iy][iz - 1]);
-    Eyl += weight110 * (Eyth[ix - 1][iy - 1][iz]     + Fext*Ey_ext[ix - 1][iy - 1][iz]);
-    Eyl += weight111 * (Eyth[ix - 1][iy - 1][iz - 1] + Fext*Ey_ext[ix - 1][iy - 1][iz - 1]);
-    //                                                                                    
-    Ezl += weight000 * (Ezth[ix][iy][iz]             + Fext*Ez_ext[ix][iy][iz]);
-    Ezl += weight001 * (Ezth[ix][iy][iz - 1]         + Fext*Ez_ext[ix][iy][iz - 1]);
-    Ezl += weight010 * (Ezth[ix][iy - 1][iz]         + Fext*Ez_ext[ix][iy - 1][iz]);
-    Ezl += weight011 * (Ezth[ix][iy - 1][iz - 1]     + Fext*Ez_ext[ix][iy - 1][iz - 1]);
-    Ezl += weight100 * (Ezth[ix - 1][iy][iz]         + Fext*Ez_ext[ix - 1][iy][iz]);
-    Ezl += weight101 * (Ezth[ix - 1][iy][iz - 1]     + Fext*Ez_ext[ix - 1][iy][iz - 1]);
-    Ezl += weight110 * (Ezth[ix - 1][iy - 1][iz]     + Fext*Ez_ext[ix - 1][iy - 1][iz]);
-    Ezl += weight111 * (Ezth[ix - 1][iy - 1][iz - 1] + Fext*Ez_ext[ix - 1][iy - 1][iz - 1]);
-    */
 
     // 
     // End of interpolation
@@ -1772,6 +1788,8 @@ int Particles3D::updatePosition(Grid * grid, VirtualTopology3D * vct, Field * EM
 //#ifdef gpu
 //   #pragma acc parallel loop gang worker vector //create(xp,yp,zp,up,vp,wp) copy(x[0:nop],y[0:nop],z[0:nop],up[0:nop],vp[0:nop],wp[0:nop])  
 //#endif
+
+#pragma acc parallel loop copy(x[0:nop],y[0:nop],z[0:nop],up[0:nop],vp[0:nop],wp[0:nop])   
 for (long long rest = 0; rest < nop; rest++) {
     double xp = x[rest];
     double yp = y[rest];
@@ -3030,17 +3048,18 @@ void Particles3D::fixPosition()
 #endif //NSIGHT_PROFILING
   if (ndim == 1) {
 //#ifdef GPU
-#pragma acc parallel loop copy(this->z[0:nop]) copy(this->y[0:nop])
+///#pragma acc parallel loop copy(this->z[0:nop]) copy(this->y[0:nop])
+#pragma acc parallel loop //copyout(z[0:nop]) copyout(y[0:nop]) 
 //#endif 
     for (long long i=0; i<nop; i++) {
-      this->z[i] = 0;
-      this->y[i] = 0;
+      z[i] = 0;
+      y[i] = 0;
     }
   } else if (ndim == 2) {
 //#ifdef GPU
-#pragma acc parallel loop copy(this->z[0:nop])
+#pragma acc parallel loop //copyout(z[0:nop])
 //#endif    
-    for (long long i=0; i<nop; i++) this->z[i] = 0;
+    for (long long i=0; i<nop; i++) z[i] = 0;
   }
 #ifdef NSIGHT_PROFILING
   mynvtxstop_();
