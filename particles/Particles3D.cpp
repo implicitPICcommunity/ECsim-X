@@ -1601,9 +1601,9 @@ int Particles3D::updateVelocity(Grid * grid, VirtualTopology3D * vct, Field * EM
   // don't bother trying to push any particles simultaneously;
   // MIC already does vectorization automatically, and trying
   // to do it by hand only hurts performance.
-  //#pragma omp parallel for
-  //#pragma simd                    // this just slows things down (why?)
-#pragma parallel loop //copy(u[0:nop], v[0:nop], w[0:nop], Bx_1D[0:nxn*nyn*nzn], By_1D[0:nxn*nyn*nzn], Bz_1D[0:nxn*nyn*nzn], Bx_ext_1D[0:nxn*nyn*nzn], By_ext_1D[0:nxn*nyn*nzn], Bz_ext_1D[0:nxn*nyn*nzn])  
+
+
+// #pragma acc parallel loop copy(u[0:nop], v[0:nop], w[0:nop], Exth_1D[0:nxn*nyn*nzn], Eyth_1D[0:nxn*nyn*nzn], Ezth_1D[0:nxn*nyn*nzn], Ex_ext_1D[0:nxn*nyn*nzn], Ey_ext_1D[0:nxn*nyn*nzn], Ez_ext_1D[0:nxn*nyn*nzn], Bx_1D[0:nxn*nyn*nzn], By_1D[0:nxn*nyn*nzn], Bz_1D[0:nxn*nyn*nzn], Bx_ext_1D[0:nxn*nyn*nzn], By_ext_1D[0:nxn*nyn*nzn], Bz_ext_1D[0:nxn*nyn*nzn])  
   for (long long rest = 0; rest < nop; rest++) {
     // Copy the velocities
     double up = u[rest];
@@ -1781,15 +1781,8 @@ int Particles3D::updatePosition(Grid * grid, VirtualTopology3D * vct, Field * EM
 #ifdef NSIGHT_PROFILING
   mynvtxstart_("updatePositionloop");
 #endif //NSIGHT_PROFILING
-  
-//#pragma omp parallel for
-//#pragma simd                    // this just slows things down (why?
 
-//#ifdef gpu
-//   #pragma acc parallel loop gang worker vector //create(xp,yp,zp,up,vp,wp) copy(x[0:nop],y[0:nop],z[0:nop],up[0:nop],vp[0:nop],wp[0:nop])  
-//#endif
-
-#pragma acc parallel loop copy(x[0:nop],y[0:nop],z[0:nop],up[0:nop],vp[0:nop],wp[0:nop])   
+// #pragma acc parallel loop copy(x[0:nop],y[0:nop],z[0:nop],up[0:nop],vp[0:nop],wp[0:nop])   
 for (long long rest = 0; rest < nop; rest++) {
     double xp = x[rest];
     double yp = y[rest];
@@ -1835,7 +1828,6 @@ for (long long rest = 0; rest < nop; rest++) {
  
   fixPosition();
 
-
   // ********************//
   // COMMUNICATION 
   // *******************//
@@ -1880,8 +1872,8 @@ int Particles3D::mover_PC_sub(Grid * grid, VirtualTopology3D * vct, Field * EMf)
   // don't bother trying to push any particles simultaneously;
   // MIC already does vectorization automatically, and trying
   // to do it by hand only hurts performance.
-//#pragma omp parallel for
-//#pragma simd                    // this just slows things down (why?)
+
+
 
   for (long long rest = 0; rest < nop; rest++) {
     // copy the particle
@@ -3047,18 +3039,16 @@ void Particles3D::fixPosition()
   mynvtxstart_("fixPosition");
 #endif //NSIGHT_PROFILING
   if (ndim == 1) {
-//#ifdef GPU
-///#pragma acc parallel loop copy(this->z[0:nop]) copy(this->y[0:nop])
-#pragma acc parallel loop //copyout(z[0:nop]) copyout(y[0:nop]) 
-//#endif 
+
+//#pragma acc parallel loop copy(y[0:nop], z[0:nop])
+
+#pragma acc parallel loop // copyout(this->y[0:nop]) copyout(this->z[0:nop])
     for (long long i=0; i<nop; i++) {
       z[i] = 0;
       y[i] = 0;
     }
-  } else if (ndim == 2) {
-//#ifdef GPU
-#pragma acc parallel loop //copyout(z[0:nop])
-//#endif    
+  } else if (ndim == 2) {	  
+#pragma acc parallel loop // copy(z[0:nop])
     for (long long i=0; i<nop; i++) z[i] = 0;
   }
 #ifdef NSIGHT_PROFILING

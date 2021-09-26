@@ -310,9 +310,15 @@ void c_Solver::GatherMoments(){
   clocks->stop(5);
   #endif
 
-  for (int i = 0; i < ns; i++)
+  for (int i = 0; i < ns; i++) {
+#ifdef NSIGHT_PROFILING
+  mynvtxstart_("ComputeMoments_1s");
+#endif //NSIGHT_PROFILING
     part[i].computeMoments(EMf, grid, vct);      // interpolate Particles to Grid(Nodes)
-
+#ifdef NSIGHT_PROFILING
+  mynvtxstop_();
+#endif //NSIGHT_PROFILING
+  }
 
   EMf->sumOverSpecies (vct);
 
@@ -343,9 +349,12 @@ void c_Solver::GatherMoments_extra() {
   
     #ifndef _CHARGE_FROM_CURRENT_
     EMf->setZeroRho();                  // set to zero the densities
-    for (int i = 0; i < ns; i++)
+
+    for (int i = 0; i < ns; i++) 
+    {
       part[i].computeCharge(EMf, grid, vct);      // interpolate Particles to Grid(Nodes)
-  
+    }
+
     EMf->communicateGhostP2G_Rho(vct);
     #endif
     
@@ -399,12 +408,12 @@ bool c_Solver::ParticlesMover(int cycle) {
 #endif //NSIGHT_PROFILING
 
 #ifdef NSIGHT_PROFILING
-  mynvtxstart_("updateVelocity_TP");
+ mynvtxstart_("updateVelocity_TP");
 #endif //NSIGHT_PROFILING  
   for (int i = 0; i < TPns; i++) 
     mem_avail = testpart[i].updateVelocity(grid, vct, EMf);
 #ifdef NSIGHT_PROFILING
-  mynvtxstop_();
+ mynvtxstop_();
 #endif //NSIGHT_PROFILING 
   
   #ifdef  __JDOTE_TEST__
