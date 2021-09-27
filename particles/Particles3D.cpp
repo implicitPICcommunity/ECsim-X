@@ -1603,7 +1603,7 @@ int Particles3D::updateVelocity(Grid * grid, VirtualTopology3D * vct, Field * EM
   // to do it by hand only hurts performance.
 
 
-// #pragma acc parallel loop copy(u[0:nop], v[0:nop], w[0:nop], Exth_1D[0:nxn*nyn*nzn], Eyth_1D[0:nxn*nyn*nzn], Ezth_1D[0:nxn*nyn*nzn], Ex_ext_1D[0:nxn*nyn*nzn], Ey_ext_1D[0:nxn*nyn*nzn], Ez_ext_1D[0:nxn*nyn*nzn], Bx_1D[0:nxn*nyn*nzn], By_1D[0:nxn*nyn*nzn], Bz_1D[0:nxn*nyn*nzn], Bx_ext_1D[0:nxn*nyn*nzn], By_ext_1D[0:nxn*nyn*nzn], Bz_ext_1D[0:nxn*nyn*nzn])  
+#pragma acc parallel loop //copy(u[0:nop], v[0:nop], w[0:nop], Exth_1D[0:nxn*nyn*nzn], Eyth_1D[0:nxn*nyn*nzn], Ezth_1D[0:nxn*nyn*nzn], Ex_ext_1D[0:nxn*nyn*nzn], Ey_ext_1D[0:nxn*nyn*nzn], Ez_ext_1D[0:nxn*nyn*nzn], Bx_1D[0:nxn*nyn*nzn], By_1D[0:nxn*nyn*nzn], Bz_1D[0:nxn*nyn*nzn], Bx_ext_1D[0:nxn*nyn*nzn], By_ext_1D[0:nxn*nyn*nzn], Bz_ext_1D[0:nxn*nyn*nzn])  
   for (long long rest = 0; rest < nop; rest++) {
     // Copy the velocities
     double up = u[rest];
@@ -1782,7 +1782,7 @@ int Particles3D::updatePosition(Grid * grid, VirtualTopology3D * vct, Field * EM
   mynvtxstart_("updatePositionloop");
 #endif //NSIGHT_PROFILING
 
-// #pragma acc parallel loop copy(x[0:nop],y[0:nop],z[0:nop],up[0:nop],vp[0:nop],wp[0:nop])   
+#pragma acc parallel loop //copy(x[0:nop],y[0:nop],z[0:nop],up[0:nop],vp[0:nop],wp[0:nop])   
 for (long long rest = 0; rest < nop; rest++) {
     double xp = x[rest];
     double yp = y[rest];

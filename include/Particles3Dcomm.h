@@ -29,6 +29,7 @@ public:
   void  allocate(bool test, int species, long long initnpmax, Collective * col, VirtualTopology3D * vct, Grid * grid);
 
   /** calculate the weights given the position of particles */
+  #pragma acc routine seq
   void calculateWeights(double weight[][2][2], double xp, double yp, double zp, int ix, int iy, int iz, Grid * grid);
   /** Compute the implicit current and the mass matrix */
   void computeMoments(Field * EMf, Grid * grid, VirtualTopology3D * vct);

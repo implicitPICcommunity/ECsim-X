@@ -327,13 +327,13 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
   double Fext      = EMf->getFext();
 
  //#pragma omp parallel
+  
   {
     //#pragma omp for
+
+    #pragma acc parallel loop
     for (register long long ip = 0; ip < nop; ip++)
     {
-/*#ifdef NSIGHT_PROFILING
-  mynvtxstart_("Preliminary_CM");
-#endif //NSIGHT_PROFILING */
 
       #ifdef __PROFILING__
       clocks->start(6);
@@ -399,11 +399,6 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       clocks->stop(6);
       #endif
 
-//####ifdef NSIGHT_PROFILING
-//  mynvtxstop_();
-//#endif //NSIGHT_PROFILING
-
-
 //     #ifdef __PROFILING__
 //     clocks->start(7);
 //     #endif
@@ -419,10 +414,7 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
 //     #endif
 
 
-/*#ifdef NSIGHT_PROFILING
-  mynvtxstart_("AddImplicitCurrentDensity");
-#endif //NSIGHT_PROFILING
-*/
+
       #ifdef __PROFILING__
       clocks->start(8);
       #endif
@@ -449,11 +441,7 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #ifdef __PROFILING__
       clocks->stop(8);
       #endif
-/*
-#ifdef NSIGHT_PROFILING
-  mynvtxstop_();
-#endif //NSIGHT_PROFILING
-*/
+
 
       #ifdef __PROFILING__
       clocks->start(9);
@@ -461,9 +449,7 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       // Mass Matrix:
       //  Each node of the cell in which the particle is:
       //
-#ifdef NSIGHT_PROFILING
-  mynvtxstart_("MassMatrix");
-#endif //NSIGHT_PROFILING
+
 
       for (int i=0; i<2; i++) 
         for (int j=0; j<2; j++) 
@@ -497,9 +483,7 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
             }
           }
 
-#ifdef NSIGHT_PROFILING
-  mynvtxstop_();
-#endif //NSIGHT_PROFILING
+
 
         #ifdef __PROFILING__
         clocks->stop(9);

@@ -680,12 +680,17 @@ void c_Solver::WriteOutput(int cycle) {
     for (int i = 0; i < ns; i++) part[i].setLagrangianFrame(false);
   }
 
-  EMf->divergenceOfE(grid, vct);
-  GatherMoments_extra();
+  //  EMf->divergenceOfE(grid, vct);
+  // GatherMoments_extra();
   
 
   if (col->getWriteMethod() == "ascii") {
     if (cycle%(col->getFieldOutputCycle())!=0) return;
+
+    // for ascii output
+    EMf->divergenceOfE(grid, vct);
+    GatherMoments_extra(); 
+
     char place[128];
     const char* dirtxt = SaveDirName.c_str();
     sprintf(place,"%s/filedsProc%02d_%06d.txt",dirtxt, myrank, cycle);
@@ -920,8 +925,14 @@ void c_Solver::WriteOutput(int cycle) {
     /* -------------------------------------------- */
     /* Parallel HDF5 output using the H5hut library */
     /* -------------------------------------------- */
-    if (col->getFieldOutputCycle() != 0) 
-      if (cycle == first_cycle || cycle%(col->getFieldOutputCycle())==0)        WriteFieldsH5hut(ns, grid, EMf,  col, vct, cycle);
+    if (col->getFieldOutputCycle() != 0){
+    EMf->divergenceOfE(grid, vct);
+    GatherMoments_extra();
+    
+      if (cycle == first_cycle || cycle%(col->getFieldOutputCycle())==0)
+	WriteFieldsH5hut(ns, grid, EMf,  col, vct, cycle);
+
+    }
 
     if (col->getParticlesOutputCycle() != 0) 
       if (cycle == first_cycle || cycle%(col->getParticlesOutputCycle())==0)    WritePartclH5hut(ns, grid, part, col, vct, cycle, false);
@@ -934,6 +945,10 @@ void c_Solver::WriteOutput(int cycle) {
     // OUTPUT to large file, called proc**
     if (col->getFieldOutputCycle() != 0) {
       if (cycle % (col->getFieldOutputCycle()) == 0 ) {
+
+	EMf->divergenceOfE(grid, vct);
+        GatherMoments_extra();
+	
         hdf5_agent.open_append(SaveDirName + "/proc" + num_proc.str() + ".hdf");
         output_mgr.output("Eall + Ball + rhos + Jsall + pressure", cycle);
         // Pressure tensor is available

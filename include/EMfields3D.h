@@ -130,10 +130,14 @@ class EMfields3D                // :public Field
     /*! add an amount of charge at cell X,Y,Z */
     void addQrem(double val, int X, int Y, int Z, int ns);
 
+#pragma acc routine seq
     void addMass(double val[3][3], int, int, int, int);
     void addMassXX(double val, int, int, int, int);
+#pragma acc routine seq
     void addJxh(double weight[][2][2], int X, int Y, int Z, int is);
+#pragma acc routine seq
     void addJyh(double weight[][2][2], int X, int Y, int Z, int is);
+#pragma acc routine seq
     void addJzh(double weight[][2][2], int X, int Y, int Z, int is);
     void addJx(double weight[][2][2], int X, int Y, int Z, int ns);
     void addJy(double weight[][2][2], int X, int Y, int Z, int ns);

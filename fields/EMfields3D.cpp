@@ -1239,6 +1239,7 @@ void EMfields3D::addJxh(double weight[][2][2], int X, int Y, int Z, int is) {
     for (int j = 0; j < 2; j++)
       for (int k = 0; k < 2; k++) {
         const double temp = weight[i][j][k];
+	#pragma acc atomic update
         Jxhs[is][X - i][Y - j][Z - k] += temp;
       }
 }
@@ -1248,6 +1249,7 @@ void EMfields3D::addJyh(double weight[][2][2], int X, int Y, int Z, int is) {
     for (int j = 0; j < 2; j++)
       for (int k = 0; k < 2; k++) {
         const double temp = weight[i][j][k];
+	#pragma	acc atomic update
         Jyhs[is][X - i][Y - j][Z - k] += temp;
       }
 }
@@ -1257,6 +1259,7 @@ void EMfields3D::addJzh(double weight[][2][2], int X, int Y, int Z, int is) {
     for (int j = 0; j < 2; j++)
       for (int k = 0; k < 2; k++) {
         const double temp = weight[i][j][k];
+	#pragma	acc atomic update
         Jzhs[is][X - i][Y - j][Z - k] += temp;
       }
 }
@@ -1313,14 +1316,24 @@ void EMfields3D::addEFz(double weight[][2][2], int X, int Y, int Z, int is) {
 
 /** add an amount of current density to mass matrix field at node X,Y */
 void EMfields3D::addMass(double val[3][3], int X, int Y, int Z, int ind) {
+
+  #pragma	acc atomic update
   Mxx[ind][X][Y][Z] += val[0][0];
+  #pragma	acc atomic update
   Mxy[ind][X][Y][Z] += val[0][1];
+  #pragma	acc atomic update
   Mxz[ind][X][Y][Z] += val[0][2];
+  #pragma	acc atomic update
   Myx[ind][X][Y][Z] += val[1][0];
+  #pragma	acc atomic update
   Myy[ind][X][Y][Z] += val[1][1];
+  #pragma	acc atomic update
   Myz[ind][X][Y][Z] += val[1][2];
+  #pragma	acc atomic update
   Mzx[ind][X][Y][Z] += val[2][0];
+  #pragma	acc atomic update
   Mzy[ind][X][Y][Z] += val[2][1];
+  #pragma	acc atomic update
   Mzz[ind][X][Y][Z] += val[2][2];
 }
 void EMfields3D::addMassXX(double val, int X, int Y, int Z, int ind) {

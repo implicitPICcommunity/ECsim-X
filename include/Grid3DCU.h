@@ -109,9 +109,13 @@ public:
   /** return dz */
   double getDZ();
 
+#pragma acc routine seq
   const double &getXN(int X, int Y, int Z) { return node_xcoord[X];}
+#pragma acc routine seq
   const double &getYN(int X, int Y, int Z) { return node_ycoord[Y];}
+#pragma acc routine seq
   const double &getZN(int X, int Y, int Z) { return node_zcoord[Z];}
+
   const double &getXC(int X, int Y, int Z) { return center_xcoord[X];}
   const double &getYC(int X, int Y, int Z) { return center_ycoord[Y];}
   const double &getZC(int X, int Y, int Z) { return center_zcoord[Z];}

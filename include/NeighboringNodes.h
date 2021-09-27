@@ -27,14 +27,17 @@ public:
      i[13] = 1; j[13] = 1; k[13] = 1;  // i+1,j+1,k+1    ->i+1,j+1,k+1
   };
 
+  #pragma acc routine seq
   int getX(int ind) { 
     if (ind <= 13) return i[ind];
     else return -i[ind-13];
   }
+  #pragma acc routine seq
   int getY(int ind) { 
     if (ind <= 13) return j[ind];
     else return -j[ind-13];
   }
+  #pragma acc routine seq
   int getZ(int ind) { 
     if (ind <= 13) return k[ind];
     else return -k[ind-13];
