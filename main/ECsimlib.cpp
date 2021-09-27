@@ -320,16 +320,32 @@ void c_Solver::GatherMoments(){
 #endif //NSIGHT_PROFILING
   }
 
+#ifdef NSIGHT_PROFILING
+  mynvtxstart_("sumOverSp");
+#endif //NSIGHT_PROFILING  
   EMf->sumOverSpecies (vct);
 
+#ifdef NSIGHT_PROFILING
+  mynvtxstop_();
+#endif //NSIGHT_PROFILING
+  
   // Communicate everything:
   #ifdef __PROFILING__
   clocks->start(10);
   #endif
+
+#ifdef NSIGHT_PROFILING
+  mynvtxstart_("communicateGhosts");
+#endif //NSIGHT_PROFILING 
   EMf->communicateGhostP2G(vct);
+
+#ifdef NSIGHT_PROFILING
+  mynvtxstop_();
+#endif //NSIGHT_PROFILING 
   #ifdef __PROFILING__
   clocks->stop(10);
   #endif
+  
 
 
   // Compute the charge density as the divergence of the current
@@ -367,6 +383,10 @@ void c_Solver::CalculateField() {
 
   if (col->getStaticField()) return;
 
+#ifdef NSIGHT_PROFILING
+  mynvtxstart_("Fields");
+#endif //NSIGHT_PROFILING   
+  
   MPI_Barrier(MPI_COMM_WORLD);
 
   // MAXWELL'S SOLVER
@@ -376,6 +396,10 @@ void c_Solver::CalculateField() {
     EMf->calculateEB(grid, vct, col);               // calculate the E field
   #endif
 
+#ifdef NSIGHT_PROFILING
+  mynvtxstop_();
+#endif //NSIGHT_PROFILING  
+    
 }
 
 bool c_Solver::ParticlesMover(int cycle) {
@@ -674,6 +698,11 @@ void c_Solver::WriteConserved(int cycle) {
 
 void c_Solver::WriteOutput(int cycle) {
 
+/*#ifdef NSIGHT_PROFILING
+  mynvtxstart_(“WriteOutput”);
+#endif*/
+
+  
   // Go to the Eulerian frame 
   if (col->getLagrangian() == 1) {
     EMf->setLagrangianFrame(vct, col, false);
@@ -683,7 +712,6 @@ void c_Solver::WriteOutput(int cycle) {
   //  EMf->divergenceOfE(grid, vct);
   // GatherMoments_extra();
   
-
   if (col->getWriteMethod() == "ascii") {
     if (cycle%(col->getFieldOutputCycle())!=0) return;
 
@@ -926,11 +954,14 @@ void c_Solver::WriteOutput(int cycle) {
     /* Parallel HDF5 output using the H5hut library */
     /* -------------------------------------------- */
     if (col->getFieldOutputCycle() != 0){
-    EMf->divergenceOfE(grid, vct);
-    GatherMoments_extra();
+
     
-      if (cycle == first_cycle || cycle%(col->getFieldOutputCycle())==0)
-	WriteFieldsH5hut(ns, grid, EMf,  col, vct, cycle);
+    if (cycle == first_cycle || cycle%(col->getFieldOutputCycle())==0){
+      EMf->divergenceOfE(grid, vct);
+      GatherMoments_extra();
+      WriteFieldsH5hut(ns, grid, EMf,  col, vct, cycle);
+
+    }
 
     }
 
@@ -969,6 +1000,10 @@ void c_Solver::WriteOutput(int cycle) {
     EMf->setLagrangianFrame(vct, col, true);
     for (int i = 0; i < ns; i++) part[i].setLagrangianFrame(true);
   }
+/*#ifdef NSIGHT_PROFILING
+  mynvtxstop_();
+#endif*/ 
+  
 }
 
 
