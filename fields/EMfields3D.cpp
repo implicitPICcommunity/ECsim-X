@@ -1062,6 +1062,27 @@ void EMfields3D::communicateGhostP2G(VirtualTopology3D * vct) {
 
   int rank = vct->getCartesian_rank();
 
+#ifdef 0 // GPU_PREFETCHING //device to host
+  // -1 device to host (otherwise it moves stuff from device to host on its own, better to prefetch
+  // only the stuff which was on device before
+  cudaMemPrefetchAsync(Jxh, sizeof(double)* nxn*nyn*nzn, cudaCpuDeviceId, 0);
+  cudaMemPrefetchAsync(Jyh, sizeof(double)* nxn*nyn*nzn, cudaCpuDeviceId, 0);
+  cudaMemPrefetchAsync(Jzh, sizeof(double)* nxn*nyn*nzn, cudaCpuDeviceId, 0);
+
+  cudaMemPrefetchAsync(Mxx, sizeof(double)* nxn*nyn*nzn, cudaCpuDeviceId, 0);
+  cudaMemPrefetchAsync(Mxy, sizeof(double)* nxn*nyn*nzn, cudaCpuDeviceId, 0);
+  cudaMemPrefetchAsync(Mxz, sizeof(double)* nxn*nyn*nzn, cudaCpuDeviceId, 0);
+  cudaMemPrefetchAsync(Myx, sizeof(double)* nxn*nyn*nzn, cudaCpuDeviceId, 0);
+  cudaMemPrefetchAsync(Myy, sizeof(double)* nxn*nyn*nzn, cudaCpuDeviceId, 0);
+  cudaMemPrefetchAsync(Myz, sizeof(double)* nxn*nyn*nzn, cudaCpuDeviceId, 0);
+  cudaMemPrefetchAsync(Mzx, sizeof(double)* nxn*nyn*nzn, cudaCpuDeviceId, 0);
+  cudaMemPrefetchAsync(Mzy, sizeof(double)* nxn*nyn*nzn, cudaCpuDeviceId, 0);
+  cudaMemPrefetchAsync(Mzz, sizeof(double)* nxn*nyn*nzn, cudaCpuDeviceId, 0);
+
+
+  cudaDeviceSynchronize(); // waits for everything on GPU to finish before proceeding
+#endif
+
   // interpolate adding common nodes among processors
   communicateInterp(nxn, nyn, nzn, Jxh, 0, 0, 0, 0, 0, 0, vct);
   communicateInterp(nxn, nyn, nzn, Jyh, 0, 0, 0, 0, 0, 0, vct);
@@ -1442,6 +1463,16 @@ void EMfields3D::setZeroMass() {
 }
 /*!SPECIES: Sum the charge density of different species on NODES */
 void EMfields3D::sumOverSpecies(VirtualTopology3D * vct) {
+
+  #ifdef  GPU_PREFETCHING //device to host                                                                                                                                 
+  // -1 device to host (otherwise it moves stuff from device to host on its own, better to prefetch                                                                          
+  // only the stuff which was on device before                                                                                                                               
+  cudaMemPrefetchAsync(Jxh, sizeof(double)* nxn*nyn*nzn, cudaCpuDeviceId, 0);
+  cudaMemPrefetchAsync(Jyh, sizeof(double)* nxn*nyn*nzn, cudaCpuDeviceId, 0);
+  cudaMemPrefetchAsync(Jzh, sizeof(double)* nxn*nyn*nzn, cudaCpuDeviceId, 0);
+
+ #endif
+ 
   for (int is = 0; is < ns; is++)
     for (register int i = 0; i < nxn; i++)
       for (register int j = 0; j < nyn; j++)

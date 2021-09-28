@@ -20,7 +20,9 @@ list (APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake-modules")
 
 ## NSIGHTS
 ##set (CMAKE_CXX_FLAGS "-cuda")
-set (CMAKE_CXX_FLAGS "-cuda -acc -gpu=cc70,managed,lineinfo -Minfo=accel")
+###set (CMAKE_CXX_FLAGS "-cuda -acc -gpu=cc70,managed,lineinfo -Minfo=accel")
+# this for compatibility with PETSc for GPU: specify CUDA version
+set (CMAKE_CXX_FLAGS "-cuda -acc -gpu=cc70,managed,lineinfo,cuda11.0 -Minfo=accel")
 
 #-Minfo=accel: info on compilation of parallel region
 #lineinfo: compare GPU assembly and code-- profiling, kernel levle

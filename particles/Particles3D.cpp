@@ -1595,7 +1595,33 @@ int Particles3D::updateVelocity(Grid * grid, VirtualTopology3D * vct, Field * EM
   Ex_ext_1D = Ex_ext[0][0];
   Ey_ext_1D = Ey_ext[0][0];
   Ez_ext_1D = Ez_ext[0][0];
+
+#ifdef GPU_PREFETCHING
+  cudaMemPrefetchAsync(u, sizeof(double)*nop, 0, 0);
+  cudaMemPrefetchAsync(v, sizeof(double)*nop, 0, 0);
+  cudaMemPrefetchAsync(w, sizeof(double)*nop, 0, 0);
+  
+  cudaMemPrefetchAsync(x, sizeof(double)*nop, 0, 0);
+  cudaMemPrefetchAsync(y, sizeof(double)*nop, 0, 0);
+  cudaMemPrefetchAsync(z, sizeof(double)*nop, 0, 0);
+  
+  cudaMemPrefetchAsync(Exth_1D, sizeof(double)*(nxn*nyn*nzn), 0, 0);
+  cudaMemPrefetchAsync(Eyth_1D, sizeof(double)*(nxn*nyn*nzn), 0, 0);
+  cudaMemPrefetchAsync(Ezth_1D, sizeof(double)*(nxn*nyn*nzn), 0, 0);
+
+  cudaMemPrefetchAsync(Ex_ext_1D, sizeof(double)*(nxn*nyn*nzn), 0, 0);
+  cudaMemPrefetchAsync(Ey_ext_1D, sizeof(double)*(nxn*nyn*nzn), 0, 0);
+  cudaMemPrefetchAsync(Ez_ext_1D, sizeof(double)*(nxn*nyn*nzn), 0, 0);
+
+  cudaMemPrefetchAsync(Bx_1D, sizeof(double)*(nxn*nyn*nzn), 0, 0);
+  cudaMemPrefetchAsync(By_1D, sizeof(double)*(nxn*nyn*nzn), 0, 0);
+  cudaMemPrefetchAsync(Bz_1D, sizeof(double)*(nxn*nyn*nzn), 0, 0);
+
+  cudaMemPrefetchAsync(Bx_ext_1D, sizeof(double)*(nxn*nyn*nzn), 0, 0);
+  cudaMemPrefetchAsync(By_ext_1D, sizeof(double)*(nxn*nyn*nzn), 0, 0);
+  cudaMemPrefetchAsync(Bz_ext_1D, sizeof(double)*(nxn*nyn*nzn), 0, 0);
 #endif
+#endif // GPU
   
   const double inv_dx = 1.0 / dx, inv_dy = 1.0 / dy, inv_dz = 1.0 / dz;
   // don't bother trying to push any particles simultaneously;
@@ -1782,6 +1808,18 @@ int Particles3D::updatePosition(Grid * grid, VirtualTopology3D * vct, Field * EM
   mynvtxstart_("updatePositionloop");
 #endif //NSIGHT_PROFILING
 
+#ifdef GPU
+#ifdef GPU_PREFETCHING
+cudaMemPrefetchAsync(x, sizeof(double)*nop, 0, 0);
+cudaMemPrefetchAsync(y, sizeof(double)*nop, 0, 0);
+cudaMemPrefetchAsync(z, sizeof(double)*nop, 0, 0);
+
+cudaMemPrefetchAsync(u, sizeof(double)*nop, 0, 0);
+cudaMemPrefetchAsync(v, sizeof(double)*nop, 0, 0);
+cudaMemPrefetchAsync(w, sizeof(double)*nop, 0, 0);
+#endif
+#endif //GPU
+ 
 #pragma acc parallel loop //copy(x[0:nop],y[0:nop],z[0:nop],up[0:nop],vp[0:nop],wp[0:nop])   
 for (long long rest = 0; rest < nop; rest++) {
     double xp = x[rest];

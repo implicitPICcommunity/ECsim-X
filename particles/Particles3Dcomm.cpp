@@ -331,6 +331,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
   {
     //#pragma omp for
 
+#ifdef GPU
+#ifdef GPU_PREFETCHING
+   cudaMemPrefetchAsync(x, sizeof(double)*nop, 0, 0);
+   cudaMemPrefetchAsync(y, sizeof(double)*nop, 0, 0);
+   cudaMemPrefetchAsync(z, sizeof(double)*nop, 0, 0);
+
+   cudaMemPrefetchAsync(u, sizeof(double)*nop, 0, 0);
+   cudaMemPrefetchAsync(v, sizeof(double)*nop, 0, 0);
+   cudaMemPrefetchAsync(w, sizeof(double)*nop, 0, 0);
+
+   cudaMemPrefetchAsync(q, sizeof(double)*nop, 0, 0);
+#endif
+#endif
     #pragma acc parallel loop
     for (register long long ip = 0; ip < nop; ip++)
     {
@@ -737,6 +750,11 @@ int Particles3Dcomm::communicate(VirtualTopology3D * ptVCT) {
   int npExitingMax;
   // variable for memory availability of space for new particles
   int avail, availALL, avail1, avail2, avail3, avail4, avail5, avail6;
+
+  #ifdef NSIGHT_PROFILING
+    mynvtxstart_("minVal");
+#endif
+    #pragma acc parallel loop
   for (int i = 0; i < buffer_size; i++) {
     b_X_RIGHT[i] = MIN_VAL;
     b_X_LEFT[i] = MIN_VAL;
@@ -745,13 +763,25 @@ int Particles3Dcomm::communicate(VirtualTopology3D * ptVCT) {
     b_Z_RIGHT[i] = MIN_VAL;
     b_Z_LEFT[i] = MIN_VAL;
   }
+
+  #ifdef NSIGHT_PROFILING
+  mynvtxstop_();
+#endif
   npExitXright = 0, npExitXleft = 0, npExitYright = 0, npExitYleft = 0, npExitZright = 0, npExitZleft = 0, npExit = 0, rightDomain = 0;
   long long np_current = 0, nplast = nop - 1;
 
 #ifdef NSIGHT_PROFILING
     mynvtxstart_("particleBC");
 #endif
-  
+
+#ifdef  GPU_PREFETCHING //device to host                                                                                                                                 
+  // -1 device to host (otherwise it moves stuff from device to host on its own, better to prefetch                                                                          
+  // only the stuff which was on device before                                                                                                                               
+    cudaMemPrefetchAsync(x, sizeof(double)* nop, cudaCpuDeviceId, 0);
+    cudaMemPrefetchAsync(y, sizeof(double)* nop, cudaCpuDeviceId, 0);
+    cudaMemPrefetchAsync(z, sizeof(double)* nop, cudaCpuDeviceId, 0);
+#endif
+    
   while (np_current < nplast+1){
 
     // BC on particles
@@ -1294,10 +1324,14 @@ double Particles3Dcomm::getKe() {
   double localKe = 0.0;
   double totalKe = 0.0;
   if (Lagrangian == 0) {
+
+    #pragma acc parallel loop reduction(+:localKe)
     for (register long long i = 0; i < nop; i++) {
       localKe += .5 * (q[i] / qom) * (u[i] * u[i] + v[i] * v[i] + w[i] * w[i]);
     }
   } else {
+
+#pragma acc parallel loop reduction(+:localKe)
     for (register long long i = 0; i < nop; i++) {
       double vx = u[i] + u_bulk;
       double vy = v[i] + v_bulk;

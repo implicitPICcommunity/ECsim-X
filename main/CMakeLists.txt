@@ -94,6 +94,11 @@ endif()
 option(GPU "Compile options for GPU" OFF)
 if(GPU)
    add_definitions( -DGPU )
+ endif()
+
+option(GPU_PREFETCHING "Prefetch memory in GPU; needs cuda" OFF)
+if(GPU_PREFETCHING)
+   add_definitions( -DGPU_PREFETCHING )
 endif()
 
 option(NSIGHT_PROFILING "Compile options for GPU" OFF)

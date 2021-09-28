@@ -484,9 +484,16 @@ bool c_Solver::ParticlesMover(int cycle) {
     return (true);              // exit from the time loop
   }
 
+#ifdef NSIGHT_PROFILING
+  mynvtxstart_("centers2nodesB");
+#endif //NSIGHT_PROFILING 
+  
   // Update the values of the magnetic field in the nodes: n+1
   EMf->centers2nodesB(vct, grid, col);
 
+  #ifdef NSIGHT_PROFILING
+   mynvtxstop_();
+#endif //NSIGHT_PROFILING   
   /*-----------------------------------*/
   /*  Update the lagrangian frame      */
   /*-----------------------------------*/
@@ -498,8 +505,16 @@ bool c_Solver::ParticlesMover(int cycle) {
   /* -------------------------------------- */
   /* Repopulate the buffer zone at the edge */
   /* -------------------------------------- */
+  #ifdef NSIGHT_PROFILING
+  mynvtxstart_("InjectBoundaryParticles");
+#endif //NSIGHT_PROFILING
+  
   InjectBoundaryParticles(cycle);
 
+  #ifdef NSIGHT_PROFILING
+   mynvtxstop_();
+#endif //NSIGHT_PROFILING
+  
   if (mem_avail < 0) {          // not enough memory space allocated for particles: stop the simulation
     if (myrank == 0) {
       cout << "*************************************************************" << endl;
