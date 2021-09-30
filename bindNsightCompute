@@ -1,0 +1,24 @@
+#!/bin/bash
+
+export LOCAL_RANK=${OMPI_COMM_WORLD_LOCAL_RANK}
+export CUDA_VISIBLE_DEVICES=${LOCAL_RANK}
+
+export TAG_TIMESTAMP=`date +"%G%m%d-%H%M%S"`
+
+## check out kernel name in NSIGHT SYS
+## only kernels (== parallel regions) can be profiled with NSIGHT COMPUTE
+## example: mpirun -np 4  --map-by ppr:4:node:PE=5 --mca btl ^openib --report-bindings ./bindNsightCompute ./ECsim inputfiles/ions_scale_TP.inp 2>&1 | tee data/output
+
+
+export KERNEL_NAME=_ZN15Particles3Dcomm22computeMoments_344_gpuEP10EMfields3DP8Grid3DCUP17VirtualTopology3D
+export LAUNCH_SKIP=1
+export LAUNCH_COUNT=1
+
+echo "[LOG] local rank $LOCAL_RANK: bind to $CUDA_VISIBLE_DEVICES"
+echo ""
+
+if [[ ${LOCAL_RANK} == 0 ]]; then
+	ncu --set full -k ${KERNEL_NAME} -o report--${KERNEL_NAME}--${TAG_TIMESTAMP} --launch-skip ${LAUNCH_SKIP} --launch-count ${LAUNCH_COUNT} --target-processes all $*
+else
+	$*
+fi
