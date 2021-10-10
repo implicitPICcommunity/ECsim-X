@@ -1255,6 +1255,73 @@ void EMfields3D::addN(double weight[][2][2], int X, int Y, int Z, int is) {
 }
 
 /** add an amount of current density to current density - direction X to current density field on the node*/
+void EMfields3D::addJxh_1Dacc(double weight_000, double weight_001, double weight_010, double weight_011, double weight_100, double weight_101, double weight_110, double weight_111, int X, int Y, int Z, int is){
+
+  #pragma acc atomic update
+  Jxhs[is][X - 0][Y - 0][Z - 0] += weight_000;
+  #pragma acc atomic update
+  Jxhs[is][X - 0][Y - 0][Z - 1] += weight_001;
+  #pragma acc atomic update
+  Jxhs[is][X - 0][Y - 1][Z - 0] += weight_010;
+  #pragma acc atomic update
+  Jxhs[is][X - 0][Y - 1][Z - 1] += weight_011;
+  #pragma acc atomic update
+  Jxhs[is][X - 1][Y - 0][Z - 0] += weight_100;
+  #pragma acc atomic update
+  Jxhs[is][X - 1][Y - 0][Z - 1] += weight_101;
+  #pragma acc atomic update
+  Jxhs[is][X - 1][Y - 1][Z - 0] += weight_110;
+  #pragma acc atomic update
+  Jxhs[is][X - 1][Y - 1][Z - 1] += weight_111;
+
+}
+
+/** add an amount of current density to current density - direction Y to current density field on the node*/
+void EMfields3D::addJyh_1Dacc(double weight_000, double weight_001, double weight_010, double weight_011, double weight_100, double weight_101, double weight_110, double weight_111, int X, int Y, int Z, int is){
+
+  #pragma acc atomic update
+  Jyhs[is][X - 0][Y - 0][Z - 0] += weight_000;
+  #pragma acc atomic update
+  Jyhs[is][X - 0][Y - 0][Z - 1] += weight_001;
+  #pragma acc atomic update
+  Jyhs[is][X - 0][Y - 1][Z - 0] += weight_010;
+  #pragma acc atomic update
+  Jyhs[is][X - 0][Y - 1][Z - 1] += weight_011;
+  #pragma acc atomic update
+  Jyhs[is][X - 1][Y - 0][Z - 0] += weight_100;
+  #pragma acc atomic update
+  Jyhs[is][X - 1][Y - 0][Z - 1] += weight_101;
+  #pragma acc atomic update
+  Jyhs[is][X - 1][Y - 1][Z - 0] += weight_110;
+  #pragma acc atomic update
+  Jyhs[is][X - 1][Y - 1][Z - 1] += weight_111;
+
+}
+
+/** add an amount of current density to current density - direction Z to current density field on the node*/
+void EMfields3D::addJzh_1Dacc(double weight_000, double weight_001, double weight_010, double weight_011, double weight_100, double weight_101, double weight_110, double weight_111, int X, int Y, int Z, int is){
+
+  #pragma acc atomic update
+  Jzhs[is][X - 0][Y - 0][Z - 0] += weight_000;
+  #pragma acc atomic update
+  Jzhs[is][X - 0][Y - 0][Z - 1] += weight_001;
+  #pragma acc atomic update
+  Jzhs[is][X - 0][Y - 1][Z - 0] += weight_010;
+  #pragma acc atomic update
+  Jzhs[is][X - 0][Y - 1][Z - 1] += weight_011;
+  #pragma acc atomic update
+  Jzhs[is][X - 1][Y - 0][Z - 0] += weight_100;
+  #pragma acc atomic update
+  Jzhs[is][X - 1][Y - 0][Z - 1] += weight_101;
+  #pragma acc atomic update
+  Jzhs[is][X - 1][Y - 1][Z - 0] += weight_110;
+  #pragma acc atomic update
+  Jzhs[is][X - 1][Y - 1][Z - 1] += weight_111;
+
+}
+
+
+/** add an amount of current density to current density - direction X to current density field on the node*/
 void EMfields3D::addJxh(double weight[][2][2], int X, int Y, int Z, int is) {
   for (int i = 0; i < 2; i++)
     for (int j = 0; j < 2; j++)

@@ -68,7 +68,8 @@ include_directories(
     ${MPI_INCLUDE_PATH}
     ${HDF5_INCLUDE_DIRS}
     ${PETSC_INCLUDES}
-    /home/sw-hackathons/opt/spack/linux-ubuntu18.04-broadwell/gcc-7.5.0/cuda-11.2.2-jfcwf7pdscjm6ep3t4i4fhrrqrinzu6u/include
+    ###/home/sw-hackathons/opt/spack/linux-ubuntu18.04-broadwell/gcc-7.5.0/cuda-11.2.2-jfcwf7pdscjm6ep3t4i4fhrrqrinzu6u/include
+    /cineca/prod/opt/compilers/cuda/11.0/none/include
 )
 
 add_definitions(
@@ -96,7 +97,9 @@ target_link_libraries(
     ${HDF5_LIBRARIES}
     ${HDF5_HL_LIBRARIES}
     ${PETSC_LIBRARIES}
-    /home/sw-hackathons/opt/spack/linux-ubuntu18.04-broadwell/gcc-7.5.0/cuda-11.2.2-jfcwf7pdscjm6ep3t4i4fhrrqrinzu6u/lib64/libnvToolsExt.so
+    ###/home/sw-hackathons/opt/spack/linux-ubuntu18.04-broadwell/gcc-7.5.0/cuda-11.2.2-jfcwf7pdscjm6ep3t4i4fhrrqrinzu6u/lib64/libnvToolsExt.so
+    /cineca/prod/opt/compilers/cuda/11.0/none/lib64/libnvToolsExt.so
+    /cineca/prod/opt/compilers/cuda/11.0/none/lib64/libcublasLt.so
 )
 
 #

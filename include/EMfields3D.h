@@ -139,6 +139,13 @@ class EMfields3D                // :public Field
     void addJyh(double weight[][2][2], int X, int Y, int Z, int is);
 #pragma acc routine seq
     void addJzh(double weight[][2][2], int X, int Y, int Z, int is);
+#pragma acc routine seq
+  void addJxh_1Dacc(double weight000, double weight001, double weight010, double weight011, double weight100, double weight101, double weight110, double weight111, int X, int Y, int Z, int is);
+#pragma acc routine seq
+  void addJyh_1Dacc(double weight000, double weight001, double weight010, double weight011, double weight100, double weight101, double weight110, double weight111, int X, int Y, int Z, int is);
+#pragma acc routine seq
+  void addJzh_1Dacc(double weight000, double weight001, double weight010, double weight011, double weight100, double weight101, double weight110, double weight111, int X, int Y, int Z, int is); 
+  
     void addJx(double weight[][2][2], int X, int Y, int Z, int ns);
     void addJy(double weight[][2][2], int X, int Y, int Z, int ns);
     void addJz(double weight[][2][2], int X, int Y, int Z, int ns);
