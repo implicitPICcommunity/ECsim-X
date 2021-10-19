@@ -1062,12 +1062,16 @@ void EMfields3D::communicateGhostP2G(VirtualTopology3D * vct) {
 
   int rank = vct->getCartesian_rank();
 
-#ifdef 0 // GPU_PREFETCHING //device to host
+#ifdef GPU_PREFETCHING //device to host
   // -1 device to host (otherwise it moves stuff from device to host on its own, better to prefetch
   // only the stuff which was on device before
   cudaMemPrefetchAsync(Jxh, sizeof(double)* nxn*nyn*nzn, cudaCpuDeviceId, 0);
   cudaMemPrefetchAsync(Jyh, sizeof(double)* nxn*nyn*nzn, cudaCpuDeviceId, 0);
   cudaMemPrefetchAsync(Jzh, sizeof(double)* nxn*nyn*nzn, cudaCpuDeviceId, 0);
+
+  cudaMemPrefetchAsync(Jxhs, sizeof(double)* nxn*nyn*nzn*ns, cudaCpuDeviceId, 0);
+  cudaMemPrefetchAsync(Jyhs, sizeof(double)* nxn*nyn*nzn*ns, cudaCpuDeviceId, 0);
+  cudaMemPrefetchAsync(Jzhs, sizeof(double)* nxn*nyn*nzn*ns, cudaCpuDeviceId, 0);
 
   cudaMemPrefetchAsync(Mxx, sizeof(double)* nxn*nyn*nzn, cudaCpuDeviceId, 0);
   cudaMemPrefetchAsync(Mxy, sizeof(double)* nxn*nyn*nzn, cudaCpuDeviceId, 0);
@@ -1240,6 +1244,8 @@ void EMfields3D::addRho(double weight[][2][2], int X, int Y, int Z, int is) {
     for (int j = 0; j < 2; j++)
       for (int k = 0; k < 2; k++) {
         const double temp = weight[i][j][k];
+
+	#pragma acc atomic update
         rhons[is][X - i][Y - j][Z - k] += temp * invVOLn[X - i][Y - j][Z - k];
       }
 }
@@ -1250,6 +1256,7 @@ void EMfields3D::addN(double weight[][2][2], int X, int Y, int Z, int is) {
     for (int j = 0; j < 2; j++)
       for (int k = 0; k < 2; k++) {
         const double temp = weight[i][j][k];
+	#pragma acc atomic update
         Nns[is][X - i][Y - j][Z - k] += temp;
       }
 }
@@ -1358,6 +1365,7 @@ void EMfields3D::addJx(double weight[][2][2], int X, int Y, int Z, int ns) {
     for (int j = 0; j < 2; j++)
       for (int k = 0; k < 2; k++) {
         const double temp = weight[i][j][k];
+	#pragma acc atomic update
         Jxs[ns][X - i][Y - j][Z - k] += temp*invVOLn[X - i][Y - j][Z - k];
       }
 }
@@ -1367,6 +1375,7 @@ void EMfields3D::addJy(double weight[][2][2], int X, int Y, int Z, int ns) {
     for (int j = 0; j < 2; j++)
       for (int k = 0; k < 2; k++) {
         const double temp = weight[i][j][k];
+	#pragma acc atomic update
         Jys[ns][X - i][Y - j][Z - k] += temp*invVOLn[X - i][Y - j][Z - k];
       }
 }
@@ -1376,6 +1385,7 @@ void EMfields3D::addJz(double weight[][2][2], int X, int Y, int Z, int ns) {
     for (int j = 0; j < 2; j++)
       for (int k = 0; k < 2; k++) {
         const double temp = weight[i][j][k];
+	#pragma acc atomic update
         Jzs[ns][X - i][Y - j][Z - k] += temp*invVOLn[X - i][Y - j][Z - k];
       }
 }
@@ -1385,6 +1395,7 @@ void EMfields3D::addEFx(double weight[][2][2], int X, int Y, int Z, int is) {
   for (int i = 0; i < 2; i++)
     for (int j = 0; j < 2; j++)
       for (int k = 0; k < 2; k++)
+	#pragma acc atomic update
         EFxs[is][X - i][Y - j][Z - k] += weight[i][j][k] * invVOLn[X - i][Y - j][Z - k];
 }
 /*! add an amount of  energy flyx to EF  - direction Y to EF density field on the node */
@@ -1392,6 +1403,7 @@ void EMfields3D::addEFy(double weight[][2][2], int X, int Y, int Z, int is) {
   for (int i = 0; i < 2; i++)
     for (int j = 0; j < 2; j++)
       for (int k = 0; k < 2; k++)
+	#pragma acc atomic update
         EFys[is][X - i][Y - j][Z - k] += weight[i][j][k] * invVOLn[X - i][Y - j][Z - k];
 }
 /*! add an amount of energy flux to EF  - direction Z to EF density field on the node */
@@ -1399,6 +1411,7 @@ void EMfields3D::addEFz(double weight[][2][2], int X, int Y, int Z, int is) {
   for (int i = 0; i < 2; i++)
     for (int j = 0; j < 2; j++)
       for (int k = 0; k < 2; k++)
+	#pragma acc atomic update
         EFzs[is][X - i][Y - j][Z - k] += weight[i][j][k] * invVOLn[X - i][Y - j][Z - k];
 }
 
@@ -1433,6 +1446,7 @@ void EMfields3D::addPxx(double weight[][2][2], int X, int Y, int Z, int is) {
   for (int i = 0; i < 2; i++)
     for (int j = 0; j < 2; j++)
       for (int k = 0; k < 2; k++)
+	#pragma acc atomic update
         pXXsn[is][X - i][Y - j][Z - k] += weight[i][j][k] * invVOLn[X - i][Y - j][Z - k];
 }
 /*! add an amount of pressure density - direction XY to current density field on the node */
@@ -1440,6 +1454,7 @@ void EMfields3D::addPxy(double weight[][2][2], int X, int Y, int Z, int is) {
   for (int i = 0; i < 2; i++)
     for (int j = 0; j < 2; j++)
       for (int k = 0; k < 2; k++)
+	#pragma acc atomic update
         pXYsn[is][X - i][Y - j][Z - k] += weight[i][j][k] * invVOLn[X - i][Y - j][Z - k];
 }
 /*! add an amount of pressure density - direction XZ to current density field on the node */
@@ -1447,6 +1462,7 @@ void EMfields3D::addPxz(double weight[][2][2], int X, int Y, int Z, int is) {
   for (int i = 0; i < 2; i++)
     for (int j = 0; j < 2; j++)
       for (int k = 0; k < 2; k++)
+	#pragma acc atomic update
         pXZsn[is][X - i][Y - j][Z - k] += weight[i][j][k] * invVOLn[X - i][Y - j][Z - k];
 }
 /*! add an amount of pressure density - direction YY to current density field on the node */
@@ -1454,6 +1470,7 @@ void EMfields3D::addPyy(double weight[][2][2], int X, int Y, int Z, int is) {
   for (int i = 0; i < 2; i++)
     for (int j = 0; j < 2; j++)
       for (int k = 0; k < 2; k++)
+	#pragma acc atomic update
         pYYsn[is][X - i][Y - j][Z - k] += weight[i][j][k] * invVOLn[X - i][Y - j][Z - k];
 }
 /*! add an amount of pressure density - direction YZ to current density field on the node */
@@ -1461,6 +1478,7 @@ void EMfields3D::addPyz(double weight[][2][2], int X, int Y, int Z, int is) {
   for (int i = 0; i < 2; i++)
     for (int j = 0; j < 2; j++)
       for (int k = 0; k < 2; k++)
+	#pragma acc atomic update
         pYZsn[is][X - i][Y - j][Z - k] += weight[i][j][k] * invVOLn[X - i][Y - j][Z - k];
 }
 /*! add an amount of pressure density - direction ZZ to current density field on the node */
@@ -1468,6 +1486,7 @@ void EMfields3D::addPzz(double weight[][2][2], int X, int Y, int Z, int is) {
   for (int i = 0; i < 2; i++)
     for (int j = 0; j < 2; j++)
       for (int k = 0; k < 2; k++)
+	#pragma acc atomic update
         pZZsn[is][X - i][Y - j][Z - k] += weight[i][j][k] * invVOLn[X - i][Y - j][Z - k];
 }
 
@@ -1480,6 +1499,8 @@ void EMfields3D::setZeroRho() {
 
 /*! set to 0 all the densities fields expect from rho*/
 void EMfields3D::setZeroDensities() {
+
+  #pragma acc parallel loop
   for (register int i = 0; i < nxn; i++)
     for (register int j = 0; j < nyn; j++)
       for (register int k = 0; k < nzn; k++) {
@@ -1490,6 +1511,7 @@ void EMfields3D::setZeroDensities() {
 
   setZeroMass();
 
+  #pragma acc parallel loop
   for (register int kk = 0; kk < ns; kk++)
     for (register int i = 0; i < nxn; i++)
       for (register int j = 0; j < nyn; j++)
@@ -1513,6 +1535,8 @@ void EMfields3D::setZeroDensities() {
 }
 
 void EMfields3D::setZeroMass() {
+
+  #pragma acc parallel loop
   for (register int c = 0; c < NE_MASS; c++) 
     for (register int i = 0; i < nxn; i++)
       for (register int j = 0; j < nyn; j++)
@@ -5039,6 +5063,8 @@ void EMfields3D::setLagrangianFrame(VirtualTopology3D * vct, Collective *col, bo
 
 void EMfields3D::setZeroCurrent(VirtualTopology3D * vct)
 {
+
+ 
   for (int k=1; k<nzn-1; k++) 
     for (int j=1; j<nyn-1; j++) 
       for (int i=1; i<nxn-1; i++) {
@@ -5160,4 +5186,38 @@ void EMfields3D::divergenceOfE(Grid* grid, VirtualTopology3D * vct) {
 
   communicateCenterBC(nxc, nyc, nzc, tempC, 2, 2, 2, 2, 2, 2, vct);
   grid->interpC2N(divE, tempC); 
+}
+
+void EMfields3D::preFetchMoments(){
+
+#ifdef GPU_PREFETCHING
+  // they were calculated on GPU; back to host before solver
+  cudaMemPrefetchAsync(Jxh, sizeof(double)* nxn*nyn*nzn, cudaCpuDeviceId, 0);
+  cudaMemPrefetchAsync(Jyh, sizeof(double)* nxn*nyn*nzn, cudaCpuDeviceId, 0);
+  cudaMemPrefetchAsync(Jzh, sizeof(double)* nxn*nyn*nzn, cudaCpuDeviceId, 0);
+#endif
+  
+}
+
+
+void EMfields3D::PrefetchAfterGatherMoments_extra(){
+
+  #ifdef GPU_PREFETCHING
+  // they were calculated on GPU; back to host before solver
+  cudaMemPrefetchAsync(Jxs, sizeof(double)* nxn*nyn*nzn*ns, cudaCpuDeviceId, 0);
+  cudaMemPrefetchAsync(Jys, sizeof(double)* nxn*nyn*nzn*ns, cudaCpuDeviceId, 0);
+  cudaMemPrefetchAsync(Jzs, sizeof(double)* nxn*nyn*nzn*ns, cudaCpuDeviceId, 0);
+
+  cudaMemPrefetchAsync(pXXsn, sizeof(double)* nxn*nyn*nzn*ns, cudaCpuDeviceId, 0);
+  cudaMemPrefetchAsync(pXYsn, sizeof(double)* nxn*nyn*nzn*ns, cudaCpuDeviceId, 0);
+  cudaMemPrefetchAsync(pXZsn, sizeof(double)* nxn*nyn*nzn*ns, cudaCpuDeviceId, 0);
+  cudaMemPrefetchAsync(pYYsn, sizeof(double)* nxn*nyn*nzn*ns, cudaCpuDeviceId, 0);
+  cudaMemPrefetchAsync(pYZsn, sizeof(double)* nxn*nyn*nzn*ns, cudaCpuDeviceId, 0);
+  cudaMemPrefetchAsync(pZZsn, sizeof(double)* nxn*nyn*nzn*ns, cudaCpuDeviceId, 0);
+
+  cudaMemPrefetchAsync(EFxs, sizeof(double)* nxn*nyn*nzn*ns, cudaCpuDeviceId, 0);
+  cudaMemPrefetchAsync(EFys, sizeof(double)* nxn*nyn*nzn*ns, cudaCpuDeviceId, 0);
+  cudaMemPrefetchAsync(EFzs, sizeof(double)* nxn*nyn*nzn*ns, cudaCpuDeviceId, 0);
+#endif
+
 }

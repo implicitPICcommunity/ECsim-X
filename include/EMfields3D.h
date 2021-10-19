@@ -124,8 +124,10 @@ class EMfields3D                // :public Field
     /*! communicate ghost for grid -> Particles interpolation */
     void communicateGhostP2G(int ns, int bcFaceXright, int bcFaceXleft, int bcFaceYright, int bcFaceYleft, VirtualTopology3D * vct);
     /*! add an amount of charge density to charge density field at node X,Y,Z */
+  #pragma acc routine seq
     void addRho(double weight[][2][2], int X, int Y, int Z, int is);
     /*! add an amount of particles at node X,Y,Z */
+  #pragma acc routine seq
     void addN(double weight[][2][2], int X, int Y, int Z, int is);
     /*! add an amount of charge at cell X,Y,Z */
     void addQrem(double val, int X, int Y, int Z, int ns);
@@ -145,29 +147,44 @@ class EMfields3D                // :public Field
   void addJyh_1Dacc(double weight000, double weight001, double weight010, double weight011, double weight100, double weight101, double weight110, double weight111, int X, int Y, int Z, int is);
 #pragma acc routine seq
   void addJzh_1Dacc(double weight000, double weight001, double weight010, double weight011, double weight100, double weight101, double weight110, double weight111, int X, int Y, int Z, int is); 
-  
+
+  void preFetchMoments();
+  void PrefetchAfterGatherMoments_extra();
+
+    #pragma acc routine seq
     void addJx(double weight[][2][2], int X, int Y, int Z, int ns);
+    #pragma acc routine seq
     void addJy(double weight[][2][2], int X, int Y, int Z, int ns);
+    #pragma acc routine seq
     void addJz(double weight[][2][2], int X, int Y, int Z, int ns);
 
     /*! add an amount of EF - direction X  at node X,Y,Z */
+    #pragma acc routine seq
     void addEFx(double weight[][2][2], int X, int Y, int Z, int is);
     /*! add an amount of EF - direction Y at node X,Y,Z */
+    #pragma acc routine seq
     void addEFy(double weight[][2][2], int X, int Y, int Z, int is);
     /*! add an amount of EF - direction Z at node X,Y,Z */
+    #pragma acc routine seq
     void addEFz(double weight[][2][2], int X, int Y, int Z, int is);
     
     /*! add an amount of pressure density - direction XX to current density field at node X,Y,Z */
+    #pragma acc routine seq
     void addPxx(double weight[][2][2], int X, int Y, int Z, int is);
     /*! add an amount of pressure density - direction XY to current density field at node X,Y,Z */
+    #pragma acc routine seq
     void addPxy(double weight[][2][2], int X, int Y, int Z, int is);
     /*! add an amount of pressure density - direction XZ to current density field at node X,Y,Z */
+    #pragma acc routine seq
     void addPxz(double weight[][2][2], int X, int Y, int Z, int is);
     /*! add an amount of pressure density - direction YY to current density field at node X,Y,Z */
+    #pragma acc routine seq
     void addPyy(double weight[][2][2], int X, int Y, int Z, int is);
     /*! add an amount of pressure density - direction YZ to current density field at node X,Y,Z */
+    #pragma acc routine seq
     void addPyz(double weight[][2][2], int X, int Y, int Z, int is);
     /*! add an amount of pressure density - direction ZZ to current density field at node X,Y,Z */
+    #pragma acc routine seq
     void addPzz(double weight[][2][2], int X, int Y, int Z, int is);
 
     /*! Perfect conductor boundary conditions LEFT wall */

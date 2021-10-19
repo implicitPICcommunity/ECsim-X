@@ -377,6 +377,9 @@ void c_Solver::GatherMoments_extra() {
     EMf->communicateGhostP2G_JP(vct);
     gridUpdated = true;
   }
+
+ EMf->PrefetchAfterGatherMoments_extra();
+ 
 }
 
 void c_Solver::CalculateField() {
@@ -389,6 +392,9 @@ void c_Solver::CalculateField() {
   
   MPI_Barrier(MPI_COMM_WORLD);
 
+  EMf->preFetchMoments();
+  
+  
   // MAXWELL'S SOLVER
   #ifdef __WITH_PETSC__
     petscSolver->solveE();
@@ -713,9 +719,9 @@ void c_Solver::WriteConserved(int cycle) {
 
 void c_Solver::WriteOutput(int cycle) {
 
-/*#ifdef NSIGHT_PROFILING
-  mynvtxstart_(“WriteOutput”);
-#endif*/
+#ifdef NSIGHT_PROFILING
+  mynvtxstart_("WriteOutput");
+#endif
 
   
   // Go to the Eulerian frame 
@@ -724,8 +730,6 @@ void c_Solver::WriteOutput(int cycle) {
     for (int i = 0; i < ns; i++) part[i].setLagrangianFrame(false);
   }
 
-  //  EMf->divergenceOfE(grid, vct);
-  // GatherMoments_extra();
   
   if (col->getWriteMethod() == "ascii") {
     if (cycle%(col->getFieldOutputCycle())!=0) return;
@@ -1015,9 +1019,9 @@ void c_Solver::WriteOutput(int cycle) {
     EMf->setLagrangianFrame(vct, col, true);
     for (int i = 0; i < ns; i++) part[i].setLagrangianFrame(true);
   }
-/*#ifdef NSIGHT_PROFILING
+#ifdef NSIGHT_PROFILING
   mynvtxstop_();
-#endif*/ 
+#endif 
   
 }
 

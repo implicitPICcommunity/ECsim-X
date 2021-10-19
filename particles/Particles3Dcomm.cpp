@@ -560,6 +560,7 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
         #endif
     }
   }
+  
 }
 
 /** Compute the mass matrix for the charge initialization */
@@ -621,6 +622,8 @@ void Particles3Dcomm::computeCharge(Field * EMf, Grid * grid, VirtualTopology3D 
  //#pragma omp parallel
   {
     //#pragma omp for
+
+    #pragma acc parallel loop
     for (register long long ip = 0; ip < nop; ip++)
     {
       const int ix = 2 + int (floor((x[ip] - xstart) * inv_dx));
@@ -658,6 +661,8 @@ void Particles3Dcomm::computeCurrent(Field * EMf, Grid * grid, VirtualTopology3D
  //#pragma omp parallel
   {
     //#pragma omp for
+
+    #pragma acc parallel loop
     for (register long long ip = 0; ip < nop; ip++)
     {
       const int ix = 2 + int (floor((x[ip] - xstart) * inv_dx));
@@ -837,6 +842,17 @@ int Particles3Dcomm::communicate(VirtualTopology3D * ptVCT) {
     cudaMemPrefetchAsync(x, sizeof(double)* nop, cudaCpuDeviceId, 0);
     cudaMemPrefetchAsync(y, sizeof(double)* nop, cudaCpuDeviceId, 0);
     cudaMemPrefetchAsync(z, sizeof(double)* nop, cudaCpuDeviceId, 0);
+
+    cudaMemPrefetchAsync(u, sizeof(double)* nop, cudaCpuDeviceId, 0);
+    cudaMemPrefetchAsync(v, sizeof(double)* nop, cudaCpuDeviceId, 0);
+    cudaMemPrefetchAsync(w, sizeof(double)* nop, cudaCpuDeviceId, 0);
+
+    cudaMemPrefetchAsync(q, sizeof(double)* nop, cudaCpuDeviceId, 0);
+
+     if (TrackParticleID) {
+    cudaMemPrefetchAsync(partID, sizeof(long long)* nop, cudaCpuDeviceId, 0);
+    cudaMemPrefetchAsync(partRank, sizeof(long long)* nop, cudaCpuDeviceId, 0);
+     }
 #endif
     
   while (np_current < nplast+1){

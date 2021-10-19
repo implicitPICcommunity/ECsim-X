@@ -3080,12 +3080,21 @@ void Particles3D::fixPosition()
 
 //#pragma acc parallel loop copy(y[0:nop], z[0:nop])
 
+#ifdef GPU_PREFETCHING
+  cudaMemPrefetchAsync(z, sizeof(double)*nop, 0, 0);
+  cudaMemPrefetchAsync(y, sizeof(double)*nop, 0, 0);
+  #endif
+    
 #pragma acc parallel loop // copyout(this->y[0:nop]) copyout(this->z[0:nop])
     for (long long i=0; i<nop; i++) {
       z[i] = 0;
       y[i] = 0;
     }
-  } else if (ndim == 2) {	  
+  } else if (ndim == 2) {
+    #ifdef GPU_PREFETCHING
+  cudaMemPrefetchAsync(z, sizeof(double)*nop, 0, 0);
+
+  #endif
 #pragma acc parallel loop // copy(z[0:nop])
     for (long long i=0; i<nop; i++) z[i] = 0;
   }
