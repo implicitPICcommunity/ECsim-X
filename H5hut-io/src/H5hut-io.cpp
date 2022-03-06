@@ -37,7 +37,8 @@ void H5output::OpenFieldsFile(std::string dtype, int nspec, int ntx, int nty, in
   /* Open HDF5 file */
   /* -------------- */
 
-  fldsfile = H5OpenFile(filename.c_str(), H5_O_RDWR, CART_COMM);
+  //fldsfile = H5OpenFile(filename.c_str(), H5_O_RDWR, CART_COMM);
+  fldsfile = H5OpenFile(filename.c_str(), H5_O_RDWR, H5_PROP_DEFAULT);
   H5SetStep(fldsfile,0);
   H5WriteStepAttribInt32(fldsfile, "nspec", &nspec, 1);
   H5Block3dSetGrid(fldsfile, pdims[0], pdims[1], pdims[2]);
@@ -105,7 +106,8 @@ void H5output::OpenPartclFile(int nspec, MPI_Comm CART_COMM){
   /* Open HDF5 file */
   /* -------------- */
 
-  partfile = H5OpenFile(filename.c_str(), H5_O_WRONLY, CART_COMM);
+  //partfile = H5OpenFile(filename.c_str(), H5_O_WRONLY, CART_COMM);
+  partfile = H5OpenFile(filename.c_str(), H5_O_WRONLY, H5_PROP_DEFAULT);
   H5SetStep(partfile,0);
   H5WriteStepAttribInt32(partfile, "nspec", &nspec, 1);
 
@@ -255,6 +257,81 @@ void H5output::WriteParticles(int ispec, long long np, long long *rank, long lon
 
 }
 
+void H5output::WriteTestParticles(int ispec, long long np, long long *rank, long long* id,  double *q, double *x, double *y, double *z, double *u, double *v, double *w, MPI_Comm CART_COMM){
+
+  /* --------------------------------------------------------------------- */
+  /* Find out the total number of particles of species i in all the domain */
+  /* --------------------------------------------------------------------- */
+
+  long long ntpart;
+
+  MPI_Allreduce(&np, &ntpart, 1, MPI_LONG_LONG, MPI_SUM, CART_COMM);
+  const h5_int64_t ntp = ntpart;
+
+  /* --------------------------------------------- */
+  /* Write the number of particles as an attribute */
+  /* --------------------------------------------- */
+
+  std::stringstream sstm;
+
+  sstm << "npart_" << ispec;
+  std::string nparti = sstm.str();
+  H5WriteStepAttribInt64(partfile, nparti.c_str(), &ntp, 1);
+  sstm.str("");
+
+  H5PartSetNumParticles(partfile,np);
+
+  /* ------------------ */
+  /* Write the datasets */
+  /* ------------------ */
+
+  sstm << "tagR_" << ispec;
+  std::string dtset = sstm.str();
+  H5PartWriteDataInt64(partfile,dtset.c_str(),(const int64_t*) rank);
+  sstm.str("");
+
+  sstm << "tagP_" << ispec;
+  dtset = sstm.str();
+  H5PartWriteDataInt64(partfile,dtset.c_str(),(const int64_t*) id);
+  sstm.str("");
+
+  sstm << "q_" << ispec;
+  dtset = sstm.str();
+  H5PartWriteDataFloat64(partfile,dtset.c_str(),q);
+  sstm.str("");
+
+  sstm << "x_" << ispec;
+  dtset = sstm.str();
+  H5PartWriteDataFloat64(partfile,dtset.c_str(),x);
+  sstm.str("");
+
+  sstm << "y_" << ispec;
+  dtset = sstm.str();
+  H5PartWriteDataFloat64(partfile,dtset.c_str(),y);
+  sstm.str("");
+
+  sstm << "z_" << ispec;
+  dtset = sstm.str();
+  H5PartWriteDataFloat64(partfile,dtset.c_str(),z);
+  sstm.str("");
+
+  sstm << "u_" << ispec;
+  dtset = sstm.str();
+  H5PartWriteDataFloat64(partfile,dtset.c_str(),u);
+  sstm.str("");
+
+  sstm << "v_" << ispec;
+  dtset = sstm.str();
+  H5PartWriteDataFloat64(partfile,dtset.c_str(),v);
+  sstm.str("");
+
+  sstm << "w_" << ispec;
+  dtset = sstm.str();
+  H5PartWriteDataFloat64(partfile,dtset.c_str(),w);
+  sstm.str("");
+
+}
+
 /* ====================== */
 /*         INPUT          */
 /* ====================== */
@@ -293,7 +370,8 @@ int H5input::OpenFieldsFile(std::string dtype, int nspec, int ntx, int nty, int 
   if (fd == 0) return -1;
   else fclose(fd);
 
-  fldsfile = H5OpenFile(filename.c_str(), H5_O_RDONLY, CART_COMM);
+  //fldsfile = H5OpenFile(filename.c_str(), H5_O_RDONLY, CART_COMM);
+  fldsfile = H5OpenFile(filename.c_str(), H5_O_RDONLY, H5_PROP_DEFAULT);
   H5SetStep(fldsfile, 0);
   H5ReadStepAttribInt32(fldsfile, "nspec", &file_nspec);
 
@@ -378,13 +456,13 @@ int H5input::OpenFieldsFile(std::string dtype, int nspec, int ntx, int nty, int 
   return 0;
 }
 
-void H5input::ReadFields(double ***field, std::string fname, int nx, int ny, int nz, int rank){
+int H5input::ReadFields(double ***field, std::string fname, int nx, int ny, int nz, int rank){
 
   h5_float64_t*     buffer;
 
   buffer = new h5_float64_t[nz*ny*nx];
 
-  H5Block3dReadScalarFieldFloat64(fldsfile, fname.c_str(), buffer);
+  int err = H5Block3dReadScalarFieldFloat64(fldsfile, fname.c_str(), buffer);
 
   int n = 0;
   for (int k=1; k<nz-1; k++) {
@@ -396,6 +474,7 @@ void H5input::ReadFields(double ***field, std::string fname, int nx, int ny, int
   }
 
   delete [] buffer;
+  return err;
 }
 
 void H5input::CloseFieldsFile(){
