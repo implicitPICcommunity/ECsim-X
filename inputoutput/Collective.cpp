@@ -62,7 +62,9 @@ void Collective::ReadInput(string inputfile) {
     zeroCurrent       = config.read < int >("ZeroCurrent", 0);
     probesFile        = config.read<string>("ProbesFile", "no");
 
-
+    /* Alfven wave parameters */
+    deltaB = config.read <double>("deltaB", 0.0);
+    
     rhoINIT = new double[ns];
     array_double rhoINIT0 = config.read < array_double > ("rhoINIT");
     rhoINIT[0] = rhoINIT0.a;
@@ -1522,3 +1524,8 @@ double Collective::getWbulk() { return w_bulk; }
 /*! Get if the total current has to be zero */
 int Collective::getZeroCurrent() {return zeroCurrent;}
 double Collective::getMemPartGb() { return MemPartGb; }
+
+/*! init for Alfven: perpendicular field */
+double Collective::getDeltaB(){
+  return deltaB;
+}

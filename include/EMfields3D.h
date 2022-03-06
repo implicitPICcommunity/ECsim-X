@@ -69,6 +69,7 @@ class EMfields3D                // :public Field
     void initHalfPlanet(VirtualTopology3D *vct, Grid *grid, Collective *col);
     void initPulse(VirtualTopology3D * vct, Grid * grid, Collective *col);
     void initFluxRope(VirtualTopology3D *vct, Grid *grid, Collective *col);
+    void initPar_LH_circPol_mono_Alfven(VirtualTopology3D * vct, Grid * grid, Collective *col);
     void slabs_instability(VirtualTopology3D * vct, Grid * grid, Collective *col);
 
     /* Fix boundary conditions in cylindrical coordinate */
@@ -176,7 +177,10 @@ class EMfields3D                // :public Field
     void sustensorRightZ(double **susxz, double **susyz, double **suszz);
     void sustensorLeftZ (double **susxz, double **susyz, double **suszz);
 
+    /*! calculate characteristic plasma parameters - in the normalization currently used */
+    void calculateCharacteristicParameters();
 
+  
     /*! get Electric Field component X defined on node(indexX,indexY,indexZ) */
     double &getEx(int indexX, int indexY, int indexZ) const;
     /*! get Electric field X component array */
@@ -284,6 +288,7 @@ class EMfields3D                // :public Field
     void UpdateFext(int cycle);
     double getFext();
 
+    void printDensity(int is);
 
     /*! get pressure tensor XX for species */
     double ****getpXXsn();
@@ -356,6 +361,19 @@ class EMfields3D                // :public Field
     double getBextenergy();
     double getBintenergy();
 
+    /*! get omega_pi */
+    double getomega_pi();
+    /*! get Omega_ci */
+    double getOmega_ci();
+    /*! get omega_pe */
+    double getomega_pe();
+    /*! get Omega_ce */
+    double getOmega_ce();
+
+    /*! get k0 */
+    double getk0();
+    /*! get omega_r*/
+    double getomega_r();
 
     /*! print electromagnetic fields info */
     void print(void) const;
@@ -651,6 +669,17 @@ class EMfields3D                // :public Field
     double Benergy;
     double EenergyRemoved;
 
+    /* variables needed for whistler init: real frequency and perpendicular field */
+    double omega_r;
+    double deltaB;
+    double k0;
+
+    /* characteristic parameters - electron and ion plasma frequency, gyrofrequency - in the normalization used */
+    double omega_pe;
+    double omega_pi;
+    double Omega_ce;
+    double Omega_ci;
+  
 };
 
 typedef EMfields3D Field;

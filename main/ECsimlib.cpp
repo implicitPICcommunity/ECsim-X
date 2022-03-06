@@ -116,6 +116,7 @@ int c_Solver::Init(int argc, char **argv) {
     else if (col->getCase()=="pulse")       EMf->initPulse(vct,grid,col);
     else if (col->getCase()=="HalfPlanet")  EMf->initHalfPlanet(vct,grid,col);
     else if (col->getCase()=="FluxRope")    EMf->initFluxRope(vct,grid,col);
+    else if (col->getCase()=="Par_LH_circPol_mono_Alfven") EMf->initPar_LH_circPol_mono_Alfven(vct, grid, col);
     else {
       if (myrank==0) {
         cout << " =========================================================== " << endl;
@@ -153,6 +154,7 @@ int c_Solver::Init(int argc, char **argv) {
       else if (col->getCase()=="IC")             part[i].MaxwellianIonCyclotron(grid, EMf, vct);
       else if (col->getCase()=="Dipole")         part[i].maxwellian(grid, EMf, vct);
       else if (col->getCase()=="FluxRope")       part[i].maxwellian(grid, EMf, vct);
+      else if (col->getCase()=="Par_LH_circPol_mono_Alfven") part[i].maxwellian_Par_LH_circPol_mono_Alfven(grid, EMf, vct, col);
       else if (col->getCase()=="TwoCoils" || col->getCase()=="SixCoils" || col->getCase()=="TwoCoilsINJ" || col->getCase()=="SixCoilsINJ"
                || col->getCase()=="Mirror"){
         if (col->getRHOinit(i) > 0.0) 
@@ -333,6 +335,7 @@ void c_Solver::GatherMoments(){
 /** Compute the charge, current and pressure densities. They are not needed for the 
  * calculation, only for the output */
 void c_Solver::GatherMoments_extra() {
+
  if (!gridUpdated) {
     // Compute the charge density and the current of each specie 
     EMf->setZeroDensities();                  // set to zero the densities
@@ -348,6 +351,7 @@ void c_Solver::GatherMoments_extra() {
     #endif
     
     EMf->communicateGhostP2G_JP(vct);
+
     gridUpdated = true;
   }
 }
@@ -644,8 +648,15 @@ void c_Solver::WriteOutput(int cycle) {
 
   EMf->divergenceOfE(grid, vct);
   GatherMoments_extra();
-  
 
+  // test
+  if (0){
+    EMf->printDensity(0);
+    cout << endl;
+    EMf->printDensity(1);
+  }
+
+  
   if (col->getWriteMethod() == "ascii") {
     if (cycle%(col->getFieldOutputCycle())!=0) return;
     char place[128];

@@ -279,6 +279,9 @@ class Collective
     /*! get the amplitude of the magnetic field 1 along z */
     double getB1z();
 
+    /*! get the parameters for Alfve wave init */
+    double getDeltaB();
+    
     /*! get the boolean value for verbose results */
     bool getVerbose();
 
@@ -546,6 +549,8 @@ class Collective
     double B1y;
     double B1z;
 
+    /* init for Alfven wave */
+    double deltaB;
 
     /*! boolean value for verbose results */
     bool verbose;
