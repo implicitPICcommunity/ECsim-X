@@ -100,6 +100,7 @@ int c_Solver::Init(int argc, char **argv) {
     else if (col->getCase()=="DoubleGEM")   EMf->initDoubleGEM(vct, grid,col);
     else if (col->getCase()=="DoubleHarris")EMf->initDoublePeriodicHarrisWithGaussianHumpPerturbation(vct,grid,col);
     else if (col->getCase()=="FF")          EMf->initForceFree(vct,grid,col);
+    else if (col->getCase()=="FF_kappa")    EMf->initForceFree(vct,grid,col);
     else if (col->getCase()=="TD")          EMf->tangential_discontinuity(vct,grid,col); 
     else if (col->getCase()=="mKHI")        EMf->mag_KHI(vct,grid,col);
     else if (col->getCase()=="SI")          EMf->slabs_instability(vct,grid,col);
@@ -155,6 +156,8 @@ int c_Solver::Init(int argc, char **argv) {
       else if (col->getCase()=="Dipole")         part[i].maxwellian(grid, EMf, vct);
       else if (col->getCase()=="FluxRope")       part[i].maxwellian(grid, EMf, vct);
       else if (col->getCase()=="Par_LH_circPol_mono_Alfven") part[i].maxwellian_Par_LH_circPol_mono_Alfven(grid, EMf, vct, col);
+      else if (col->getCase()=="FF_kappa") part[i].Kappaspacedist(col,grid,EMf,vct);
+      else if (col->getPartInit()=="Kappa") part[i].kappa(grid,EMf,vct);
       else if (col->getCase()=="TwoCoils" || col->getCase()=="SixCoils" || col->getCase()=="TwoCoilsINJ" || col->getCase()=="SixCoilsINJ"
                || col->getCase()=="Mirror"){
         if (col->getRHOinit(i) > 0.0) 
