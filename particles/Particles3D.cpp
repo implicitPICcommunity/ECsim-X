@@ -3223,8 +3223,6 @@ void Particles3D::maxwellian_Par_LH_circPol_mono_Alfven(Grid * grid, Field * EMf
 /** Drift velocity computed directly from the fields for species with u0 = 1 */
 void Particles3D::Kappaspacedist(Collective * col, Grid * grid, Field * EMf, VirtualTopology3D * vct) {
 
-  double k_kappa = 5.0;//has to be larger than 1.5 
-
   if (vct->getCartesian_rank() == 0) {
     cout << "Particle init: FF_kappa with k= "<< k_kappa << endl;
   }
@@ -3245,8 +3243,6 @@ void Particles3D::Kappaspacedist(Collective * col, Grid * grid, Field * EMf, Vir
   double theta;
   long long counter = 0;
 
-  // the following variables should be coming from input file, eventually
-  //double k_kappa = 5.0;//has to be larger than 1.5
   double apar = vth*vth*2.0*(k_kappa-1.5)/k_kappa;
   double aperp = uth*uth*2.0*(k_kappa-1.5)/k_kappa;
 
@@ -3332,8 +3328,6 @@ void Particles3D::kappa(Grid * grid, Field * EMf, VirtualTopology3D * vct) {
   double harvest;
   double reverser;
   double prob, theta, sign;
-  // the following variables should be coming form input file, eventually
-  double k_kappa = 3.0;//has to be larger than 1.5
   double apar = vth*vth*2.0*(k_kappa-1.5)/k_kappa;
   double aperp = uth*uth*2.0*(k_kappa-1.5)/k_kappa;
   long long counter = 0;

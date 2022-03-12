@@ -208,6 +208,8 @@ int c_Solver::Init(int argc, char **argv) {
         else if (col->getCase()=="IC")             testpart[i].MaxwellianIonCyclotron(grid, EMf, vct);
         else if (col->getCase()=="Dipole")         testpart[i].maxwellian(grid, EMf, vct);
         else if (col->getCase()=="FluxRope")       testpart[i].maxwellian(grid, EMf, vct);
+	else if (col->getCase()=="FF_kappa")       testpart[i].Kappaspacedist(col,grid,EMf,vct);
+	else if (col->getPartInit()=="Kappa")      testpart[i].kappa(grid,EMf,vct);
         else if (col->getCase()=="TwoCoils" || col->getCase()=="SixCoils" || col->getCase()=="TwoCoilsINJ" || col->getCase()=="SixCoilsINJ"
                  || col->getCase()=="Mirror"){
             if (col->getPartInit() == "mono") {

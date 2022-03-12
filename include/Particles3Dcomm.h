@@ -174,6 +174,8 @@ protected:
   double v0;
   /** w0 Drift velocity - Direction Z */
   double w0;
+  /** kappa index of the distribution, used only with appropriate cases **/
+  double k_kappa;
   /** Positions arra - X component */
   double *x;
   /** Positions array - Y component */
