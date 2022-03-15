@@ -104,6 +104,7 @@ void Collective::ReadInput(string inputfile) {
     ParticlesOutputCycle = config.read < int >("ParticlesOutputCycle");
     RestartOutputCycle = config.read < int >("RestartOutputCycle");
     DiagnosticsOutputCycle = config.read < int >("DiagnosticsOutputCycle", FieldOutputCycle);
+    SuccessiveFieldsSaved = config.read < int > ("SuccessiveFieldsSaved", 1); 
   }
 
   SolInit = false;
@@ -1503,6 +1504,10 @@ int Collective::getRestartOutputCycle() {
 /*! output of fields */
 int Collective::getDiagnosticsOutputCycle() {
   return (DiagnosticsOutputCycle);
+}
+/*! number of successive fields to save */
+int Collective::getSuccessiveFieldsSaved() {
+  return (SuccessiveFieldsSaved);
 }
 /*! Cylindrical coordinates */
 int Collective::getCylindrical() {

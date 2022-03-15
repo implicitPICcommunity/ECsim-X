@@ -894,7 +894,9 @@ void c_Solver::WriteOutput(int cycle) {
     /* Parallel HDF5 output using the H5hut library */
     /* -------------------------------------------- */
     if (col->getFieldOutputCycle() != 0) 
-      if (cycle == first_cycle || cycle%(col->getFieldOutputCycle())==0)        WriteFieldsH5hut(ns, grid, EMf,  col, vct, cycle);
+      //if (cycle == first_cycle || cycle%(col->getFieldOutputCycle())==0)        
+      if (cycle == first_cycle || (cycle%(col->getFieldOutputCycle()))< col->getSuccessiveFieldsSaved() )
+	WriteFieldsH5hut(ns, grid, EMf,  col, vct, cycle);
 
     if (col->getParticlesOutputCycle() != 0) 
       if (cycle == first_cycle || cycle%(col->getParticlesOutputCycle())==0)    WritePartclH5hut(ns, grid, part, col, vct, cycle, false);
@@ -906,7 +908,8 @@ void c_Solver::WriteOutput(int cycle) {
 
     // OUTPUT to large file, called proc**
     if (col->getFieldOutputCycle() != 0) {
-      if (cycle % (col->getFieldOutputCycle()) == 0 ) {
+      if ((cycle % (col->getFieldOutputCycle())) < col->getSuccessiveFieldsSaved()  ) { 
+      //if (cycle % (col->getFieldOutputCycle()) == 0 ) {
         hdf5_agent.open_append(SaveDirName + "/proc" + num_proc.str() + ".hdf");
         output_mgr.output("Eall + Ball + rhos + Jsall + pressure", cycle);
         // Pressure tensor is available

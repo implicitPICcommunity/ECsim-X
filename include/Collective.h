@@ -305,6 +305,8 @@ class Collective
     int getRestartOutputCycle();
     /*! output of diagnostics */
     int getDiagnosticsOutputCycle();
+    /*! number of successive fields saved */
+    int getSuccessiveFieldsSaved();
 
     /*! Boundary condition selection for BCFace for the electric field components */
     int bcEx[6], bcEy[6], bcEz[6];
@@ -579,6 +581,8 @@ class Collective
     int RestartOutputCycle;
     /*! Output for diagnostics */
     int DiagnosticsOutputCycle;
+    /*! Number of successive fields saved */
+    int SuccessiveFieldsSaved;
 
     /** Cylindrical coordinates */
     int Cylindrical;
