@@ -228,6 +228,7 @@ void Collective::ReadInput(string inputfile) {
     u0 = new double[ns];
     v0 = new double[ns];
     w0 = new double[ns];
+    kappa = new double[ns];
     x_center_inj = new double[ns];
     y_center_inj = new double[ns];
     z_center_inj = new double[ns];
@@ -243,6 +244,10 @@ void Collective::ReadInput(string inputfile) {
     array_double u00 = config.read < array_double > ("u0");
     array_double v00 = config.read < array_double > ("v0");
     array_double w00 = config.read < array_double > ("w0");
+    
+    array_double kappa_def;
+    kappa_def.a= kappa_def.b= kappa_def.c= kappa_def.d= kappa_def.e= kappa_def.f= 5;
+    array_double kappa0 = config.read < array_double > ("kappa", kappa_def);
 
     array_double arrayInjX, arrayInjY, arrayInjZ, arrayInjL;
 		arrayInjX.a = arrayInjX.b = arrayInjX.c = arrayInjX.e = arrayInjX.d = arrayInjX.f = x_center;
@@ -264,6 +269,7 @@ void Collective::ReadInput(string inputfile) {
     u0[0] = u00.a;
     v0[0] = v00.a;
     w0[0] = w00.a;
+    kappa[0] = kappa0.a;
     x_center_inj[0] = xceninj.a;
     y_center_inj[0] = yceninj.a;
     z_center_inj[0] = zceninj.a;
@@ -280,6 +286,7 @@ void Collective::ReadInput(string inputfile) {
       u0[1] = u00.b;
       v0[1] = v00.b;
       w0[1] = w00.b;
+      kappa[1] = kappa0.b;
       x_center_inj[1] = xceninj.b;
       y_center_inj[1] = yceninj.b;
       z_center_inj[1] = zceninj.b;
@@ -296,6 +303,7 @@ void Collective::ReadInput(string inputfile) {
       u0[2] = u00.c;
       v0[2] = v00.c;
       w0[2] = w00.c;
+      kappa[2] = kappa0.c;
       x_center_inj[2] = xceninj.c;
       y_center_inj[2] = yceninj.c;
       z_center_inj[2] = zceninj.c;
@@ -312,6 +320,7 @@ void Collective::ReadInput(string inputfile) {
       u0[3] = u00.d;
       v0[3] = v00.d;
       w0[3] = w00.d;
+      kappa[3] = kappa0.d;
       x_center_inj[3] = xceninj.d;
       y_center_inj[3] = yceninj.d;
       z_center_inj[3] = zceninj.d;
@@ -328,6 +337,7 @@ void Collective::ReadInput(string inputfile) {
       u0[4] = u00.e;
       v0[4] = v00.e;
       w0[4] = w00.e;
+      kappa[4] = kappa0.e;
       x_center_inj[4] = xceninj.e;
       y_center_inj[4] = yceninj.e;
       z_center_inj[4] = zceninj.e;
@@ -344,6 +354,7 @@ void Collective::ReadInput(string inputfile) {
       u0[5] = u00.f;
       v0[5] = v00.f;
       w0[5] = w00.f;
+      kappa[5] = kappa0.f;
       x_center_inj[5] = xceninj.f;
       y_center_inj[5] = yceninj.f;
       z_center_inj[5] = zceninj.f;
@@ -378,6 +389,7 @@ void Collective::ReadInput(string inputfile) {
       TP_u0 = new double[TP_ns];
       TP_v0 = new double[TP_ns];
       TP_w0 = new double[TP_ns];
+      TP_kappa = new double[TP_ns];
       TP_x_center = new double[TP_ns];
       TP_y_center = new double[TP_ns];
       TP_z_center = new double[TP_ns];
@@ -393,7 +405,12 @@ void Collective::ReadInput(string inputfile) {
       array_double TP_u00 = config.read < array_double > ("TP_u0");
       array_double TP_v00 = config.read < array_double > ("TP_v0");
       array_double TP_w00 = config.read < array_double > ("TP_w0");
-  
+
+      array_double TP_kappa_def;
+      TP_kappa_def.a= TP_kappa_def.b= TP_kappa_def.c= TP_kappa_def.d=TP_kappa_def.e= TP_kappa_def.f= 5;
+      
+      array_double TP_kappa0 = config.read < array_double > ("TP_kappa", TP_kappa_def);
+
       array_double TP_arrayX, TP_arrayY, TP_arrayZ, TP_arrayL;
   		TP_arrayX.a = TP_arrayX.b = TP_arrayX.c = TP_arrayX.e = TP_arrayX.d = TP_arrayX.f = x_center;
   		TP_arrayY.a = TP_arrayY.b = TP_arrayY.c = TP_arrayY.e = TP_arrayY.d = TP_arrayY.f = y_center;
@@ -414,6 +431,7 @@ void Collective::ReadInput(string inputfile) {
       TP_u0[0] = TP_u00.a;
       TP_v0[0] = TP_v00.a;
       TP_w0[0] = TP_w00.a;
+      TP_kappa[0] = TP_kappa0.a;
       TP_x_center[0] = TP_xcen.a;
       TP_y_center[0] = TP_ycen.a;
       TP_z_center[0] = TP_zcen.a;
@@ -430,6 +448,7 @@ void Collective::ReadInput(string inputfile) {
         TP_u0[1] = TP_u00.b;
         TP_v0[1] = TP_v00.b;
         TP_w0[1] = TP_w00.b;
+	TP_kappa[1] = TP_kappa0.b;
         TP_x_center[1] = TP_xcen.b;
         TP_y_center[1] = TP_ycen.b;
         TP_z_center[1] = TP_zcen.b;
@@ -446,6 +465,7 @@ void Collective::ReadInput(string inputfile) {
         TP_u0[2] = TP_u00.c;
         TP_v0[2] = TP_v00.c;
         TP_w0[2] = TP_w00.c;
+	TP_kappa[2] = TP_kappa0.c;
         TP_x_center[2] = TP_xcen.c;
         TP_y_center[2] = TP_ycen.c;
         TP_z_center[2] = TP_zcen.c;
@@ -462,6 +482,7 @@ void Collective::ReadInput(string inputfile) {
         TP_u0[3] = TP_u00.d;
         TP_v0[3] = TP_v00.d;
         TP_w0[3] = TP_w00.d;
+	TP_kappa[3] = TP_kappa0.d;
         TP_x_center[3] = TP_xcen.d;
         TP_y_center[3] = TP_ycen.d;
         TP_z_center[3] = TP_zcen.d;
@@ -478,6 +499,7 @@ void Collective::ReadInput(string inputfile) {
         TP_u0[4] = TP_u00.e;
         TP_v0[4] = TP_v00.e;
         TP_w0[4] = TP_w00.e;
+	TP_kappa[4] = TP_kappa0.e;
         TP_x_center[4] = TP_xcen.e;
         TP_y_center[4] = TP_ycen.e;
         TP_z_center[4] = TP_zcen.e;
@@ -494,6 +516,7 @@ void Collective::ReadInput(string inputfile) {
         TP_u0[5] = TP_u00.f;
         TP_v0[5] = TP_v00.f;
         TP_w0[5] = TP_w00.f;
+	TP_kappa[5] = TP_kappa0.f;
         TP_x_center[5] = TP_xcen.f;
         TP_y_center[5] = TP_ycen.f;
         TP_z_center[5] = TP_zcen.f;
@@ -1239,7 +1262,10 @@ double Collective::getV0(int nspecies) {
 double Collective::getW0(int nspecies) {
   return (w0[nspecies]);
 }
-
+/*! get k index */
+double Collective::getKappa(int nspecies) {
+  return (kappa[nspecies]);
+}
 /*! Test particles: get the number of species */
 int Collective::getTP_Ns() {
   return (TP_ns);
@@ -1299,6 +1325,10 @@ double Collective::getTP_V0(int nspecies) {
 /*! Test particles: get beam velocity - Direction Z */
 double Collective::getTP_W0(int nspecies) {
   return (TP_w0[nspecies]);
+}
+/*! Test particles: get K index */
+double Collective::getTP_Kappa(int nspecies) {
+  return (TP_kappa[nspecies]);
 }
 /*! get Boundary Condition Particles: FaceXright */
 int Collective::getBcPfaceXright() {

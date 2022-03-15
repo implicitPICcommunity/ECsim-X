@@ -91,6 +91,7 @@ void Particles3Dcomm::allocate(bool test, int species, long long initnpmax, Coll
     u0 = col->getTP_U0(species);
     v0 = col->getTP_V0(species);
     w0 = col->getTP_W0(species);
+    k_kappa= col->getTP_Kappa(species);
     TrackParticleID = 1;
   } else {
     npcel = col->getNpcel(species);
@@ -104,6 +105,7 @@ void Particles3Dcomm::allocate(bool test, int species, long long initnpmax, Coll
     u0 = col->getU0(species);
     v0 = col->getV0(species);
     w0 = col->getW0(species);
+    k_kappa= col->getKappa(species);
     TrackParticleID = col->getTrackParticleID(species);
   }
 

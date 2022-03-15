@@ -52,9 +52,12 @@ class Particles3D:public Particles3Dcomm {
     int maxwell_box(Grid* grid,Field* EMf,VirtualTopology3D* vct, double L_square, double x_center, double y_center, double z_center, double multiple);
     int maxwell_sphere(Grid* grid,Field* EMf,VirtualTopology3D* vct, double L_square, double x_center, double y_center, double z_center, double multiple);
     int monoenergetic_sphere(Grid* grid,Field* EMf,VirtualTopology3D* vct, double L_square, double x_center, double y_center, double z_center, double multiple);
-     /** parallel-propagating, left-handed, circularly polarized, monochromatic Alfven wave **/
-  void maxwellian_Par_LH_circPol_mono_Alfven(Grid * grid, Field * EMf, VirtualTopology3D * vct, Collective * col);
-  
+    /** parallel-propagating, left-handed, circularly polarized, monochromatic Alfven wave **/
+    void maxwellian_Par_LH_circPol_mono_Alfven(Grid * grid, Field * EMf, VirtualTopology3D * vct, Collective * col);
+    /** kappa init **/
+    void kappa(Grid * grid, Field * EMf, VirtualTopology3D * vct);
+    /** force free with kappa distribution **/
+    void Kappaspacedist(Collective * col, Grid * grid, Field * EMf, VirtualTopology3D * vct) ;
     /** Initial condition: empty system */
     void empty(Grid* grid,Field* EMf, VirtualTopology3D* vct);
        

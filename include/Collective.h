@@ -150,6 +150,8 @@ class Collective
     double getV0(int nspecies);
     /*! get Drift velocity - Direction Z */
     double getW0(int nspecies);
+    /*! get kappa */
+    double getKappa(int nspecies);
 
     int getTP_Ns();
     /*! Test particles: get the number of particles for different species */
@@ -180,6 +182,8 @@ class Collective
     double getTP_V0(int nspecies);
     /*! Test particles: get Drift velocity - Direction Z */
     double getTP_W0(int nspecies);
+    /*! Test particles: get kappa */
+    double getTP_Kappa(int nspecies);
     /*! Test particles: Get object center - direction X */
     double getTP_x_center(int is);
     /*! Test particles: Get object center - direction Y */
@@ -424,6 +428,8 @@ class Collective
     double *v0;
     /*! Drift velocity - Direction Z */
     double *w0;
+    /*! index for kappa distribution, only if appropriate case is selected */
+    double *kappa;
 
     /*! Test particles: number of species */
     int TP_ns;
@@ -455,6 +461,8 @@ class Collective
     double *TP_v0;
     /*! Test particles: Drift velocity - Direction Z */
     double *TP_w0;
+    /*! Test particles: index for kappa distribution, only if appropriate case is selected */
+    double *TP_kappa;
     /*! object center - X direction */
     double *TP_x_center;
     /*! object center - Y direction */
