@@ -86,6 +86,8 @@ Particles3Dcomm::~Particles3Dcomm() {
   delete[]Ey_ext_1D;
   delete[]Ez_ext_1D;
   #endif
+  delete[]fvxvy;
+  delete[]onedf;
 }
 /** constructors fo a single species*/
 void Particles3Dcomm::allocate(bool test, int species, long long initnpmax, Collective * col, VirtualTopology3D * vct, Grid * grid) {
@@ -264,8 +266,22 @@ void Particles3Dcomm::allocate(bool test, int species, long long initnpmax, Coll
   Ey_ext_1D = new double[nxn * nyn * nzn];
   Ez_ext_1D = new double[nxn * nyn * nzn];
   #endif
+  
+  nBinsvx = 512;
+  nBinsvy = 512;
+  //int size;
+  //long double **f;
 
+  //nBinsx = 512;
+  //nBinsy = 512;
+  sizevxvy = nBinsvx*nBinsvy;
 
+  fvxvy = new long double *[nBinsvx];
+  for (int i = 0; i < nBinsvx; i++){
+      fvxvy[i] = new long double[nBinsvy];
+  }
+
+  onedf = new long double [sizevxvy]; 
 
   b_X_RIGHT = new double[buffer_size];
   b_X_RIGHT_ptr = b_X_RIGHT;    // alias to make the resize
@@ -376,8 +392,8 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       
 #ifdef GPU
 
-      // 1D access to fields
-      double xi_0=x[ip] - grid->getXN(ix-1,iy  ,iz  );
+    // 1D access to fields
+    double xi_0=x[ip] - grid->getXN(ix-1,iy  ,iz  );
     double xi_1=grid->getXN(ix,iy,iz) - x[ip];
     double eta_0=y[ip] - grid->getYN(ix  ,iy-1,iz  );
     double eta_1=grid->getYN(ix,iy,iz) - y[ip];
@@ -1494,6 +1510,68 @@ unsigned long *Particles3Dcomm::getVelocityDistribution(int nBins, double maxVel
   MPI_Allreduce(MPI_IN_PLACE, f, nBins, MPI_LONG_LONG, MPI_SUM, MPI_COMM_WORLD);
 
   return f;
+}
+
+/** get phase space vyvx */
+long double *Particles3Dcomm::getphasespacevyvx(VirtualTopology3D * vct) {
+  //int nBinsx;
+  //int nBinsy;
+  //int size;
+  //long double **f;
+
+  //nBinsx = 512;
+  //nBinsy = 512;
+  //size = nBinsx*nBinsy;
+
+  //f = new long double *[nBinsx];
+  //for (int i = 0; i < nBinsx; i++){
+  //    f[i] = new long double[nBinsy];
+  //}
+  //
+
+  for (int i = 0; i < nBinsvx; i++){
+      for (int j = 0; j < nBinsvy; j++){
+          fvxvy[i][j] = 0.0;
+      }
+  }
+
+  //long double *onedf = new long double[size];
+  for (int i = 0; i < sizevxvy; i++)
+    onedf[i] = 0.0;
+   
+  double Velx = 0.0;
+  double Vely = 0.0;
+  double minVel = -1.0;
+  double maxVel = 1.0;
+  double dvx = ( maxVel - minVel) / nBinsvx;
+  double dvy = ( maxVel - minVel) / nBinsvy;
+  double invvv = 1/(dvx * dvy);
+  int binx = 0;
+  int biny = 0;
+  for (long long i = 0; i < nop; i++) {
+    Velx = u[i];
+    Vely = v[i];
+    binx = int (floor((Velx-minVel) / dvx));
+    biny = int (floor((Vely-minVel) / dvy));
+    if ((binx >= 0) && (binx < nBinsvx) && (biny >= 0) && (biny < nBinsvy)){
+       fvxvy[binx][biny] += q[i];
+       }
+  }  
+  
+  int INDEX;
+  for (int i = 0; i < 512; i++)
+      for (int j = 0; j <= 512; j++){
+	  INDEX = 512*i + j;  
+	  onedf[INDEX] = fvxvy[i][j]*invvv;
+      }
+  //cout << "my rank is " << vct->getCartesian_rank() << " and my f is " << fvxvy[256][256] << endl;
+  //cout << "my rank is " << vct->getCartesian_rank() << " and my onedf is " << onedf[131328] << endl;
+
+  MPI_Allreduce(MPI_IN_PLACE, onedf, sizevxvy, MPI_LONG_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+
+  //cout << "my rank is " << vct->getCartesian_rank() << " and my fsum is " << onedf[131328] << endl;
+  
+  return onedf;
 }
 
 /** return the total charge */

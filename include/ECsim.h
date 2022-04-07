@@ -66,6 +66,8 @@ namespace ECsim {
     double        *qom;
     double        *Qremoved;
 
+    long double *VelocityDist2D;
+
     PSK::OutputManager < PSK::OutputAdaptor > output_mgr; // Create an Output Manager
     myOutputAgent < PSK::HDF5OutputAdaptor > hdf5_agent;  // Create an Output Agent for HDF5 output
 
@@ -75,6 +77,7 @@ namespace ECsim {
     string cqsat;
     string cq;
     string ds;
+    string *ds_vx;
     stringstream num_proc;
     int restart_cycle;
     int restart;

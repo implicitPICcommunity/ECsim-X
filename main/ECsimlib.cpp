@@ -270,6 +270,9 @@ int c_Solver::Init(int argc, char **argv) {
   momentum = new double[ns];
   cq = SaveDirName + "/ConservedQuantities.txt";
   
+  int sizevdist2D;
+  sizevdist2D = 512*512;
+  VelocityDist2D = new long double[sizevdist2D];
 
   /* Compute the external current to have the total current equal to zero */
   if (col->getZeroCurrent() == 1) {
@@ -980,10 +983,49 @@ void c_Solver::WriteOutput(int cycle) {
       GatherMoments_extra();
       WriteFieldsH5hut(ns, grid, EMf,  col, vct, cycle);
 
-    }
+      ds_vx = new string[ns];
+      for (int i=0; i< ns; i++){
+    
+         std::ostringstream os;
+         os << i;
 
-    }
+         std::stringstream filenmbr;
+      
+         filenmbr << std::setfill('0') << std::setw(6) << cycle; 
+      
+         ds_vx[i] = SaveDirName + "/v2v1_sp_" + os.str() + "_" + filenmbr.str() + ".txt";
+         } 
+  
+      if (myrank == 0) {
+        for (int i=0; i< ns; i++){
+           ofstream my_file1(ds_vx[i].c_str());
+           my_file1.close();
+        }
+      }
 
+   
+         for (int is = 0; is < ns; is++) {
+
+	     VelocityDist2D = part[is].getphasespacevyvx(vct);
+
+	     if (myrank == 0) {
+
+		ofstream my_file(ds_vx[is].c_str(), fstream::app);
+                
+		int INDEX;
+		for (int i = 0; i < 512; i++){
+                    for (int j = 0; j < 512; j++){
+			INDEX = 512*i + j;
+                        my_file  << VelocityDist2D[INDEX] <<"\t";
+                    }
+                    my_file << "\n";
+                }
+                my_file << endl;
+                my_file.close();
+             }
+	 }
+    }
+    }
     if (col->getParticlesOutputCycle() != 0) 
       if (cycle == first_cycle || cycle%(col->getParticlesOutputCycle())==0)    WritePartclH5hut(ns, grid, part, col, vct, cycle, false);
     
