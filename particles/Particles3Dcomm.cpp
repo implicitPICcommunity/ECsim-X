@@ -506,19 +506,41 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
 
             // Only half of the possible nodes  (M is symetric)
             for (int c=0; c<14; c++) {
-            //for (int c=0; c<27; c++) {
-              int n2i = ni + NeNo.getX(c);
-              int n2j = nj + NeNo.getY(c);
-              int n2k = nk + NeNo.getZ(c);
+
+	      int nenoX, nenoY, nenoZ;
+	      switch(c)
+		{
+	      case 0: {nenoX= 0; nenoY= 0;nenoZ= 0; break;}
+	      case 1: {nenoX= 1; nenoY= 0;nenoZ= 0; break;}
+	      case 2: {nenoX= 0; nenoY= 1;nenoZ= 0; break;}
+	      case 3: {nenoX= 0; nenoY= 0;nenoZ= 1; break;}
+	      case 4: {nenoX= 1; nenoY= 1;nenoZ= 0; break;}
+	      case 5: {nenoX= 1; nenoY=-1;nenoZ= 0; break;}
+	      case 6: {nenoX= 1; nenoY= 0;nenoZ= 1; break;}
+	      case 7: {nenoX= 1; nenoY= 0;nenoZ=-1; break;}
+	      case 8: {nenoX= 0; nenoY= 1;nenoZ= 1; break;}
+	      case 9: {nenoX= 0; nenoY= 1;nenoZ=-1; break;}
+	      case 10:{nenoX= 1; nenoY=-1;nenoZ= 1; break;}
+	      case 11:{nenoX= 1; nenoY= 1;nenoZ=-1; break;}
+	      case 12:{nenoX=-1; nenoY= 1;nenoZ= 1; break;}
+	      case 13:{nenoX= 1; nenoY= 1;nenoZ= 1; break;}
+		}
+	      
+              int n2i = ni + nenoX;
+              int n2j = nj + nenoY;
+              int n2k = nk + nenoZ;
 
               int i2 = ix - n2i;
               int j2 = iy - n2j;
               int k2 = iz - n2k;
 
               // Check if this node is one of the cell in which the particle is:
-              if (i2>=0 && i2<2 && j2>=0 && j2<2 && k2>=0 && k2<2) {
-                //Mass[i][j][j] 
-                double qww = q[ip]*beta*weight[i][j][k]*weight[i2][j2][k2];
+              //if (i2>=0 && i2<2 && j2>=0 && j2<2 && k2>=0 && k2<2) {
+
+	      double qww;
+	      double all= q[ip]*beta*weight[i][j][k];
+	      // 000
+              qww = all*weight000;
 
 #pragma       acc atomic update
 		EMf->Mxx[c][ni][nj][nk] += alpha00*qww;
@@ -538,8 +560,165 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
 		EMf->Mzy[c][ni][nj][nk]  += alpha21*qww;
 #pragma       acc atomic update
 		EMf->Mzz[c][ni][nj][nk]  += alpha22*qww;
-       
-	      }
+
+		
+		//001
+		qww = all*weight001;
+
+#pragma       acc atomic update
+		EMf->Mxx[c][ni][nj][nk] += alpha00*qww;
+#pragma       acc atomic update
+		EMf->Mxy[c][ni][nj][nk] += alpha01*qww;
+#pragma       acc atomic update
+		EMf->Mxz[c][ni][nj][nk] += alpha02*qww;
+#pragma       acc atomic update
+		EMf->Myx[c][ni][nj][nk]  += alpha10*qww;
+#pragma       acc atomic update
+		EMf->Myy[c][ni][nj][nk]  += alpha11*qww;
+#pragma       acc atomic update
+		EMf->Myz[c][ni][nj][nk]  += alpha12*qww;
+#pragma       acc atomic update
+		EMf->Mzx[c][ni][nj][nk]  += alpha20*qww;
+#pragma       acc atomic update
+		EMf->Mzy[c][ni][nj][nk]  += alpha21*qww;
+#pragma       acc atomic update
+		EMf->Mzz[c][ni][nj][nk]  += alpha22*qww;
+
+		//010
+		qww = all*weight010;
+
+#pragma       acc atomic update
+		EMf->Mxx[c][ni][nj][nk] += alpha00*qww;
+#pragma       acc atomic update
+		EMf->Mxy[c][ni][nj][nk] += alpha01*qww;
+#pragma       acc atomic update
+		EMf->Mxz[c][ni][nj][nk] += alpha02*qww;
+#pragma       acc atomic update
+		EMf->Myx[c][ni][nj][nk]  += alpha10*qww;
+#pragma       acc atomic update
+		EMf->Myy[c][ni][nj][nk]  += alpha11*qww;
+#pragma       acc atomic update
+		EMf->Myz[c][ni][nj][nk]  += alpha12*qww;
+#pragma       acc atomic update
+		EMf->Mzx[c][ni][nj][nk]  += alpha20*qww;
+#pragma       acc atomic update
+		EMf->Mzy[c][ni][nj][nk]  += alpha21*qww;
+#pragma       acc atomic update
+		EMf->Mzz[c][ni][nj][nk]  += alpha22*qww;
+
+		//011
+		qww = all*weight011;
+
+#pragma       acc atomic update
+		EMf->Mxx[c][ni][nj][nk] += alpha00*qww;
+#pragma       acc atomic update
+		EMf->Mxy[c][ni][nj][nk] += alpha01*qww;
+#pragma       acc atomic update
+		EMf->Mxz[c][ni][nj][nk] += alpha02*qww;
+#pragma       acc atomic update
+		EMf->Myx[c][ni][nj][nk]  += alpha10*qww;
+#pragma       acc atomic update
+		EMf->Myy[c][ni][nj][nk]  += alpha11*qww;
+#pragma       acc atomic update
+		EMf->Myz[c][ni][nj][nk]  += alpha12*qww;
+#pragma       acc atomic update
+		EMf->Mzx[c][ni][nj][nk]  += alpha20*qww;
+#pragma       acc atomic update
+		EMf->Mzy[c][ni][nj][nk]  += alpha21*qww;
+#pragma       acc atomic update
+		EMf->Mzz[c][ni][nj][nk]  += alpha22*qww;
+
+
+		//100
+		qww = all*weight100;
+
+#pragma       acc atomic update
+		EMf->Mxx[c][ni][nj][nk] += alpha00*qww;
+#pragma       acc atomic update
+		EMf->Mxy[c][ni][nj][nk] += alpha01*qww;
+#pragma       acc atomic update
+		EMf->Mxz[c][ni][nj][nk] += alpha02*qww;
+#pragma       acc atomic update
+		EMf->Myx[c][ni][nj][nk]  += alpha10*qww;
+#pragma       acc atomic update
+		EMf->Myy[c][ni][nj][nk]  += alpha11*qww;
+#pragma       acc atomic update
+		EMf->Myz[c][ni][nj][nk]  += alpha12*qww;
+#pragma       acc atomic update
+		EMf->Mzx[c][ni][nj][nk]  += alpha20*qww;
+#pragma       acc atomic update
+		EMf->Mzy[c][ni][nj][nk]  += alpha21*qww;
+#pragma       acc atomic update
+		EMf->Mzz[c][ni][nj][nk]  += alpha22*qww;
+
+		//101
+		qww = all*weight101;
+
+#pragma       acc atomic update
+		EMf->Mxx[c][ni][nj][nk] += alpha00*qww;
+#pragma       acc atomic update
+		EMf->Mxy[c][ni][nj][nk] += alpha01*qww;
+#pragma       acc atomic update
+		EMf->Mxz[c][ni][nj][nk] += alpha02*qww;
+#pragma       acc atomic update
+		EMf->Myx[c][ni][nj][nk]  += alpha10*qww;
+#pragma       acc atomic update
+		EMf->Myy[c][ni][nj][nk]  += alpha11*qww;
+#pragma       acc atomic update
+		EMf->Myz[c][ni][nj][nk]  += alpha12*qww;
+#pragma       acc atomic update
+		EMf->Mzx[c][ni][nj][nk]  += alpha20*qww;
+#pragma       acc atomic update
+		EMf->Mzy[c][ni][nj][nk]  += alpha21*qww;
+#pragma       acc atomic update
+		EMf->Mzz[c][ni][nj][nk]  += alpha22*qww;
+
+		//110
+		qww = all*weight110;
+
+#pragma       acc atomic update
+		EMf->Mxx[c][ni][nj][nk] += alpha00*qww;
+#pragma       acc atomic update
+		EMf->Mxy[c][ni][nj][nk] += alpha01*qww;
+#pragma       acc atomic update
+		EMf->Mxz[c][ni][nj][nk] += alpha02*qww;
+#pragma       acc atomic update
+		EMf->Myx[c][ni][nj][nk]  += alpha10*qww;
+#pragma       acc atomic update
+		EMf->Myy[c][ni][nj][nk]  += alpha11*qww;
+#pragma       acc atomic update
+		EMf->Myz[c][ni][nj][nk]  += alpha12*qww;
+#pragma       acc atomic update
+		EMf->Mzx[c][ni][nj][nk]  += alpha20*qww;
+#pragma       acc atomic update
+		EMf->Mzy[c][ni][nj][nk]  += alpha21*qww;
+#pragma       acc atomic update
+		EMf->Mzz[c][ni][nj][nk]  += alpha22*qww;
+
+		//111
+		qww = all*weight111;
+
+#pragma       acc atomic update
+		EMf->Mxx[c][ni][nj][nk] += alpha00*qww;
+#pragma       acc atomic update
+		EMf->Mxy[c][ni][nj][nk] += alpha01*qww;
+#pragma       acc atomic update
+		EMf->Mxz[c][ni][nj][nk] += alpha02*qww;
+#pragma       acc atomic update
+		EMf->Myx[c][ni][nj][nk]  += alpha10*qww;
+#pragma       acc atomic update
+		EMf->Myy[c][ni][nj][nk]  += alpha11*qww;
+#pragma       acc atomic update
+		EMf->Myz[c][ni][nj][nk]  += alpha12*qww;
+#pragma       acc atomic update
+		EMf->Mzx[c][ni][nj][nk]  += alpha20*qww;
+#pragma       acc atomic update
+		EMf->Mzy[c][ni][nj][nk]  += alpha21*qww;
+#pragma       acc atomic update
+		EMf->Mzz[c][ni][nj][nk]  += alpha22*qww;
+
+		       
+		//}// end if
 
             }
           }
@@ -681,10 +860,29 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
 
             // Only half of the possible nodes  (M is symetric)
             for (int c=0; c<14; c++) {
-            //for (int c=0; c<27; c++) {
-              int n2i = ni + NeNo.getX(c);
-              int n2j = nj + NeNo.getY(c);
-              int n2k = nk + NeNo.getZ(c);
+
+	      int nenoX, nenoY, nenoZ;
+	      switch(c)
+		{
+	      case 0: {nenoX= 0; nenoY= 0;nenoZ= 0; break;}
+	      case 1: {nenoX= 1; nenoY= 0;nenoZ= 0; break;}
+	      case 2: {nenoX= 0; nenoY= 1;nenoZ= 0; break;}
+	      case 3: {nenoX= 0; nenoY= 0;nenoZ= 1; break;}
+	      case 4: {nenoX= 1; nenoY= 1;nenoZ= 0; break;}
+	      case 5: {nenoX= 1; nenoY=-1;nenoZ= 0; break;}
+	      case 6: {nenoX= 1; nenoY= 0;nenoZ= 1; break;}
+	      case 7: {nenoX= 1; nenoY= 0;nenoZ=-1; break;}
+	      case 8: {nenoX= 0; nenoY= 1;nenoZ= 1; break;}
+	      case 9: {nenoX= 0; nenoY= 1;nenoZ=-1; break;}
+	      case 10:{nenoX= 1; nenoY=-1;nenoZ= 1; break;}
+	      case 11:{nenoX= 1; nenoY= 1;nenoZ=-1; break;}
+	      case 12:{nenoX=-1; nenoY= 1;nenoZ= 1; break;}
+	      case 13:{nenoX= 1; nenoY= 1;nenoZ= 1; break;}
+		}
+	      
+              int n2i = ni + nenoX;
+              int n2j = nj + nenoY;
+              int n2k = nk + nenoZ;
 
               int i2 = ix - n2i;
               int j2 = iy - n2j;
