@@ -324,7 +324,7 @@ void Particles3Dcomm::calculateWeights(double weight[][2][2], double xp, double 
 }
 
 
-
+#ifdef GPU
 /** Compute the mass matrix and the implicit current */
 void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D * vct) {
   const double inv_dx = 1.0 / dx;
@@ -342,33 +342,29 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
   double ***Bz_ext = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBz_ext());
   double Fext      = EMf->getFext();
 
- //#pragma omp parallel
   
   {
-    //#pragma omp for
-
-#ifdef GPU
 
     Bx_1D = Bx[0][0];
-  By_1D = By[0][0];
-  Bz_1D = Bz[0][0];
-  Bx_ext_1D = Bx_ext[0][0];
-  By_ext_1D = By_ext[0][0];
-  Bz_ext_1D = Bz_ext[0][0];
+    By_1D = By[0][0];
+    Bz_1D = Bz[0][0];
+    Bx_ext_1D = Bx_ext[0][0];
+    By_ext_1D = By_ext[0][0];
+    Bz_ext_1D = Bz_ext[0][0];
 
      
 #ifdef GPU_PREFETCHING
-   cudaMemPrefetchAsync(x, sizeof(double)*nop, 0, 0);
-   cudaMemPrefetchAsync(y, sizeof(double)*nop, 0, 0);
-   cudaMemPrefetchAsync(z, sizeof(double)*nop, 0, 0);
+    cudaMemPrefetchAsync(x, sizeof(double)*nop, 0, 0);
+    cudaMemPrefetchAsync(y, sizeof(double)*nop, 0, 0);
+    cudaMemPrefetchAsync(z, sizeof(double)*nop, 0, 0);
 
-   cudaMemPrefetchAsync(u, sizeof(double)*nop, 0, 0);
-   cudaMemPrefetchAsync(v, sizeof(double)*nop, 0, 0);
-   cudaMemPrefetchAsync(w, sizeof(double)*nop, 0, 0);
+    cudaMemPrefetchAsync(u, sizeof(double)*nop, 0, 0);
+    cudaMemPrefetchAsync(v, sizeof(double)*nop, 0, 0);
+    cudaMemPrefetchAsync(w, sizeof(double)*nop, 0, 0);
 
-   cudaMemPrefetchAsync(q, sizeof(double)*nop, 0, 0);
+    cudaMemPrefetchAsync(q, sizeof(double)*nop, 0, 0);
 #endif
-#endif
+
     #pragma acc parallel loop
     for (register long long ip = 0; ip < nop; ip++)
     {
@@ -390,7 +386,7 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       Byl = 0.0;
       Bzl = 0.0;
       
-#ifdef GPU
+
 
     // 1D access to fields
     double xi_0=x[ip] - grid->getXN(ix-1,iy  ,iz  );
@@ -445,17 +441,7 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
     Bzl += weight110 * (Bz_1D[INDEX110] + Fext*Bz_ext_1D[INDEX110]);
     Bzl += weight111 * (Bz_1D[INDEX111] + Fext*Bz_ext_1D[INDEX111]);
     
-#else
-            
-      // B field: Grid -> particle
-      for (int i=0; i<=1; i++)
-        for (int j=0; j<=1; j++)
-          for (int k=0; k<=1; k++) {
-            Bxl += weight[i][j][k] * (Bx[ix-i][iy-j][iz-k] + Fext*Bx_ext[ix-i][iy-j][iz-k]);
-            Byl += weight[i][j][k] * (By[ix-i][iy-j][iz-k] + Fext*By_ext[ix-i][iy-j][iz-k]);
-            Bzl += weight[i][j][k] * (Bz[ix-i][iy-j][iz-k] + Fext*Bz_ext[ix-i][iy-j][iz-k]);
-          }
-#endif
+
       // Rotation matrix alpha:
       double omcx = beta * Bxl;
       double omcy = beta * Byl;
@@ -468,6 +454,164 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       double oyz = omcy*omcz;
       double denom = 1.0 / (1.0 + oxx + oyy + ozz);
 
+      double alpha00 = ( 1    + oxx)*denom;
+      double alpha01 = ( omcz + oxy)*denom;
+      double alpha02 = (-omcy + oxz)*denom;
+
+      double alpha10 = (-omcz + oxy)*denom;
+      double alpha11 = ( 1    + oyy)*denom;
+      double alpha12 = ( omcx + oyz)*denom;
+
+      double alpha20 = ( omcy + oxz)*denom;
+      double alpha21 = (-omcx + oyz)*denom;
+      double alpha22 = ( 1    + ozz)*denom;
+
+      double qau = q[ip]*(alpha00*u[ip] + alpha01*v[ip] + alpha02*w[ip]);
+      double qav = q[ip]*(alpha10*u[ip] + alpha11*v[ip] + alpha12*w[ip]);
+      double qaw = q[ip]*(alpha20*u[ip] + alpha21*v[ip] + alpha22*w[ip]);
+
+      #ifdef __PROFILING__
+      clocks->stop(6);
+      #endif
+
+      #ifdef __PROFILING__
+      clocks->start(8);
+      #endif
+
+
+
+      EMf->addJxh_1Dacc(qau*weight000, qau*weight001, qau*weight010, qau*weight011, qau*weight100, qau*weight101, qau*weight110, qau*weight111,ix, iy, iz, ns);
+      EMf->addJyh_1Dacc(qav*weight000, qav*weight001, qav*weight010, qav*weight011, qav*weight100, qav*weight101, qav*weight110, qav*weight111,ix, iy, iz, ns);
+      EMf->addJzh_1Dacc(qaw*weight000, qaw*weight001, qaw*weight010, qaw*weight011, qaw*weight100, qaw*weight101, qaw*weight110, qaw*weight111,ix, iy, iz, ns);
+      
+      #ifdef __PROFILING__
+      clocks->stop(8);
+      #endif
+
+
+      #ifdef __PROFILING__
+      clocks->start(9);
+      #endif
+      // Mass Matrix:
+      //  Each node of the cell in which the particle is:
+      //
+
+      //think about changing this
+        for (int i=0; i<2; i++) 
+        for (int j=0; j<2; j++) 
+          for (int k=0; k<2; k++) {
+            int ni = ix-i;
+            int nj = iy-j;
+            int nk = iz-k;
+
+            // Only half of the possible nodes  (M is symetric)
+            for (int c=0; c<14; c++) {
+            //for (int c=0; c<27; c++) {
+              int n2i = ni + NeNo.getX(c);
+              int n2j = nj + NeNo.getY(c);
+              int n2k = nk + NeNo.getZ(c);
+
+              int i2 = ix - n2i;
+              int j2 = iy - n2j;
+              int k2 = iz - n2k;
+
+              // Check if this node is one of the cell in which the particle is:
+              if (i2>=0 && i2<2 && j2>=0 && j2<2 && k2>=0 && k2<2) {
+                //Mass[i][j][j] 
+                double qww = q[ip]*beta*weight[i][j][k]*weight[i2][j2][k2];
+
+#pragma       acc atomic update
+		EMf->Mxx[c][ni][nj][nk] += alpha00*qww;
+#pragma       acc atomic update
+		EMf->Mxy[c][ni][nj][nk] += alpha01*qww;
+#pragma       acc atomic update
+		EMf->Mxz[c][ni][nj][nk] += alpha02*qww;
+#pragma       acc atomic update
+		EMf->Myx[c][ni][nj][nk]  += alpha10*qww;
+#pragma       acc atomic update
+		EMf->Myy[c][ni][nj][nk]  += alpha11*qww;
+#pragma       acc atomic update
+		EMf->Myz[c][ni][nj][nk]  += alpha12*qww;
+#pragma       acc atomic update
+		EMf->Mzx[c][ni][nj][nk]  += alpha20*qww;
+#pragma       acc atomic update
+		EMf->Mzy[c][ni][nj][nk]  += alpha21*qww;
+#pragma       acc atomic update
+		EMf->Mzz[c][ni][nj][nk]  += alpha22*qww;
+       
+	      }
+
+            }
+          }
+
+        #ifdef __PROFILING__
+        clocks->stop(9);
+        #endif
+    }
+  }
+  
+}
+
+#else
+/** Compute the mass matrix and the implicit current */
+void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D * vct) {
+  const double inv_dx = 1.0 / dx;
+  const double inv_dy = 1.0 / dy;
+  const double inv_dz = 1.0 / dz;
+  double alphaU, alphaV, alphaW;
+  double Bxl, Byl, Bzl;
+  double beta = 0.5*qom*dt;
+
+  double ***Bx     = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBx());
+  double ***By     = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBy());
+  double ***Bz     = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBz());
+  double ***Bx_ext = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBx_ext());
+  double ***By_ext = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBy_ext());
+  double ***Bz_ext = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBz_ext());
+  double Fext      = EMf->getFext();
+
+  {
+
+    for (register long long ip = 0; ip < nop; ip++)
+    {
+
+      #ifdef __PROFILING__
+      clocks->start(6);
+      #endif
+
+      const int ix = 2 + int (floor((x[ip] - xstart) * inv_dx));
+      const int iy = 2 + int (floor((y[ip] - ystart) * inv_dy));
+      const int iz = 2 + int (floor((z[ip] - zstart) * inv_dz));
+
+      // we need weight[2][2][2] for the #ifdef GPU part as well
+      double weight[2][2][2];
+      double temp[2][2][2];
+      calculateWeights( weight, x[ip], y[ip], z[ip], ix, iy, iz, grid);
+
+      Bxl = 0.0;
+      Byl = 0.0;
+      Bzl = 0.0;
+      
+      // B field: Grid -> particle
+      for (int i=0; i<=1; i++)
+        for (int j=0; j<=1; j++)
+          for (int k=0; k<=1; k++) {
+            Bxl += weight[i][j][k] * (Bx[ix-i][iy-j][iz-k] + Fext*Bx_ext[ix-i][iy-j][iz-k]);
+            Byl += weight[i][j][k] * (By[ix-i][iy-j][iz-k] + Fext*By_ext[ix-i][iy-j][iz-k]);
+            Bzl += weight[i][j][k] * (Bz[ix-i][iy-j][iz-k] + Fext*Bz_ext[ix-i][iy-j][iz-k]);
+          }
+
+      // Rotation matrix alpha:
+      double omcx = beta * Bxl;
+      double omcy = beta * Byl;
+      double omcz = beta * Bzl;
+      double oxx = omcx*omcx;
+      double oyy = omcy*omcy;
+      double ozz = omcz*omcz;
+      double oxy = omcy*omcx;
+      double oxz = omcx*omcz;
+      double oyz = omcy*omcz;
+      double denom = 1.0 / (1.0 + oxx + oyy + ozz);
 
       double alpha[3][3];
       alpha[0][0] = ( 1    + oxx)*denom;
@@ -495,14 +639,6 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       clocks->start(8);
       #endif
 
-#ifdef GPU
-
-      EMf->addJxh_1Dacc(qau*weight000, qau*weight001, qau*weight010, qau*weight011, qau*weight100, qau*weight101, qau*weight110, qau*weight111,ix, iy, iz, ns);
-      EMf->addJyh_1Dacc(qav*weight000, qav*weight001, qav*weight010, qav*weight011, qav*weight100, qav*weight101, qav*weight110, qav*weight111,ix, iy, iz, ns);
-      EMf->addJzh_1Dacc(qaw*weight000, qaw*weight001, qaw*weight010, qaw*weight011, qaw*weight100, qaw*weight101, qaw*weight110, qaw*weight111,ix, iy, iz, ns);
-      
-#else      
-      
       // add implicit current density - X
       for (int ii = 0; ii < 2; ii++)
         for (int jj = 0; jj < 2; jj++)
@@ -523,7 +659,6 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
           for (int kk = 0; kk < 2; kk++)
             temp[ii][jj][kk] = qaw* weight[ii][jj][kk];
       EMf->addJzh(temp, ix, iy, iz, ns);
-#endif
       
       #ifdef __PROFILING__
       clocks->stop(8);
@@ -563,8 +698,10 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
                 for (int ind1=0; ind1<3; ind1++)
                    for (int ind2=0; ind2<3; ind2++) val[ind1][ind2] = alpha[ind2][ind1]*qww;
 
-                EMf->addMass(val, ni, nj, nk, c);
-              }
+                
+		EMf->addMass(val, ni, nj, nk, c);
+       
+	      }
 
             }
           }
@@ -578,6 +715,7 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
   }
   
 }
+#endif
 
 /** Compute the mass matrix for the charge initialization */
 void Particles3Dcomm::computeMassMatrices(Field * EMf, Grid * grid, VirtualTopology3D * vct) {
@@ -832,14 +970,14 @@ int Particles3Dcomm::communicate(VirtualTopology3D * ptVCT) {
   #ifdef NSIGHT_PROFILING
     mynvtxstart_("minVal");
 #endif
-    #pragma acc parallel loop
-  for (int i = 0; i < buffer_size; i++) {
-    b_X_RIGHT[i] = MIN_VAL;
-    b_X_LEFT[i] = MIN_VAL;
-    b_Y_RIGHT[i] = MIN_VAL;
-    b_Y_LEFT[i] = MIN_VAL;
-    b_Z_RIGHT[i] = MIN_VAL;
-    b_Z_LEFT[i] = MIN_VAL;
+    #pragma acc parallel loop  // present(this) //, this->b_X_RIGHT, this->b_X_LEFT, this->b_Y_RIGHT, this->b_Y_LEFT, this->b_Z_RIGHT, this->b_Z_LEFT)
+  for (int i = 0; i < buffer_size; i++) { 
+    this->b_X_RIGHT[i] = MIN_VAL;
+    this->b_X_LEFT[i] = MIN_VAL;
+    this->b_Y_RIGHT[i] = MIN_VAL;
+    this->b_Y_LEFT[i] = MIN_VAL;
+    this->b_Z_RIGHT[i] = MIN_VAL;
+    this->b_Z_LEFT[i] = MIN_VAL;
   }
 
   #ifdef NSIGHT_PROFILING
@@ -873,7 +1011,7 @@ int Particles3Dcomm::communicate(VirtualTopology3D * ptVCT) {
     
   while (np_current < nplast+1){
 
-    // BC on particles
+   // BC on particles
     if (x[np_current] < 0 && ptVCT->getXleft_neighbor_P() == MPI_PROC_NULL)
       BCpart(&x[np_current],&u[np_current],&v[np_current],&w[np_current],Lx,uth,vth,wth,bcPfaceXright,bcPfaceXleft);
     else if (x[np_current] > Lx && ptVCT->getXright_neighbor_P() == MPI_PROC_NULL)
@@ -886,6 +1024,7 @@ int Particles3Dcomm::communicate(VirtualTopology3D * ptVCT) {
       BCpart(&z[np_current],&w[np_current],&u[np_current],&v[np_current],Lz,wth,uth,vth,bcPfaceZright,bcPfaceZleft);
     else if (z[np_current] > Lz && ptVCT->getZright_neighbor_P() == MPI_PROC_NULL) //check it here
       BCpart(&z[np_current],&w[np_current],&u[np_current],&v[np_current],Lz,wth,uth,vth,bcPfaceZright,bcPfaceZleft);
+
 
     // if the particle exits, apply the boundary conditions add the particle to communication buffer
     if (x[np_current] < xstart || x[np_current] >xend){
@@ -1240,8 +1379,8 @@ int Particles3Dcomm::unbuffer(double *b_) {
     w[nop] = b_[nVar * np_current + 5];
     q[nop] = b_[nVar * np_current + 6];
     if (TrackParticleID) {
-      partID[nop]   = (long) b_[nVar * np_current + 7];
-      partRank[nop] = (long) b_[nVar * np_current + 8];
+      partID[nop]   = (long long) b_[nVar * np_current + 7];
+      partRank[nop] = (long long) b_[nVar * np_current + 8];
     }
     np_current++;
     // these particles need further communication

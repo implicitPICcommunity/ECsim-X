@@ -396,7 +396,11 @@ void c_Solver::CalculateField() {
   MPI_Barrier(MPI_COMM_WORLD);
 
   EMf->preFetchMoments();
-  
+
+
+  #ifdef NSIGHT_PROFILING
+      mynvtxstart_("solver");
+  #endif  
   
   // MAXWELL'S SOLVER
   #ifdef __WITH_PETSC__
@@ -404,6 +408,11 @@ void c_Solver::CalculateField() {
   #else
     EMf->calculateEB(grid, vct, col);               // calculate the E field
   #endif
+
+  #ifdef NSIGHT_PROFILING
+      mynvtxstop_();
+  #endif
+
 
 #ifdef NSIGHT_PROFILING
   mynvtxstop_();

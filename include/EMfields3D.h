@@ -411,6 +411,18 @@ class EMfields3D                // :public Field
     void setFext(int v) { Fext = v; };
 
     void divergenceOfE(Grid* grid, VirtualTopology3D * vct);
+#ifdef GPU    
+    /*! Mass matrix */
+    double ****Mxx;
+    double ****Mxy;
+    double ****Mxz;
+    double ****Myx;
+    double ****Myy;
+    double ****Myz;
+    double ****Mzx;
+    double ****Mzy;
+    double ****Mzz;
+#endif
 
     /* ********************************* // VARIABLES ********************************* */
   private:
@@ -605,6 +617,7 @@ class EMfields3D                // :public Field
     double ***Jy_ext;
     double ***Jz_ext;
 
+#ifndef GPU
     /*! Mass matrix */
     double ****Mxx;
     double ****Mxy;
@@ -615,6 +628,7 @@ class EMfields3D                // :public Field
     double ****Mzx;
     double ****Mzy;
     double ****Mzz;
+#endif 
 
     NeighboringNodes NeNo; 
 
@@ -678,6 +692,7 @@ class EMfields3D                // :public Field
     double Eenergy;
     double Benergy;
     double EenergyRemoved;
+
 
 };
 
