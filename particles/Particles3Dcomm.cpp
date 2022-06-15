@@ -506,10 +506,28 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
 
             // Only half of the possible nodes  (M is symetric)
             for (int c=0; c<14; c++) {
-            //for (int c=0; c<27; c++) {
-              int n2i = ni + NeNo.getX(c);
-              int n2j = nj + NeNo.getY(c);
-              int n2k = nk + NeNo.getZ(c);
+              int nenoX, nenoY, nenoZ;
+              switch(c)
+                {
+              case 0: {nenoX= 0; nenoY= 0;nenoZ= 0; break;}
+              case 1: {nenoX= 1; nenoY= 0;nenoZ= 0; break;}
+              case 2: {nenoX= 0; nenoY= 1;nenoZ= 0; break;}
+              case 3: {nenoX= 0; nenoY= 0;nenoZ= 1; break;}
+              case 4: {nenoX= 1; nenoY= 1;nenoZ= 0; break;}
+              case 5: {nenoX= 1; nenoY=-1;nenoZ= 0; break;}
+              case 6: {nenoX= 1; nenoY= 0;nenoZ= 1; break;}
+              case 7: {nenoX= 1; nenoY= 0;nenoZ=-1; break;}
+              case 8: {nenoX= 0; nenoY= 1;nenoZ= 1; break;}
+              case 9: {nenoX= 0; nenoY= 1;nenoZ=-1; break;}
+              case 10:{nenoX= 1; nenoY=-1;nenoZ= 1; break;}
+              case 11:{nenoX= 1; nenoY= 1;nenoZ=-1; break;}
+              case 12:{nenoX=-1; nenoY= 1;nenoZ= 1; break;}
+              case 13:{nenoX= 1; nenoY= 1;nenoZ= 1; break;}
+                }
+
+              int n2i = ni + nenoX;
+              int n2j = nj + nenoY;
+              int n2k = nk + nenoZ;
 
               int i2 = ix - n2i;
               int j2 = iy - n2j;
