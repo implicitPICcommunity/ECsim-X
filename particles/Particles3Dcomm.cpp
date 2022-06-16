@@ -414,7 +414,7 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
     int INDEX110 = (ix -1) * nzn * nyn + (iy - 1) * nzn + (iz - 0);
     int INDEX111 = (ix -1) * nzn * nyn + (iy - 1) * nzn + (iz - 1);
 
-     Bxl += weight000 * (Bx_1D[INDEX000] + Fext*Bx_ext_1D[INDEX000]);
+    Bxl += weight000 * (Bx_1D[INDEX000] + Fext*Bx_ext_1D[INDEX000]);
     Bxl += weight001 * (Bx_1D[INDEX001] + Fext*Bx_ext_1D[INDEX001]);
     Bxl += weight010 * (Bx_1D[INDEX010] + Fext*Bx_ext_1D[INDEX010]);
     Bxl += weight011 * (Bx_1D[INDEX011] + Fext*Bx_ext_1D[INDEX011]);
@@ -478,8 +478,6 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       clocks->start(8);
       #endif
 
-
-
       EMf->addJxh_1Dacc(qau*weight000, qau*weight001, qau*weight010, qau*weight011, qau*weight100, qau*weight101, qau*weight110, qau*weight111,ix, iy, iz, ns);
       EMf->addJyh_1Dacc(qav*weight000, qav*weight001, qav*weight010, qav*weight011, qav*weight100, qav*weight101, qav*weight110, qav*weight111,ix, iy, iz, ns);
       EMf->addJzh_1Dacc(qaw*weight000, qaw*weight001, qaw*weight010, qaw*weight011, qaw*weight100, qaw*weight101, qaw*weight110, qaw*weight111,ix, iy, iz, ns);
@@ -487,7 +485,6 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #ifdef __PROFILING__
       clocks->stop(8);
       #endif
-
 
       #ifdef __PROFILING__
       clocks->start(9);
@@ -508,53 +505,53 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
             for (int c=0; c<14; c++) {
               int nenoX, nenoY, nenoZ;
               switch(c)
-                {
-              case 0: {nenoX= 0; nenoY= 0;nenoZ= 0; break;}
-              case 1: {nenoX= 1; nenoY= 0;nenoZ= 0; break;}
-              case 2: {nenoX= 0; nenoY= 1;nenoZ= 0; break;}
-              case 3: {nenoX= 0; nenoY= 0;nenoZ= 1; break;}
-              case 4: {nenoX= 1; nenoY= 1;nenoZ= 0; break;}
-              case 5: {nenoX= 1; nenoY=-1;nenoZ= 0; break;}
-              case 6: {nenoX= 1; nenoY= 0;nenoZ= 1; break;}
-              case 7: {nenoX= 1; nenoY= 0;nenoZ=-1; break;}
-              case 8: {nenoX= 0; nenoY= 1;nenoZ= 1; break;}
-              case 9: {nenoX= 0; nenoY= 1;nenoZ=-1; break;}
-              case 10:{nenoX= 1; nenoY=-1;nenoZ= 1; break;}
-              case 11:{nenoX= 1; nenoY= 1;nenoZ=-1; break;}
-              case 12:{nenoX=-1; nenoY= 1;nenoZ= 1; break;}
-              case 13:{nenoX= 1; nenoY= 1;nenoZ= 1; break;}
-                }
+              {
+                 case 0: {nenoX= 0; nenoY= 0;nenoZ= 0; break;}
+                 case 1: {nenoX= 1; nenoY= 0;nenoZ= 0; break;}
+                 case 2: {nenoX= 0; nenoY= 1;nenoZ= 0; break;}
+                 case 3: {nenoX= 0; nenoY= 0;nenoZ= 1; break;}
+                 case 4: {nenoX= 1; nenoY= 1;nenoZ= 0; break;}
+                 case 5: {nenoX= 1; nenoY=-1;nenoZ= 0; break;}
+                 case 6: {nenoX= 1; nenoY= 0;nenoZ= 1; break;}
+                 case 7: {nenoX= 1; nenoY= 0;nenoZ=-1; break;}
+                 case 8: {nenoX= 0; nenoY= 1;nenoZ= 1; break;}
+                 case 9: {nenoX= 0; nenoY= 1;nenoZ=-1; break;}
+                 case 10:{nenoX= 1; nenoY=-1;nenoZ= 1; break;}
+                 case 11:{nenoX= 1; nenoY= 1;nenoZ=-1; break;}
+                 case 12:{nenoX=-1; nenoY= 1;nenoZ= 1; break;}
+                 case 13:{nenoX= 1; nenoY= 1;nenoZ= 1; break;}
+              }
 
-              int n2i = ni + nenoX;
-              int n2j = nj + nenoY;
-              int n2k = nk + nenoZ;
+              //int n2i = ni + nenoX;
+              //int n2j = nj + nenoY;
+              //int n2k = nk + nenoZ;
 
-              int i2 = ix - n2i;
-              int j2 = iy - n2j;
-              int k2 = iz - n2k;
+              int i2 = i - nenoX;
+              int j2 = j - nenoY;
+              int k2 = k - nenoZ;
 
               // Check if this node is one of the cell in which the particle is:
               if (i2>=0 && i2<2 && j2>=0 && j2<2 && k2>=0 && k2<2) {
                 //Mass[i][j][j] 
                 double qww = q[ip]*beta*weight[i][j][k]*weight[i2][j2][k2];
 
-#pragma       acc atomic update
+                #pragma acc atomic update
 		EMf->Mxx[c][ni][nj][nk] += alpha00*qww;
-#pragma       acc atomic update
+                #pragma acc atomic update
 		EMf->Mxy[c][ni][nj][nk] += alpha01*qww;
-#pragma       acc atomic update
+                #pragma acc atomic update
 		EMf->Mxz[c][ni][nj][nk] += alpha02*qww;
-#pragma       acc atomic update
+                #pragma acc atomic update
 		EMf->Myx[c][ni][nj][nk]  += alpha10*qww;
-#pragma       acc atomic update
+                #pragma acc atomic update
 		EMf->Myy[c][ni][nj][nk]  += alpha11*qww;
-#pragma       acc atomic update
+                #pragma acc atomic update
 		EMf->Myz[c][ni][nj][nk]  += alpha12*qww;
-#pragma       acc atomic update
+                #pragma acc atomic update
 		EMf->Mzx[c][ni][nj][nk]  += alpha20*qww;
-#pragma       acc atomic update
+                #pragma acc atomic update
 		EMf->Mzy[c][ni][nj][nk]  += alpha21*qww;
-#pragma       acc atomic update
+                #pragma acc atomic update
 		EMf->Mzz[c][ni][nj][nk]  += alpha22*qww;
        
 	      }
