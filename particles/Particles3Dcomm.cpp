@@ -501,19 +501,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[0][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[0][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[0][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[0][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[0][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[0][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[0][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[0][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[0][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[0][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[0][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[0][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[0][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[0][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[0][ni][nj][nk]  += alpha22*qww;
 
@@ -526,19 +526,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[0][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[0][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[0][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[0][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[0][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[0][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[0][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[0][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[0][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[0][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[0][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[0][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[0][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[0][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[0][ni][nj][nk]  += alpha22*qww;
 
@@ -551,19 +551,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[3][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[3][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[3][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[3][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[3][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[3][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[3][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[3][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[3][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[3][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[3][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[3][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[3][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[3][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[3][ni][nj][nk]  += alpha22*qww;
 
@@ -576,19 +576,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[0][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[0][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[0][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[0][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[0][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[0][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[0][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[0][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[0][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[0][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[0][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[0][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[0][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[0][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[0][ni][nj][nk]  += alpha22*qww;
 
@@ -601,19 +601,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[2][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[2][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[2][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[2][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[2][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[2][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[2][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[2][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[2][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[2][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[2][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[2][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[2][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[2][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[2][ni][nj][nk]  += alpha22*qww;
 
@@ -626,19 +626,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[9][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[9][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[9][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[9][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[9][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[9][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[9][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[9][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[9][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[9][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[9][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[9][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[9][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[9][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[9][ni][nj][nk]  += alpha22*qww;
 
@@ -651,19 +651,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[0][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[0][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[0][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[0][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[0][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[0][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[0][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[0][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[0][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[0][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[0][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[0][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[0][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[0][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[0][ni][nj][nk]  += alpha22*qww;
 
@@ -676,19 +676,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[2][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[2][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[2][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[2][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[2][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[2][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[2][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[2][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[2][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[2][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[2][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[2][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[2][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[2][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[2][ni][nj][nk]  += alpha22*qww;
 
@@ -701,19 +701,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[3][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[3][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[3][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[3][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[3][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[3][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[3][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[3][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[3][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[3][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[3][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[3][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[3][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[3][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[3][ni][nj][nk]  += alpha22*qww;
 
@@ -726,19 +726,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[8][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[8][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[8][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[8][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[8][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[8][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[8][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[8][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[8][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[8][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[8][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[8][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[8][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[8][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[8][ni][nj][nk]  += alpha22*qww;
 
@@ -751,19 +751,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[12][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[12][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[12][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[12][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[12][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[12][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[12][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[12][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[12][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[12][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[12][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[12][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[12][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[12][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[12][ni][nj][nk]  += alpha22*qww;
 
@@ -776,19 +776,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[0][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[0][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[0][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[0][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[0][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[0][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[0][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[0][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[0][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[0][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[0][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[0][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[0][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[0][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[0][ni][nj][nk]  += alpha22*qww;
 
@@ -801,19 +801,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[1][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[1][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[1][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[1][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[1][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[1][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[1][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[1][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[1][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[1][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[1][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[1][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[1][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[1][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[1][ni][nj][nk]  += alpha22*qww;
 
@@ -826,19 +826,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[5][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[5][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[5][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[5][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[5][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[5][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[5][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[5][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[5][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[5][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[5][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[5][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[5][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[5][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[5][ni][nj][nk]  += alpha22*qww;
 
@@ -851,19 +851,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[7][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[7][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[7][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[7][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[7][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[7][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[7][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[7][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[7][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[7][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[7][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[7][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[7][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[7][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[7][ni][nj][nk]  += alpha22*qww;
 
@@ -876,19 +876,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[0][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[0][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[0][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[0][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[0][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[0][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[0][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[0][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[0][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[0][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[0][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[0][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[0][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[0][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[0][ni][nj][nk]  += alpha22*qww;
 
@@ -901,19 +901,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[1][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[1][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[1][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[1][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[1][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[1][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[1][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[1][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[1][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[1][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[1][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[1][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[1][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[1][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[1][ni][nj][nk]  += alpha22*qww;
 
@@ -926,19 +926,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[3][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[3][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[3][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[3][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[3][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[3][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[3][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[3][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[3][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[3][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[3][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[3][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[3][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[3][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[3][ni][nj][nk]  += alpha22*qww;
 
@@ -951,19 +951,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[5][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[5][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[5][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[5][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[5][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[5][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[5][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[5][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[5][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[5][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[5][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[5][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[5][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[5][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[5][ni][nj][nk]  += alpha22*qww;
 
@@ -976,19 +976,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[6][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[6][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[6][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[6][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[6][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[6][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[6][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[6][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[6][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[6][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[6][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[6][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[6][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[6][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[6][ni][nj][nk]  += alpha22*qww;
 
@@ -1001,19 +1001,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[10][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[10][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[10][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[10][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[10][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[10][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[10][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[10][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[10][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[10][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[10][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[10][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[10][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[10][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[10][ni][nj][nk]  += alpha22*qww;
 
@@ -1026,19 +1026,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[0][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[0][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[0][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[0][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[0][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[0][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[0][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[0][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[0][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[0][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[0][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[0][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[0][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[0][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[0][ni][nj][nk]  += alpha22*qww;
 
@@ -1051,19 +1051,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[1][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[1][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[1][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[1][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[1][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[1][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[1][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[1][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[1][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[1][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[1][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[1][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[1][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[1][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[1][ni][nj][nk]  += alpha22*qww;
 
@@ -1076,19 +1076,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[2][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[2][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[2][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[2][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[2][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[2][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[2][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[2][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[2][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[2][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[2][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[2][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[2][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[2][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[2][ni][nj][nk]  += alpha22*qww;
 
@@ -1101,19 +1101,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[4][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[4][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[4][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[4][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[4][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[4][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[4][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[4][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[4][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[4][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[4][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[4][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[4][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[4][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[4][ni][nj][nk]  += alpha22*qww;
 
@@ -1126,19 +1126,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[7][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[7][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[7][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[7][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[7][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[7][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[7][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[7][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[7][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[7][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[7][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[7][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[7][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[7][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[7][ni][nj][nk]  += alpha22*qww;
 
@@ -1151,19 +1151,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[9][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[9][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[9][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[9][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[9][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[9][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[9][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[9][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[9][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[9][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[9][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[9][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[9][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[9][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[9][ni][nj][nk]  += alpha22*qww;
 
@@ -1176,19 +1176,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[11][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[11][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[11][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[11][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[11][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[11][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[11][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[11][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[11][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[11][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[11][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[11][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[11][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[11][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[11][ni][nj][nk]  += alpha22*qww;
 
@@ -1201,19 +1201,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[0][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[0][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[0][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[0][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[0][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[0][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[0][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[0][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[0][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[0][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[0][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[0][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[0][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[0][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[0][ni][nj][nk]  += alpha22*qww;
 
@@ -1226,19 +1226,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[1][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[1][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[1][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[1][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[1][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[1][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[1][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[1][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[1][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[1][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[1][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[1][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[1][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[1][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[1][ni][nj][nk]  += alpha22*qww;
 
@@ -1251,19 +1251,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[2][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[2][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[2][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[2][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[2][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[2][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[2][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[2][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[2][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[2][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[2][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[2][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[2][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[2][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[2][ni][nj][nk]  += alpha22*qww;
 
@@ -1276,19 +1276,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[3][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[3][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[3][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[3][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[3][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[3][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[3][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[3][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[3][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[3][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[3][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[3][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[3][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[3][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[3][ni][nj][nk]  += alpha22*qww;
 
@@ -1301,19 +1301,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[4][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[4][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[4][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[4][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[4][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[4][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[4][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[4][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[4][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[4][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[4][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[4][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[4][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[4][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[4][ni][nj][nk]  += alpha22*qww;
 
@@ -1326,19 +1326,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[6][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[6][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[6][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[6][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[6][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[6][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[6][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[6][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[6][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[6][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[6][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[6][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[6][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[6][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[6][ni][nj][nk]  += alpha22*qww;
 
@@ -1351,19 +1351,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[8][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[8][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[8][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[8][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[8][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[8][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[8][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[8][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[8][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[8][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[8][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[8][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[8][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[8][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[8][ni][nj][nk]  += alpha22*qww;
 
@@ -1376,19 +1376,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       #pragma acc atomic update
       EMf->Mxx[13][ni][nj][nk] += alpha00*qww;
       #pragma acc atomic update
-      EMf->Mxy[13][ni][nj][nk] += alpha01*qww;
+      EMf->Mxy[13][ni][nj][nk] += alpha10*qww;
       #pragma acc atomic update
-      EMf->Mxz[13][ni][nj][nk] += alpha02*qww;
+      EMf->Mxz[13][ni][nj][nk] += alpha20*qww;
       #pragma acc atomic update
-      EMf->Myx[13][ni][nj][nk]  += alpha10*qww;
+      EMf->Myx[13][ni][nj][nk]  += alpha01*qww;
       #pragma acc atomic update
       EMf->Myy[13][ni][nj][nk]  += alpha11*qww;
       #pragma acc atomic update
-      EMf->Myz[13][ni][nj][nk]  += alpha12*qww;
+      EMf->Myz[13][ni][nj][nk]  += alpha21*qww;
       #pragma acc atomic update
-      EMf->Mzx[13][ni][nj][nk]  += alpha20*qww;
+      EMf->Mzx[13][ni][nj][nk]  += alpha02*qww;
       #pragma acc atomic update
-      EMf->Mzy[13][ni][nj][nk]  += alpha21*qww;
+      EMf->Mzy[13][ni][nj][nk]  += alpha12*qww;
       #pragma acc atomic update
       EMf->Mzz[13][ni][nj][nk]  += alpha22*qww;
 
