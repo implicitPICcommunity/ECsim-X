@@ -538,19 +538,19 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
                 #pragma acc atomic update
 		EMf->Mxx[c][ni][nj][nk] += alpha00*qww;
                 #pragma acc atomic update
-		EMf->Mxy[c][ni][nj][nk] += alpha01*qww;
+		EMf->Mxy[c][ni][nj][nk] += alpha10*qww;
                 #pragma acc atomic update
-		EMf->Mxz[c][ni][nj][nk] += alpha02*qww;
+		EMf->Mxz[c][ni][nj][nk] += alpha20*qww;
                 #pragma acc atomic update
-		EMf->Myx[c][ni][nj][nk]  += alpha10*qww;
+		EMf->Myx[c][ni][nj][nk]  += alpha01*qww;
                 #pragma acc atomic update
 		EMf->Myy[c][ni][nj][nk]  += alpha11*qww;
                 #pragma acc atomic update
-		EMf->Myz[c][ni][nj][nk]  += alpha12*qww;
+		EMf->Myz[c][ni][nj][nk]  += alpha21*qww;
                 #pragma acc atomic update
-		EMf->Mzx[c][ni][nj][nk]  += alpha20*qww;
+		EMf->Mzx[c][ni][nj][nk]  += alpha02*qww;
                 #pragma acc atomic update
-		EMf->Mzy[c][ni][nj][nk]  += alpha21*qww;
+		EMf->Mzy[c][ni][nj][nk]  += alpha12*qww;
                 #pragma acc atomic update
 		EMf->Mzz[c][ni][nj][nk]  += alpha22*qww;
        
