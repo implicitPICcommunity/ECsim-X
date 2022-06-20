@@ -342,6 +342,9 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
   double ***Bz_ext = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBz_ext());
   double Fext      = EMf->getFext();
 
+  
+  {
+
     Bx_1D = Bx[0][0];
     By_1D = By[0][0];
     Bz_1D = Bz[0][0];
@@ -375,14 +378,16 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       const int iz = 2 + int (floor((z[ip] - zstart) * inv_dz));
 
       // we need weight[2][2][2] for the #ifdef GPU part as well
-//      double weight[2][2][2];
-//      double temp[2][2][2];
-//      calculateWeights( weight, x[ip], y[ip], z[ip], ix, iy, iz, grid);
+      double weight[2][2][2];
+      double temp[2][2][2];
+      calculateWeights( weight, x[ip], y[ip], z[ip], ix, iy, iz, grid);
 
       Bxl = 0.0;
       Byl = 0.0;
       Bzl = 0.0;
       
+
+
     // 1D access to fields
     double xi_0=x[ip] - grid->getXN(ix-1,iy  ,iz  );
     double xi_1=grid->getXN(ix,iy,iz) - x[ip];
@@ -487,915 +492,77 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       // Mass Matrix:
       //  Each node of the cell in which the particle is:
       //
-  
-      int ni, nj, nk;
-      double qww;
-      double qb = q[ip]*beta;
 
-      // case1 c = 0, ijk = 000, i2j2k2 = 000
-      ni = ix - 0;
-      nj = iy - 0;
-      nk = iz - 0;
-      
-      qww = qb*weight000*weight000;
-      #pragma acc atomic update
-      EMf->Mxx[0][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[0][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[0][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[0][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[0][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[0][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[0][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[0][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[0][ni][nj][nk]  += alpha22*qww;
+      //think about changing this
+        for (int i=0; i<2; i++) 
+        for (int j=0; j<2; j++) 
+          for (int k=0; k<2; k++) {
+            int ni = ix-i;
+            int nj = iy-j;
+            int nk = iz-k;
 
-      // case2 c = 0, ijk = 001, i2j2k2 = 001
-      ni = ix - 0;
-      nj = iy - 0;
-      nk = iz - 1;
-      
-      qww = qb*weight001*weight001;
-      #pragma acc atomic update
-      EMf->Mxx[0][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[0][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[0][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[0][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[0][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[0][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[0][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[0][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[0][ni][nj][nk]  += alpha22*qww;
+            // Only half of the possible nodes  (M is symetric)
+            for (int c=0; c<14; c++) {
+              int nenoX, nenoY, nenoZ;
+              switch(c)
+              {
+                 case 0: {nenoX= 0; nenoY= 0;nenoZ= 0; break;}
+                 case 1: {nenoX= 1; nenoY= 0;nenoZ= 0; break;}
+                 case 2: {nenoX= 0; nenoY= 1;nenoZ= 0; break;}
+                 case 3: {nenoX= 0; nenoY= 0;nenoZ= 1; break;}
+                 case 4: {nenoX= 1; nenoY= 1;nenoZ= 0; break;}
+                 case 5: {nenoX= 1; nenoY=-1;nenoZ= 0; break;}
+                 case 6: {nenoX= 1; nenoY= 0;nenoZ= 1; break;}
+                 case 7: {nenoX= 1; nenoY= 0;nenoZ=-1; break;}
+                 case 8: {nenoX= 0; nenoY= 1;nenoZ= 1; break;}
+                 case 9: {nenoX= 0; nenoY= 1;nenoZ=-1; break;}
+                 case 10:{nenoX= 1; nenoY=-1;nenoZ= 1; break;}
+                 case 11:{nenoX= 1; nenoY= 1;nenoZ=-1; break;}
+                 case 12:{nenoX=-1; nenoY= 1;nenoZ= 1; break;}
+                 case 13:{nenoX= 1; nenoY= 1;nenoZ= 1; break;}
+              }
 
-      // case3 c = 3, ijk = 001, i2j2k2 = 000
-      ni = ix - 0;
-      nj = iy - 0;
-      nk = iz - 1;
-      
-      qww = qb*weight001*weight000;
-      #pragma acc atomic update
-      EMf->Mxx[3][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[3][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[3][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[3][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[3][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[3][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[3][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[3][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[3][ni][nj][nk]  += alpha22*qww;
+              //int n2i = ni + nenoX;
+              //int n2j = nj + nenoY;
+              //int n2k = nk + nenoZ;
 
-      // case4 c = 0, ijk = 010, i2j2k2 = 010
-      ni = ix - 0;
-      nj = iy - 1;
-      nk = iz - 0;
-      
-      qww = qb*weight010*weight010;
-      #pragma acc atomic update
-      EMf->Mxx[0][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[0][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[0][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[0][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[0][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[0][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[0][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[0][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[0][ni][nj][nk]  += alpha22*qww;
+              int i2 = i - nenoX;
+              int j2 = j - nenoY;
+              int k2 = k - nenoZ;
 
-      // case5 c = 2, ijk = 010, i2j2k2 = 000
-      ni = ix - 0;
-      nj = iy - 1;
-      nk = iz - 0;
-      
-      qww = qb*weight010*weight000;
-      #pragma acc atomic update
-      EMf->Mxx[2][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[2][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[2][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[2][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[2][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[2][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[2][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[2][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[2][ni][nj][nk]  += alpha22*qww;
+              // Check if this node is one of the cell in which the particle is:
+              if (i2>=0 && i2<2 && j2>=0 && j2<2 && k2>=0 && k2<2) {
+                //Mass[i][j][j] 
+                double qww = q[ip]*beta*weight[i][j][k]*weight[i2][j2][k2];
 
-      // case6 c = 9, ijk = 010, i2j2k2 = 001
-      ni = ix - 0;
-      nj = iy - 1;
-      nk = iz - 0;
-      
-      qww = qb*weight010*weight001;
-      #pragma acc atomic update
-      EMf->Mxx[9][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[9][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[9][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[9][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[9][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[9][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[9][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[9][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[9][ni][nj][nk]  += alpha22*qww;
+                #pragma acc atomic update
+		EMf->Mxx[c][ni][nj][nk] += alpha00*qww;
+                #pragma acc atomic update
+		EMf->Mxy[c][ni][nj][nk] += alpha01*qww;
+                #pragma acc atomic update
+		EMf->Mxz[c][ni][nj][nk] += alpha02*qww;
+                #pragma acc atomic update
+		EMf->Myx[c][ni][nj][nk]  += alpha10*qww;
+                #pragma acc atomic update
+		EMf->Myy[c][ni][nj][nk]  += alpha11*qww;
+                #pragma acc atomic update
+		EMf->Myz[c][ni][nj][nk]  += alpha12*qww;
+                #pragma acc atomic update
+		EMf->Mzx[c][ni][nj][nk]  += alpha20*qww;
+                #pragma acc atomic update
+		EMf->Mzy[c][ni][nj][nk]  += alpha21*qww;
+                #pragma acc atomic update
+		EMf->Mzz[c][ni][nj][nk]  += alpha22*qww;
+       
+	      }
 
-      // case7 c = 0, ijk = 011, i2j2k2 = 011
-      ni = ix - 0;
-      nj = iy - 1;
-      nk = iz - 1;
-      
-      qww = qb*weight011*weight011;
-      #pragma acc atomic update
-      EMf->Mxx[0][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[0][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[0][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[0][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[0][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[0][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[0][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[0][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[0][ni][nj][nk]  += alpha22*qww;
-
-      // case8 c = 2, ijk = 011, i2j2k2 = 001
-      ni = ix - 0;
-      nj = iy - 1;
-      nk = iz - 1;
-      
-      qww = qb*weight011*weight001;
-      #pragma acc atomic update
-      EMf->Mxx[2][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[2][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[2][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[2][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[2][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[2][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[2][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[2][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[2][ni][nj][nk]  += alpha22*qww;
-
-      // case9 c = 3, ijk = 011, i2j2k2 = 010
-      ni = ix - 0;
-      nj = iy - 1;
-      nk = iz - 1;
-      
-      qww = qb*weight011*weight010;
-      #pragma acc atomic update
-      EMf->Mxx[3][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[3][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[3][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[3][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[3][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[3][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[3][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[3][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[3][ni][nj][nk]  += alpha22*qww;
-
-      // case10 c = 8, ijk = 011, i2j2k2 = 000
-      ni = ix - 0;
-      nj = iy - 1;
-      nk = iz - 1;
-      
-      qww = qb*weight011*weight000;
-      #pragma acc atomic update
-      EMf->Mxx[8][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[8][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[8][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[8][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[8][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[8][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[8][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[8][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[8][ni][nj][nk]  += alpha22*qww;
-
-      // case11 c = 12, ijk = 011, i2j2k2 = 100
-      ni = ix - 0;
-      nj = iy - 1;
-      nk = iz - 1;
-      
-      qww = qb*weight011*weight100;
-      #pragma acc atomic update
-      EMf->Mxx[12][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[12][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[12][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[12][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[12][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[12][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[12][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[12][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[12][ni][nj][nk]  += alpha22*qww;
-
-      // case12 c = 0, ijk = 100, i2j2k2 = 100
-      ni = ix - 1;
-      nj = iy - 0;
-      nk = iz - 0;
-      
-      qww = qb*weight100*weight100;
-      #pragma acc atomic update
-      EMf->Mxx[0][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[0][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[0][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[0][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[0][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[0][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[0][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[0][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[0][ni][nj][nk]  += alpha22*qww;
-
-      // case13 c = 1, ijk = 100, i2j2k2 = 000
-      ni = ix - 1;
-      nj = iy - 0;
-      nk = iz - 0;
-      
-      qww = qb*weight100*weight000;
-      #pragma acc atomic update
-      EMf->Mxx[1][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[1][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[1][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[1][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[1][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[1][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[1][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[1][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[1][ni][nj][nk]  += alpha22*qww;
-
-      // case14 c = 5, ijk = 100, i2j2k2 = 010
-      ni = ix - 1;
-      nj = iy - 0;
-      nk = iz - 0;
-      
-      qww = qb*weight100*weight010;
-      #pragma acc atomic update
-      EMf->Mxx[5][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[5][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[5][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[5][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[5][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[5][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[5][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[5][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[5][ni][nj][nk]  += alpha22*qww;
-
-      // case15 c = 7, ijk = 100, i2j2k2 = 001
-      ni = ix - 1;
-      nj = iy - 0;
-      nk = iz - 0;
-      
-      qww = qb*weight100*weight001;
-      #pragma acc atomic update
-      EMf->Mxx[7][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[7][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[7][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[7][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[7][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[7][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[7][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[7][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[7][ni][nj][nk]  += alpha22*qww;
-
-      // case16 c = 0, ijk = 101, i2j2k2 = 101
-      ni = ix - 1;
-      nj = iy - 0;
-      nk = iz - 1;
-      
-      qww = qb*weight101*weight101;
-      #pragma acc atomic update
-      EMf->Mxx[0][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[0][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[0][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[0][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[0][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[0][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[0][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[0][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[0][ni][nj][nk]  += alpha22*qww;
-
-      // case17 c = 1, ijk = 101, i2j2k2 = 001
-      ni = ix - 1;
-      nj = iy - 0;
-      nk = iz - 1;
-      
-      qww = qb*weight101*weight001;
-      #pragma acc atomic update
-      EMf->Mxx[1][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[1][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[1][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[1][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[1][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[1][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[1][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[1][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[1][ni][nj][nk]  += alpha22*qww;
-
-      // case18 c = 3, ijk = 101, i2j2k2 = 100
-      ni = ix - 1;
-      nj = iy - 0;
-      nk = iz - 1;
-      
-      qww = qb*weight101*weight100;
-      #pragma acc atomic update
-      EMf->Mxx[3][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[3][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[3][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[3][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[3][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[3][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[3][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[3][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[3][ni][nj][nk]  += alpha22*qww;
-
-      // case19 c = 5, ijk = 101, i2j2k2 = 011
-      ni = ix - 1;
-      nj = iy - 0;
-      nk = iz - 1;
-      
-      qww = qb*weight101*weight011;
-      #pragma acc atomic update
-      EMf->Mxx[5][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[5][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[5][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[5][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[5][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[5][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[5][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[5][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[5][ni][nj][nk]  += alpha22*qww;
-
-      // case20 c = 6, ijk = 101, i2j2k2 = 000
-      ni = ix - 1;
-      nj = iy - 0;
-      nk = iz - 1;
-      
-      qww = qb*weight101*weight000;
-      #pragma acc atomic update
-      EMf->Mxx[6][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[6][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[6][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[6][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[6][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[6][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[6][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[6][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[6][ni][nj][nk]  += alpha22*qww;
-
-      // case21 c = 10, ijk = 101, i2j2k2 = 010
-      ni = ix - 1;
-      nj = iy - 0;
-      nk = iz - 1;
-      
-      qww = qb*weight101*weight010;
-      #pragma acc atomic update
-      EMf->Mxx[10][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[10][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[10][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[10][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[10][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[10][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[10][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[10][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[10][ni][nj][nk]  += alpha22*qww;
-
-      // case22 c = 0, ijk = 110, i2j2k2 = 110
-      ni = ix - 1;
-      nj = iy - 1;
-      nk = iz - 0;
-      
-      qww = qb*weight110*weight110;
-      #pragma acc atomic update
-      EMf->Mxx[0][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[0][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[0][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[0][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[0][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[0][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[0][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[0][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[0][ni][nj][nk]  += alpha22*qww;
-
-      // case23 c = 1, ijk = 110, i2j2k2 = 010
-      ni = ix - 1;
-      nj = iy - 1;
-      nk = iz - 0;
-      
-      qww = qb*weight110*weight010;
-      #pragma acc atomic update
-      EMf->Mxx[1][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[1][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[1][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[1][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[1][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[1][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[1][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[1][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[1][ni][nj][nk]  += alpha22*qww;
-
-      // case24 c = 2, ijk = 110, i2j2k2 = 100
-      ni = ix - 1;
-      nj = iy - 1;
-      nk = iz - 0;
-      
-      qww = qb*weight110*weight100;
-      #pragma acc atomic update
-      EMf->Mxx[2][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[2][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[2][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[2][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[2][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[2][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[2][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[2][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[2][ni][nj][nk]  += alpha22*qww;
-
-      // case25 c = 4, ijk = 110, i2j2k2 = 000
-      ni = ix - 1;
-      nj = iy - 1;
-      nk = iz - 0;
-      
-      qww = qb*weight110*weight000;
-      #pragma acc atomic update
-      EMf->Mxx[4][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[4][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[4][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[4][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[4][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[4][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[4][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[4][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[4][ni][nj][nk]  += alpha22*qww;
-
-      // case26 c = 7, ijk = 110, i2j2k2 = 011
-      ni = ix - 1;
-      nj = iy - 1;
-      nk = iz - 0;
-      
-      qww = qb*weight110*weight011;
-      #pragma acc atomic update
-      EMf->Mxx[7][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[7][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[7][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[7][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[7][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[7][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[7][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[7][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[7][ni][nj][nk]  += alpha22*qww;
-
-      // case27 c = 9, ijk = 110, i2j2k2 = 101
-      ni = ix - 1;
-      nj = iy - 1;
-      nk = iz - 0;
-      
-      qww = qb*weight110*weight101;
-      #pragma acc atomic update
-      EMf->Mxx[9][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[9][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[9][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[9][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[9][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[9][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[9][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[9][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[9][ni][nj][nk]  += alpha22*qww;
-
-      // case28 c = 11, ijk = 110, i2j2k2 = 001
-      ni = ix - 1;
-      nj = iy - 1;
-      nk = iz - 0;
-      
-      qww = qb*weight110*weight001;
-      #pragma acc atomic update
-      EMf->Mxx[11][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[11][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[11][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[11][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[11][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[11][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[11][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[11][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[11][ni][nj][nk]  += alpha22*qww;
-
-      // case29 c = 0, ijk = 111, i2j2k2 = 111
-      ni = ix - 1;
-      nj = iy - 1;
-      nk = iz - 1;
-      
-      qww = qb*weight111*weight111;
-      #pragma acc atomic update
-      EMf->Mxx[0][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[0][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[0][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[0][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[0][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[0][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[0][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[0][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[0][ni][nj][nk]  += alpha22*qww;
-
-      // case30 c = 1, ijk = 111, i2j2k2 = 011
-      ni = ix - 1;
-      nj = iy - 1;
-      nk = iz - 1;
-      
-      qww = qb*weight111*weight011;
-      #pragma acc atomic update
-      EMf->Mxx[1][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[1][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[1][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[1][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[1][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[1][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[1][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[1][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[1][ni][nj][nk]  += alpha22*qww;
-
-      // case31 c = 2, ijk = 111, i2j2k2 = 101
-      ni = ix - 1;
-      nj = iy - 1;
-      nk = iz - 1;
-      
-      qww = qb*weight111*weight101;
-      #pragma acc atomic update
-      EMf->Mxx[2][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[2][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[2][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[2][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[2][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[2][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[2][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[2][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[2][ni][nj][nk]  += alpha22*qww;
-
-      // case32 c = 3, ijk = 111, i2j2k2 = 110
-      ni = ix - 1;
-      nj = iy - 1;
-      nk = iz - 1;
-      
-      qww = qb*weight111*weight110;
-      #pragma acc atomic update
-      EMf->Mxx[3][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[3][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[3][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[3][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[3][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[3][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[3][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[3][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[3][ni][nj][nk]  += alpha22*qww;
-
-      // case33 c = 4, ijk = 111, i2j2k2 = 001
-      ni = ix - 1;
-      nj = iy - 1;
-      nk = iz - 1;
-      
-      qww = qb*weight111*weight001;
-      #pragma acc atomic update
-      EMf->Mxx[4][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[4][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[4][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[4][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[4][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[4][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[4][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[4][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[4][ni][nj][nk]  += alpha22*qww;
-
-      // case34 c = 6, ijk = 111, i2j2k2 = 010
-      ni = ix - 1;
-      nj = iy - 1;
-      nk = iz - 1;
-      
-      qww = qb*weight111*weight010;
-      #pragma acc atomic update
-      EMf->Mxx[6][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[6][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[6][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[6][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[6][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[6][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[6][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[6][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[6][ni][nj][nk]  += alpha22*qww;
-
-      // case35 c = 8, ijk = 111, i2j2k2 = 100
-      ni = ix - 1;
-      nj = iy - 1;
-      nk = iz - 1;
-      
-      qww = qb*weight111*weight100;
-      #pragma acc atomic update
-      EMf->Mxx[8][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[8][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[8][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[8][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[8][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[8][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[8][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[8][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[8][ni][nj][nk]  += alpha22*qww;
-
-      // case36 c = 13, ijk = 111, i2j2k2 = 000
-      ni = ix - 1;
-      nj = iy - 1;
-      nk = iz - 1;
-      
-      qww = qb*weight111*weight000;
-      #pragma acc atomic update
-      EMf->Mxx[13][ni][nj][nk] += alpha00*qww;
-      #pragma acc atomic update
-      EMf->Mxy[13][ni][nj][nk] += alpha10*qww;
-      #pragma acc atomic update
-      EMf->Mxz[13][ni][nj][nk] += alpha20*qww;
-      #pragma acc atomic update
-      EMf->Myx[13][ni][nj][nk]  += alpha01*qww;
-      #pragma acc atomic update
-      EMf->Myy[13][ni][nj][nk]  += alpha11*qww;
-      #pragma acc atomic update
-      EMf->Myz[13][ni][nj][nk]  += alpha21*qww;
-      #pragma acc atomic update
-      EMf->Mzx[13][ni][nj][nk]  += alpha02*qww;
-      #pragma acc atomic update
-      EMf->Mzy[13][ni][nj][nk]  += alpha12*qww;
-      #pragma acc atomic update
-      EMf->Mzz[13][ni][nj][nk]  += alpha22*qww;
+            }
+          }
 
         #ifdef __PROFILING__
         clocks->stop(9);
         #endif
-   
+    }
   }
   
 }
