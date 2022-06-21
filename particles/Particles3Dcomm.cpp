@@ -9,7 +9,8 @@ developers: Stefano Markidis, Giovanni Lapenta.
 #include <sstream>
 #include <string>
 #include <fstream>
-#include <math.h>
+#include <cmath>
+#include <algorithm>
 #include "VirtualTopology3D.h"
 #include "VCtopology3D.h"
 #include "Collective.h"
@@ -365,9 +366,58 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
     cudaMemPrefetchAsync(q, sizeof(double)*nop, 0, 0);
 #endif
 
-    #pragma acc parallel loop
-    for (register long long ip = 0; ip < nop; ip++)
+  int nxc = grid->getNXC();
+  int nyc = grid->getNYC();
+  int nzc = grid->getNZC();
+ 
+  MySort *indirection_list = (MySort*) malloc(sizeof(MySort)*nop); //consider put in allocate withthe same size as x
+  for (int ip = 0; ip<nop; ip++)
+  {
+     const int ix = 2 + int (floor((x[ip] - xstart) * inv_dx));
+     const int iy = 2 + int (floor((y[ip] - ystart) * inv_dy));
+     const int iz = 2 + int (floor((z[ip] - zstart) * inv_dz));
+     //indirection_list.index gives cell number of the particle
+     indirection_list[ip].index = (ix - 2) + (iy - 2) * (nxc - 2) + (iz -2) * (nxc -2) * (nyc-2);
+     //     printf(" xp, xstart = %d %d\n", x[ip], xstart);
+     //     printf(" index %d %d %d %d %d %d %d\n",ix,iy,iz,nxc,nyc,nzc,indirection_list[ip].index );
+     //indirection_list.location gives index of particle in original array
+     indirection_list[ip].location = ip;
+  }
+
+  std::sort(indirection_list, indirection_list + nop, MySort());
+
+  int* start_p = (int*) malloc(sizeof(int) * nxc * nyc * nzc); //check if cells or nodes
+  int* end_p = (int*) malloc(sizeof(int) * nxc * nyc * nzc);
+  for (int ic = 0; ic < nxc * nyc * nzc; ic++)
+  {
+     start_p[ic] = -1;
+     end_p[ic] = -1;
+  }
+
+  start_p[0] = 0;
+  for (int ip = 1; ip < nop; ip++) 
+  {
+    //    printf("Part %d\n", indirection_list[ip-1].index);
+    if (indirection_list[ip].index > indirection_list[ip-1].index)
+     {
+        
+	end_p[indirection_list[ip-1].index] = ip;
+	start_p[indirection_list[ip].index] = ip;
+     } 
+  }
+  end_p[indirection_list[nop-1].index] = nop;  
+  for (int ic = 0; ic < nxc * nyc * nzc; ic++)
+    for (register long long ipc = start_p[ic]; ipc < end_p[ic]; ipc++) {
+      int index_start = indirection_list[start_p[ic]].index;
+      int index = indirection_list[ipc].index;
+      if ( index_start != index )
+	printf("invalid index at %d %d\n",ic,ipc);
+    }
+  
+  for (int ic = 0; ic < (nxc-2) * (nyc-2) * (nzc-2); ic++)
+    for (register long long ipc = start_p[ic]; ipc < end_p[ic]; ipc++)
     {
+      int ip = indirection_list[ipc].location;
 
       #ifdef __PROFILING__
       clocks->start(6);
@@ -376,6 +426,13 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       const int ix = 2 + int (floor((x[ip] - xstart) * inv_dx));
       const int iy = 2 + int (floor((y[ip] - ystart) * inv_dy));
       const int iz = 2 + int (floor((z[ip] - zstart) * inv_dz));
+
+
+      int index = (ix - 2) + (iy - 2) * (nxc - 2) + (iz -2) * (nxc -2) * (nyc-2);
+      if (index != ic)
+      {
+	  printf("Error");
+      }
 
       // we need weight[2][2][2] for the #ifdef GPU part as well
       double weight[2][2][2];
@@ -563,6 +620,8 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
         clocks->stop(9);
         #endif
     }
+  
+    free(indirection_list); 
   }
   
 }
