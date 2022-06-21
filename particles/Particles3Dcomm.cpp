@@ -344,7 +344,6 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
   double Fext      = EMf->getFext();
 
   
-  {
 
     Bx_1D = Bx[0][0];
     By_1D = By[0][0];
@@ -415,6 +414,33 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
     }
   
   for (int ic = 0; ic < (nxc-2) * (nyc-2) * (nzc-2); ic++)
+  { 
+	  int ip = indirection_list[start_p[ic]].location;
+    
+	  const int ix = 2 + int (floor((x[ip] - xstart) * inv_dx));
+          const int iy = 2 + int (floor((y[ip] - ystart) * inv_dy));
+          const int iz = 2 + int (floor((z[ip] - zstart) * inv_dz));
+
+          const int INDEX000 = (ix -0) * nzn * nyn + (iy - 0) * nzn + (iz - 0);
+          const int INDEX001 = (ix -0) * nzn * nyn + (iy - 0) * nzn + (iz - 1);
+          const int INDEX010 = (ix -0) * nzn * nyn + (iy - 1) * nzn + (iz - 0);
+          const int INDEX011 = (ix -0) * nzn * nyn + (iy - 1) * nzn + (iz - 1);
+          const int INDEX100 = (ix -1) * nzn * nyn + (iy - 0) * nzn + (iz - 0);
+          const int INDEX101 = (ix -1) * nzn * nyn + (iy - 0) * nzn + (iz - 1);
+          const int INDEX110 = (ix -1) * nzn * nyn + (iy - 1) * nzn + (iz - 0);
+          const int INDEX111 = (ix -1) * nzn * nyn + (iy - 1) * nzn + (iz - 1);
+
+          double Mxx[14][2][2][2] = {0.}; 
+          double Mxy[14][2][2][2] = {0.};
+          double Mxz[14][2][2][2] = {0.};
+          double Myx[14][2][2][2] = {0.};
+          double Myy[14][2][2][2] = {0.};
+          double Myz[14][2][2][2] = {0.};
+          double Mzx[14][2][2][2] = {0.};
+          double Mzy[14][2][2][2] = {0.};
+          double Mzz[14][2][2][2] = {0.}; 
+
+
     for (register long long ipc = start_p[ic]; ipc < end_p[ic]; ipc++)
     {
       int ip = indirection_list[ipc].location;
@@ -423,18 +449,8 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       clocks->start(6);
       #endif
 
-      const int ix = 2 + int (floor((x[ip] - xstart) * inv_dx));
-      const int iy = 2 + int (floor((y[ip] - ystart) * inv_dy));
-      const int iz = 2 + int (floor((z[ip] - zstart) * inv_dz));
 
-
-      int index = (ix - 2) + (iy - 2) * (nxc - 2) + (iz -2) * (nxc -2) * (nyc-2);
-      if (index != ic)
-      {
-	  printf("Error");
-      }
-
-      // we need weight[2][2][2] for the #ifdef GPU part as well
+        // we need weight[2][2][2] for the #ifdef GPU part as well
       double weight[2][2][2];
       double temp[2][2][2];
       calculateWeights( weight, x[ip], y[ip], z[ip], ix, iy, iz, grid);
@@ -462,16 +478,7 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
     double weight110 = xi_1 * eta_1 * zeta_0 * invVOL;
     double weight111 = xi_1 * eta_1 * zeta_1 * invVOL;
 
-    int INDEX000 = (ix -0) * nzn * nyn + (iy - 0) * nzn + (iz - 0);
-    int INDEX001 = (ix -0) * nzn * nyn + (iy - 0) * nzn + (iz - 1);
-    int INDEX010 = (ix -0) * nzn * nyn + (iy - 1) * nzn + (iz - 0);
-    int INDEX011 = (ix -0) * nzn * nyn + (iy - 1) * nzn + (iz - 1);
-    int INDEX100 = (ix -1) * nzn * nyn + (iy - 0) * nzn + (iz - 0);
-    int INDEX101 = (ix -1) * nzn * nyn + (iy - 0) * nzn + (iz - 1);
-    int INDEX110 = (ix -1) * nzn * nyn + (iy - 1) * nzn + (iz - 0);
-    int INDEX111 = (ix -1) * nzn * nyn + (iy - 1) * nzn + (iz - 1);
-
-    Bxl += weight000 * (Bx_1D[INDEX000] + Fext*Bx_ext_1D[INDEX000]);
+     Bxl += weight000 * (Bx_1D[INDEX000] + Fext*Bx_ext_1D[INDEX000]);
     Bxl += weight001 * (Bx_1D[INDEX001] + Fext*Bx_ext_1D[INDEX001]);
     Bxl += weight010 * (Bx_1D[INDEX010] + Fext*Bx_ext_1D[INDEX010]);
     Bxl += weight011 * (Bx_1D[INDEX011] + Fext*Bx_ext_1D[INDEX011]);
@@ -554,11 +561,8 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
         for (int i=0; i<2; i++) 
         for (int j=0; j<2; j++) 
           for (int k=0; k<2; k++) {
-            int ni = ix-i;
-            int nj = iy-j;
-            int nk = iz-k;
-
-            // Only half of the possible nodes  (M is symetric)
+             
+	    // Only half of the possible nodes  (M is symetric)
             for (int c=0; c<14; c++) {
               int nenoX, nenoY, nenoZ;
               switch(c)
@@ -592,39 +596,61 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
                 //Mass[i][j][j] 
                 double qww = q[ip]*beta*weight[i][j][k]*weight[i2][j2][k2];
 
-                #pragma acc atomic update
-		EMf->Mxx[c][ni][nj][nk] += alpha00*qww;
-                #pragma acc atomic update
-		EMf->Mxy[c][ni][nj][nk] += alpha10*qww;
-                #pragma acc atomic update
-		EMf->Mxz[c][ni][nj][nk] += alpha20*qww;
-                #pragma acc atomic update
-		EMf->Myx[c][ni][nj][nk]  += alpha01*qww;
-                #pragma acc atomic update
-		EMf->Myy[c][ni][nj][nk]  += alpha11*qww;
-                #pragma acc atomic update
-		EMf->Myz[c][ni][nj][nk]  += alpha21*qww;
-                #pragma acc atomic update
-		EMf->Mzx[c][ni][nj][nk]  += alpha02*qww;
-                #pragma acc atomic update
-		EMf->Mzy[c][ni][nj][nk]  += alpha12*qww;
-                #pragma acc atomic update
-		EMf->Mzz[c][ni][nj][nk]  += alpha22*qww;
+
+		Mxx[c][i][j][k] += alpha00*qww;
+		Mxy[c][i][j][k] += alpha10*qww;
+		Mxz[c][i][j][k] += alpha20*qww;
+		Myx[c][i][j][k] += alpha01*qww;
+		Myy[c][i][j][k] += alpha11*qww;
+		Myz[c][i][j][k] += alpha21*qww;
+		Mzx[c][i][j][k] += alpha02*qww;
+		Mzy[c][i][j][k] += alpha12*qww;
+		Mzz[c][i][j][k] += alpha22*qww;
        
-	      }
+	      } //closes if
 
-            }
-          }
-
+            } // closes c
+          } //closes i j k
+    
+    } //closes loop on the particles
         #ifdef __PROFILING__
         clocks->stop(9);
         #endif
-    }
+   
+        for (int i=0; i<2; i++) 
+         for (int j=0; j<2; j++) 
+          for (int k=0; k<2; k++) {
+            int ni = ix-i;
+            int nj = iy-j;
+            int nk = iz-k;
+
+	    for (int c=0; c<14; c++) {
+
+               #pragma acc atomic update
+               EMf->Mxx[c][ni][nj][nk] += Mxx[c][i][j][k];
+               #pragma acc atomic update
+	       EMf->Mxy[c][ni][nj][nk] += Mxy[c][i][j][k];
+               #pragma acc atomic update
+	       EMf->Mxz[c][ni][nj][nk] += Mxz[c][i][j][k];
+               #pragma acc atomic update
+               EMf->Myx[c][ni][nj][nk] += Myz[c][i][j][k];
+               #pragma acc atomic update
+               EMf->Myy[c][ni][nj][nk]  += Myy[c][i][j][k];
+               #pragma acc atomic update
+               EMf->Myz[c][ni][nj][nk]  += Myz[c][i][j][k];
+               #pragma acc atomic update
+	       EMf->Mzx[c][ni][nj][nk]  += Mzx[c][i][j][k];
+               #pragma acc atomic update
+               EMf->Mzy[c][ni][nj][nk]  += Mzy[c][i][j][k];
+               #pragma acc atomic update
+               EMf->Mzz[c][ni][nj][nk]  += Mzz[c][i][j][k];
+    	   } //closes loop on c
+      }// closes loop on i j k
   
     free(indirection_list); 
-  }
+  } //closes loop on the cell
   
-}
+} // closes routine
 
 #else
 /** Compute the mass matrix and the implicit current */
