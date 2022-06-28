@@ -28,18 +28,6 @@ public:
   /** allocate particles */
   void  allocate(bool test, int species, long long initnpmax, Collective * col, VirtualTopology3D * vct, Grid * grid);
 
-  /* sorting */
-  struct MySort
-  {
-     int index;
-     int location;
-
-     bool operator () (const MySort& lhs, const MySort& rhs) {return lhs.index < rhs.index;}
-  };
- 
-  
-
-
   /** calculate the weights given the position of particles */
   #pragma acc routine seq
   void calculateWeights(double weight[][2][2], double xp, double yp, double zp, int ix, int iy, int iz, Grid * grid);
