@@ -334,16 +334,24 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
   double Bxl, Byl, Bzl;
   double beta = 0.5*qom*dt;
 
-  double ***Bx     = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBx());
-  double ***By     = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBy());
-  double ***Bz     = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBz());
-  double ***Bx_ext = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBx_ext());
-  double ***By_ext = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBy_ext());
-  double ***Bz_ext = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBz_ext());
+  double ***Bx     = asgArr3(double, nxn, nyn, nzn, EMf->getBx());
+  double ***By     = asgArr3(double, nxn, nyn, nzn, EMf->getBy());
+  double ***Bz     = asgArr3(double, nxn, nyn, nzn, EMf->getBz());
+  double ***Bx_ext = asgArr3(double, nxn, nyn, nzn, EMf->getBx_ext());
+  double ***By_ext = asgArr3(double, nxn, nyn, nzn, EMf->getBy_ext());
+  double ***Bz_ext = asgArr3(double, nxn, nyn, nzn, EMf->getBz_ext());
   double Fext      = EMf->getFext();
 
-  
-  {
+  // Can we change v with c?
+  A5D right(nxn, nyn, nzn, 9, 14);
+  // Is there a better way?
+  for (int i = 0; i < nxn; i++)
+      for (int j = 0; j < nyn; j++)
+  	  for (int k = 0; k < nzn; k++)
+              for (int v = 0; v < 9; v++)
+  		  for (int c = 0; c < 14; c++){
+                      right.l(i,j,k,v,c) = 0.0;
+	              } 
 
     Bx_1D = Bx[0][0];
     By_1D = By[0][0];
@@ -379,7 +387,6 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
 
       // we need weight[2][2][2] for the #ifdef GPU part as well
       double weight[2][2][2];
-      double temp[2][2][2];
       calculateWeights( weight, x[ip], y[ip], z[ip], ix, iy, iz, grid);
 
       Bxl = 0.0;
@@ -470,102 +477,102 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       double qav = q[ip]*(alpha10*u[ip] + alpha11*v[ip] + alpha12*w[ip]);
       double qaw = q[ip]*(alpha20*u[ip] + alpha21*v[ip] + alpha22*w[ip]);
 
-      #ifdef __PROFILING__
-      clocks->stop(6);
-      #endif
-
-      #ifdef __PROFILING__
-      clocks->start(8);
-      #endif
-
       EMf->addJxh_1Dacc(qau*weight000, qau*weight001, qau*weight010, qau*weight011, qau*weight100, qau*weight101, qau*weight110, qau*weight111,ix, iy, iz, ns);
       EMf->addJyh_1Dacc(qav*weight000, qav*weight001, qav*weight010, qav*weight011, qav*weight100, qav*weight101, qav*weight110, qav*weight111,ix, iy, iz, ns);
       EMf->addJzh_1Dacc(qaw*weight000, qaw*weight001, qaw*weight010, qaw*weight011, qaw*weight100, qaw*weight101, qaw*weight110, qaw*weight111,ix, iy, iz, ns);
       
-      #ifdef __PROFILING__
-      clocks->stop(8);
-      #endif
-
-      #ifdef __PROFILING__
-      clocks->start(9);
-      #endif
-      // Mass Matrix:
+     // Mass Matrix:
       //  Each node of the cell in which the particle is:
       //
 
       //think about changing this
-        for (int i=0; i<2; i++) 
-        for (int j=0; j<2; j++) 
-          for (int k=0; k<2; k++) {
-            int ni = ix-i;
-            int nj = iy-j;
-            int nk = iz-k;
+      
+      #pragma acc loop seq
+      for (int i = 0; i < 2; i++){
+          int ni = ix-i;
+	  #pragma acc loop seq
+	  for (int j = 0; j < 2; j++){
+	      int nj = iy - j;
+              #pragma acc loop seq
+	      for (int k = 0; k < 2; k++){
+		  int nk = iz - k;
+		  #pragma acc loop vector collapse(2)
+		  for (int v = 0; v < 9; v++)
+	              for (int c = 0; c < 14; c++){
+                        
+                          int nenoX, nenoY, nenoZ;
+                          switch(c)
+                          {
+                             case 0: {nenoX= 0; nenoY= 0;nenoZ= 0; break;}
+                             case 1: {nenoX= 1; nenoY= 0;nenoZ= 0; break;}
+                             case 2: {nenoX= 0; nenoY= 1;nenoZ= 0; break;}
+                             case 3: {nenoX= 0; nenoY= 0;nenoZ= 1; break;}
+                             case 4: {nenoX= 1; nenoY= 1;nenoZ= 0; break;}
+                             case 5: {nenoX= 1; nenoY=-1;nenoZ= 0; break;}
+                             case 6: {nenoX= 1; nenoY= 0;nenoZ= 1; break;}
+                             case 7: {nenoX= 1; nenoY= 0;nenoZ=-1; break;}
+                             case 8: {nenoX= 0; nenoY= 1;nenoZ= 1; break;}
+                             case 9: {nenoX= 0; nenoY= 1;nenoZ=-1; break;}
+                             case 10:{nenoX= 1; nenoY=-1;nenoZ= 1; break;}
+                             case 11:{nenoX= 1; nenoY= 1;nenoZ=-1; break;}
+                             case 12:{nenoX=-1; nenoY= 1;nenoZ= 1; break;}
+                             case 13:{nenoX= 1; nenoY= 1;nenoZ= 1; break;}
+                          }
 
-            // Only half of the possible nodes  (M is symetric)
-            for (int c=0; c<14; c++) {
-              int nenoX, nenoY, nenoZ;
-              switch(c)
-              {
-                 case 0: {nenoX= 0; nenoY= 0;nenoZ= 0; break;}
-                 case 1: {nenoX= 1; nenoY= 0;nenoZ= 0; break;}
-                 case 2: {nenoX= 0; nenoY= 1;nenoZ= 0; break;}
-                 case 3: {nenoX= 0; nenoY= 0;nenoZ= 1; break;}
-                 case 4: {nenoX= 1; nenoY= 1;nenoZ= 0; break;}
-                 case 5: {nenoX= 1; nenoY=-1;nenoZ= 0; break;}
-                 case 6: {nenoX= 1; nenoY= 0;nenoZ= 1; break;}
-                 case 7: {nenoX= 1; nenoY= 0;nenoZ=-1; break;}
-                 case 8: {nenoX= 0; nenoY= 1;nenoZ= 1; break;}
-                 case 9: {nenoX= 0; nenoY= 1;nenoZ=-1; break;}
-                 case 10:{nenoX= 1; nenoY=-1;nenoZ= 1; break;}
-                 case 11:{nenoX= 1; nenoY= 1;nenoZ=-1; break;}
-                 case 12:{nenoX=-1; nenoY= 1;nenoZ= 1; break;}
-                 case 13:{nenoX= 1; nenoY= 1;nenoZ= 1; break;}
+			  int i2 = i - nenoX;
+                          int j2 = j - nenoY;
+                          int k2 = k - nenoZ;
+                          
+			  if (i2>=0 && i2<2 && j2>=0 && j2<2 && k2>=0 && k2<2){
+
+                             double qww = q[ip]*beta*weight[i][j][k]*weight[i2][j2][k2];
+
+			     double &ptr=right.l(ni,nj,nk,v,c);
+                             
+			     double alpha;
+
+                             switch(v){
+				case 0: {alpha = alpha00; break;}
+		                case 1: {alpha = alpha10; break;}
+				case 2: {alpha = alpha20; break;}
+				case 3: {alpha = alpha01; break;}
+				case 4: {alpha = alpha11; break;}
+				case 5: {alpha = alpha21; break;}
+				case 6: {alpha = alpha02; break;}
+				case 7: {alpha = alpha12; break;}
+				case 8: {alpha = alpha22; break;}
+		             }
+
+                             #pragma acc atomic update
+                             ptr += alpha * qww;
+                          } //if
+               
+	      } //loop on c
+
+            } //loop on k
+          } // loop on j
+
+      } //loop on i
+	 
+} //loop on part
+
+  for (int i = 0; i < nxn; i++)
+      for (int j = 0; j < nyn; j++)
+	  for (int k = 0; k < nzn; k++)
+	      for (int c = 0; c < 14; c++){
+                  EMf->Mxx[c][i][j][k] = right.l(i,j,k,0,c);
+		  EMf->Mxy[c][i][j][k] = right.l(i,j,k,1,c);
+		  EMf->Mxz[c][i][j][k] = right.l(i,j,k,2,c);
+		  EMf->Myx[c][i][j][k] = right.l(i,j,k,3,c);
+		  EMf->Myy[c][i][j][k] = right.l(i,j,k,4,c);
+		  EMf->Myz[c][i][j][k] = right.l(i,j,k,5,c);
+		  EMf->Mzx[c][i][j][k] = right.l(i,j,k,6,c);
+		  EMf->Mzy[c][i][j][k] = right.l(i,j,k,7,c);
+		  EMf->Mzz[c][i][j][k] = right.l(i,j,k,8,c);
               }
 
-              //int n2i = ni + nenoX;
-              //int n2j = nj + nenoY;
-              //int n2k = nk + nenoZ;
-
-              int i2 = i - nenoX;
-              int j2 = j - nenoY;
-              int k2 = k - nenoZ;
-
-              // Check if this node is one of the cell in which the particle is:
-              if (i2>=0 && i2<2 && j2>=0 && j2<2 && k2>=0 && k2<2) {
-                //Mass[i][j][j] 
-                double qww = q[ip]*beta*weight[i][j][k]*weight[i2][j2][k2];
-
-                #pragma acc atomic update
-		EMf->Mxx[c][ni][nj][nk] += alpha00*qww;
-                #pragma acc atomic update
-		EMf->Mxy[c][ni][nj][nk] += alpha10*qww;
-                #pragma acc atomic update
-		EMf->Mxz[c][ni][nj][nk] += alpha20*qww;
-                #pragma acc atomic update
-		EMf->Myx[c][ni][nj][nk]  += alpha01*qww;
-                #pragma acc atomic update
-		EMf->Myy[c][ni][nj][nk]  += alpha11*qww;
-                #pragma acc atomic update
-		EMf->Myz[c][ni][nj][nk]  += alpha21*qww;
-                #pragma acc atomic update
-		EMf->Mzx[c][ni][nj][nk]  += alpha02*qww;
-                #pragma acc atomic update
-		EMf->Mzy[c][ni][nj][nk]  += alpha12*qww;
-                #pragma acc atomic update
-		EMf->Mzz[c][ni][nj][nk]  += alpha22*qww;
-       
-	      }
-
-            }
-          }
-
-        #ifdef __PROFILING__
-        clocks->stop(9);
-        #endif
-    }
-  }
-  
-}
+right.delArr5();  
+} //function
 
 #else
 /** Compute the mass matrix and the implicit current */
@@ -577,12 +584,12 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
   double Bxl, Byl, Bzl;
   double beta = 0.5*qom*dt;
 
-  double ***Bx     = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBx());
-  double ***By     = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBy());
-  double ***Bz     = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBz());
-  double ***Bx_ext = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBx_ext());
-  double ***By_ext = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBy_ext());
-  double ***Bz_ext = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBz_ext());
+  double ***Bx     = asgArr3(double, nxn, nyn, nzn, EMf->getBx());
+  double ***By     = asgArr3(double, nxn, nyn, nzn, EMf->getBy());
+  double ***Bz     = asgArr3(double, nxn, nyn, nzn, EMf->getBz());
+  double ***Bx_ext = asgArr3(double, nxn, nyn, nzn, EMf->getBx_ext());
+  double ***By_ext = asgArr3(double, nxn, nyn, nzn, EMf->getBy_ext());
+  double ***Bz_ext = asgArr3(double, nxn, nyn, nzn, EMf->getBz_ext());
   double Fext      = EMf->getFext();
 
   {

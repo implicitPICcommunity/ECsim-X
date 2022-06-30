@@ -173,6 +173,35 @@ template < class type > void delArr2(type ** arr, int dummyx) {
   delete[]arr;
 }
 
+struct A5D {
+
+  A5D(int n1, int n2, int n3, int n4, int n5) :
+    l1(n2*n3*n4*n5), l2(n3*n4*n5), l3(n4*n5),l4(n5),
+    r2(n1), r3(n1*n2), r4(n1*n2*n3), r5(n1*n2*n3*n4)
+  {
+    data = (double*) calloc(n1*n2*n3*n4*n5,sizeof(double));
+    cudaMemPrefetchAsync(data, sizeof(double)*n1*n2*n3*n4*n5, 0, 0);
+  }
+
+  double& l(int i1, int i2, int i3, int i4, int i5) {
+    return data[l1*i1+i2*l2+i3*l3+i4*l4+i5];
+  }
+  double& r(int i1, int i2, int i3, int i4, int i5) {
+    return data[i1+i2*r2+i3*r3+i4*r4+i5*r5];
+  }
+ 
+  void delArr5(){
+       free(data);
+  }
+
+  const int l1, l2, l3, l4;
+  const int r2, r3, r4, r5;
+
+  double *data;
+
+};
+
+
 #define newArr4(type,sz1,sz2,sz3,sz4) _new_4_array<type>((sz1),(sz2),(sz3),(sz4))
 #define newArr3(type,sz1,sz2,sz3) _new_3_array<type>((sz1),(sz2),(sz3))
 #define newArr2(type,sz1,sz2) _new_2_array<type>((sz1),(sz2))
