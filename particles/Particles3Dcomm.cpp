@@ -345,13 +345,13 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
   // Can we change v with c?
   A5D right(nxn, nyn, nzn, 9, 14);
   // Is there a better way?
-  for (int i = 0; i < nxn; i++)
+  /*for (int i = 0; i < nxn; i++)
       for (int j = 0; j < nyn; j++)
   	  for (int k = 0; k < nzn; k++)
               for (int v = 0; v < 9; v++)
   		  for (int c = 0; c < 14; c++){
                       right.l(i,j,k,v,c) = 0.0;
-	              } 
+	              } */
 
     Bx_1D = Bx[0][0];
     By_1D = By[0][0];
@@ -373,7 +373,7 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
     cudaMemPrefetchAsync(q, sizeof(double)*nop, 0, 0);
 #endif
 
-    #pragma acc parallel loop
+    #pragma acc parallel loop vector_length(32)
     for (register long long ip = 0; ip < nop; ip++)
     {
 
@@ -560,15 +560,15 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       for (int j = 0; j < nyn; j++)
 	  for (int k = 0; k < nzn; k++)
 	      for (int c = 0; c < 14; c++){
-                  EMf->Mxx[c][i][j][k] = right.l(i,j,k,0,c);
-		  EMf->Mxy[c][i][j][k] = right.l(i,j,k,1,c);
-		  EMf->Mxz[c][i][j][k] = right.l(i,j,k,2,c);
-		  EMf->Myx[c][i][j][k] = right.l(i,j,k,3,c);
-		  EMf->Myy[c][i][j][k] = right.l(i,j,k,4,c);
-		  EMf->Myz[c][i][j][k] = right.l(i,j,k,5,c);
-		  EMf->Mzx[c][i][j][k] = right.l(i,j,k,6,c);
-		  EMf->Mzy[c][i][j][k] = right.l(i,j,k,7,c);
-		  EMf->Mzz[c][i][j][k] = right.l(i,j,k,8,c);
+                  EMf->Mxx[c][i][j][k] += right.l(i,j,k,0,c);
+		  EMf->Mxy[c][i][j][k] += right.l(i,j,k,1,c);
+		  EMf->Mxz[c][i][j][k] += right.l(i,j,k,2,c);
+		  EMf->Myx[c][i][j][k] += right.l(i,j,k,3,c);
+		  EMf->Myy[c][i][j][k] += right.l(i,j,k,4,c);
+		  EMf->Myz[c][i][j][k] += right.l(i,j,k,5,c);
+		  EMf->Mzx[c][i][j][k] += right.l(i,j,k,6,c);
+		  EMf->Mzy[c][i][j][k] += right.l(i,j,k,7,c);
+		  EMf->Mzz[c][i][j][k] += right.l(i,j,k,8,c);
               }
 
 right.delArr5();  
