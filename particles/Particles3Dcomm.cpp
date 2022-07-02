@@ -342,6 +342,10 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
   double ***Bz_ext = asgArr3(double, nxn, nyn, nzn, EMf->getBz_ext());
   double Fext      = EMf->getFext();
 
+#ifdef NSIGHT_PROFILING
+    mynvtxstart_("compMom");
+#endif
+
   // Can we change v with c?
   A5D right(nxn, nyn, nzn, 9, 14);
   // Is there a better way?
@@ -376,10 +380,6 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
     #pragma acc parallel loop vector_length(32)
     for (register long long ip = 0; ip < nop; ip++)
     {
-
-      #ifdef __PROFILING__
-      clocks->start(6);
-      #endif
 
       const int ix = 2 + int (floor((x[ip] - xstart) * inv_dx));
       const int iy = 2 + int (floor((y[ip] - ystart) * inv_dy));
@@ -555,6 +555,10 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
       } //loop on i
 	 
 } //loop on part
+
+#ifdef NSIGHT_PROFILING
+    mynvtxstop_();
+#endif
 
   for (int i = 0; i < nxn; i++)
       for (int j = 0; j < nyn; j++)
