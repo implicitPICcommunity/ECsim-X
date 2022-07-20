@@ -334,12 +334,12 @@ void Particles3Dcomm::computeMoments(Field * EMf, Grid * grid, VirtualTopology3D
   double Bxl, Byl, Bzl;
   double beta = 0.5*qom*dt;
 
-  double ***Bx     = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBx());
-  double ***By     = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBy());
-  double ***Bz     = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBz());
-  double ***Bx_ext = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBx_ext());
-  double ***By_ext = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBy_ext());
-  double ***Bz_ext = asgArr3(double, grid->getNXN(), grid->getNYN(), grid->getNZN(), EMf->getBz_ext());
+  double ***Bx     = asgArr3(double, nxn, nyn, nzn, EMf->getBx());
+  double ***By     = asgArr3(double, nxn, nyn, nzn, EMf->getBy());
+  double ***Bz     = asgArr3(double, nxn, nyn, nzn, EMf->getBz());
+  double ***Bx_ext = asgArr3(double, nxn, nyn, nzn, EMf->getBx_ext());
+  double ***By_ext = asgArr3(double, nxn, nyn, nzn, EMf->getBy_ext());
+  double ***Bz_ext = asgArr3(double, nxn, nyn, nzn, EMf->getBz_ext());
   double Fext      = EMf->getFext();
 
     Bx_1D = Bx[0][0];
