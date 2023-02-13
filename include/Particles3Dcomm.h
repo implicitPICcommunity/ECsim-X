@@ -130,6 +130,8 @@ public:
   long long getTotalNumPart();
   /** return energy distribution */
   unsigned long *getVelocityDistribution(int nBins, double maxVel);
+  /** return phase space vyvx */
+  long double *getphasespacevyvx(VirtualTopology3D * vct);
   /** return the momentum */
   double getP();
   /** Print particles info: positions, velocities */
@@ -141,6 +143,13 @@ public:
   void Write_vDist3D(string SaveDirName);
 
   double *ubar, *vbar, *wbar;
+  long double **fvxvy;
+  long double *onedf;
+  int nBinsvx;
+  int nBinsvy;
+  int sizevxvy;
+
+
 protected:
   /** number of species */
   int ns;
