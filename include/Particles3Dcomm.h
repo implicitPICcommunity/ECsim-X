@@ -197,6 +197,8 @@ protected:
   double *v;
   /** Velocities array - Z component */
   double *w;
+  /** Distribution type */
+  int distr_type;
 
   /** Rank */
   int rank;

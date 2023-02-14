@@ -158,6 +158,18 @@ int c_Solver::Init(int argc, char **argv) {
       else if (col->getCase()=="Par_LH_circPol_mono_Alfven") part[i].maxwellian_Par_LH_circPol_mono_Alfven(grid, EMf, vct, col);
       else if (col->getCase()=="FF_kappa") part[i].Kappaspacedist(col,grid,EMf,vct);
       else if (col->getPartInit()=="Kappa") part[i].kappa(grid,EMf,vct);
+      else if (col->getPartInit()=="Mix"){
+          int dis = col->getDistrSpec(i);
+          if (dis == 0) part[i].maxwellian(grid, EMf, vct);
+          else if (dis == 1) part[i].kappa(grid, EMf, vct);
+          else if (dis == 2) part[i].moyal(grid, EMf, vct);
+          else {
+                if (myrank == 0) {
+                   printf("ERROR: unknown velocity distribution (%d)\n", dis);
+                   MPI_Abort(MPI_COMM_WORLD, -1);
+                }
+          }
+      }
       else if (col->getCase()=="TwoCoils" || col->getCase()=="SixCoils" || col->getCase()=="TwoCoilsINJ" || col->getCase()=="SixCoilsINJ"
                || col->getCase()=="Mirror"){
         if (col->getRHOinit(i) > 0.0) 

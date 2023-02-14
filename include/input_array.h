@@ -96,7 +96,6 @@ struct array_bool {
   }
 };
 
-
 inline std::ostream & operator<<(std::ostream & os, const array_bool & t) {
   os << t.a << " " << t.b << " " << t.c << " " << t.d << " " << t.e << " " << t.f;
   return os;

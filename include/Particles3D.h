@@ -56,6 +56,8 @@ class Particles3D:public Particles3Dcomm {
     void maxwellian_Par_LH_circPol_mono_Alfven(Grid * grid, Field * EMf, VirtualTopology3D * vct, Collective * col);
     /** kappa init **/
     void kappa(Grid * grid, Field * EMf, VirtualTopology3D * vct);
+    /** moyal init **/
+    void moyal(Grid * grid, Field * EMf, VirtualTopology3D * vct); 
     /** force free with kappa distribution **/
     void Kappaspacedist(Collective * col, Grid * grid, Field * EMf, VirtualTopology3D * vct) ;
     /** Initial condition: empty system */

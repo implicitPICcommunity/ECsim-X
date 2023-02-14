@@ -84,6 +84,7 @@ class Collective
     double getUbulk();
     double getVbulk();
     double getWbulk();
+    int getDistrSpec(int i);
 
     /*! Get the number of cells - direction X */
     int getNxc();
@@ -618,6 +619,10 @@ class Collective
 
     /** Exact same kinetic energy for all species */
     string sameKineticEnergy;
+
+    /** Velocity distribution function for each species: 0->maxwell 1->kappa 2->moyal*/
+    int *distr_spec;
+ 
 };
 
 #endif

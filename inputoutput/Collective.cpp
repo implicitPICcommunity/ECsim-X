@@ -62,6 +62,20 @@ void Collective::ReadInput(string inputfile) {
     zeroCurrent       = config.read < int >("ZeroCurrent", 0);
     probesFile        = config.read<string>("ProbesFile", "no");
 
+    distr_spec = new int[ns];
+    array_int distr_spec0 = config.read <array_int> ("VDF");
+    distr_spec[0] = distr_spec0.a;
+    if (ns > 1)
+       distr_spec[1] = distr_spec0.b;
+    if (ns > 2)
+       distr_spec[2] = distr_spec0.c;
+    if (ns > 3)
+       distr_spec[3] = distr_spec0.d;
+    if (ns > 4)
+       distr_spec[4] = distr_spec0.e;
+    if (ns > 5)
+       distr_spec[5] = distr_spec0.f;
+
     /* Alfven wave parameters */
     deltaB = config.read <double>("deltaB", 0.0);
     
@@ -1559,6 +1573,8 @@ double Collective::getWbulk() { return w_bulk; }
 /*! Get if the total current has to be zero */
 int Collective::getZeroCurrent() {return zeroCurrent;}
 double Collective::getMemPartGb() { return MemPartGb; }
+
+int Collective::getDistrSpec(int i) {return distr_spec[i];}
 
 /*! init for Alfven: perpendicular field */
 double Collective::getDeltaB(){

@@ -108,6 +108,7 @@ void Particles3Dcomm::allocate(bool test, int species, long long initnpmax, Coll
     u0 = col->getU0(species);
     v0 = col->getV0(species);
     w0 = col->getW0(species);
+    distr_type = col->getDistrSpec(species);
     k_kappa= col->getKappa(species);
     TrackParticleID = col->getTrackParticleID(species);
   }

@@ -3315,10 +3315,12 @@ void Particles3D::Kappaspacedist(Collective * col, Grid * grid, Field * EMf, Vir
 
 }
 
-
-
 /** Kappa random velocity and uniform spatial distribution */
 void Particles3D::kappa(Grid * grid, Field * EMf, VirtualTopology3D * vct) {
+  
+  if (vct->getCartesian_rank() == 0) {
+    cout << "Particle init: kappa with k = "<< k_kappa << endl;
+  }
 
   /* initialize random generator with different seed on different processor */
   long long seed = (vct->getCartesian_rank() + 1)*20 + ns;
@@ -3331,6 +3333,9 @@ void Particles3D::kappa(Grid * grid, Field * EMf, VirtualTopology3D * vct) {
   double apar = vth*vth*2.0*(k_kappa-1.5)/k_kappa;
   double aperp = uth*uth*2.0*(k_kappa-1.5)/k_kappa;
   long long counter = 0;
+
+  
+  cout << "k_kappa = " << k_kappa << endl;
   for (int i = 1; i < grid->getNXC() - 1; i++)
     for (int j = 1; j < grid->getNYC() - 1; j++)
       for (int k = 1; k < grid->getNZC() - 1; k++)
@@ -3356,6 +3361,81 @@ void Particles3D::kappa(Grid * grid, Field * EMf, VirtualTopology3D * vct) {
               double vperp=sqrt(k_kappa*aperp*(1.0+vpar*vpar/(k_kappa*apar+1e-10))*(pow(1.0-harvest,-1.0/k_kappa)-1.0));
    
               //harvest = rand() / (double) RAND_MAX;
+              harvest = Drand48(seed);
+              theta = 2.0 * M_PI * harvest;
+              
+              // Assuming now perp to be y and z and parallel x
+              v[counter] = v0 + vperp * cos(theta);
+
+              w[counter] = w0 + vperp * sin(theta);
+
+              u[counter] = u0 + vpar;
+
+
+	      if (TrackParticleID) {
+		partID[counter]   = npTracked;
+                partRank[counter] = rank;
+                npTracked++;
+              }
+              
+              counter++;
+            }
+ nop = counter;
+}
+
+/** Moyal random velocity and uniform spatial distribution */
+/** Defined as Jiang et al., ApJ 935, 169 (2022) */
+void Particles3D::moyal(Grid * grid, Field * EMf, VirtualTopology3D * vct) {
+
+  if (vct->getCartesian_rank() == 0) {
+    cout << "Particle init: moyal " << endl;
+  }
+
+  /* initialize random generator with different seed on different processor */
+  long long seed = (vct->getCartesian_rank() + 1)*20 + ns;
+  srand(seed);
+  srand48(seed);
+  //srand(vct->getCartesian_rank() + 2);
+  bool flag;
+  double v1lim = max(10*uth, 1.0);
+  double v2lim = max(10*vth, 1.0);
+  double v1, v2;
+  double f, frand;
+  double vpar, vperp;
+  double harvest;
+  double theta;
+  long long counter = 0;
+  for (int i = 1; i < grid->getNXC() - 1; i++)
+    for (int j = 1; j < grid->getNYC() - 1; j++)
+      for (int k = 1; k < grid->getNZC() - 1; k++)
+        for (int ii = 0; ii < npcelx; ii++)
+          for (int jj = 0; jj < npcely; jj++)
+            for (int kk = 0; kk < npcelz; kk++) {
+              x[counter] = (ii + .5) * (dx / npcelx) + grid->getXN(i, j, k);  // x[i] = xstart + (xend-xstart)/2.0 + harvest1*((xend-xstart)/4.0)*cos(harvest2*2.0*M_PI);
+              y[counter] = (jj + .5) * (dy / npcely) + grid->getYN(i, j, k);
+              z[counter] = (kk + .5) * (dz / npcelz) + grid->getZN(i, j, k);
+
+
+              // q = charge
+	      q[counter] = (qom / fabs(qom)) * (fabs(EMf->getRHOcs(i, j, k, ns)) / npcel) * (1.0 / grid->getInvVOLc(i,j,k));
+              
+              flag = 0;
+             
+              while (flag == 0){
+
+                 v1 = -v1lim + 2 * v1lim * Drand48(seed);
+                 v2 = -v2lim + 2 * v2lim * Drand48(seed); 
+                 
+                 double f = 2.71828 * exp(0.5 * (v2*v2/(vth*vth) + v1*v1/(uth*uth)) - exp(v2*v2/(vth*vth) + v1*v1/(uth*uth)));
+                 double frand = Drand48(seed);
+
+                 if (frand <= f){
+                    vpar = v1;
+                    vperp = v2;
+                    flag = 1;
+                 }  
+              }
+
               harvest = Drand48(seed);
               theta = 2.0 * M_PI * harvest;
               
