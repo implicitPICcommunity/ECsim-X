@@ -16,7 +16,16 @@ Dependencies
 The following dependencies are required to build and run the project:
 - C/C++ compiler: A compiler supporting C and C++ (e.g., GCC or LLVM/Clang).
 - MPI: An MPI distribution supporting MPI >= 4.0. Tested with: Open MPI and MPICH
-- [*HDF5*](https://www.hdfgroup.org/solutions/hdf5/): Version >= 1.10.6.
-- [*H5hut*](https://github.com/eth-cscs/h5hut): Version >= 2.0.0.
-- [*PETSc*](https://petsc.org/release/): Version >= 3.20.1.
-- [*CMake*](https://cmake.org/): Version >= 2.8.5.
+- [HDF5](https://www.hdfgroup.org/solutions/hdf5/): Version >= 1.10.6.
+- [H5hut](https://github.com/eth-cscs/h5hut): Version >= 2.0.0.
+- [PETSc](https://petsc.org/release/): Version >= 3.20.1.
+- [CMake](https://cmake.org/): Version >= 2.8.5.
+
+Building ECsim
+--------------
+```bash
+mkdir build
+cd build
+cmake -DIPIC_PETSC_SOLVER=ON -DIPIC_H5HUT_OUTPUT=ON -DH5HUT_HOME=${H5HUT_HOME} ..
+make -j
+```
