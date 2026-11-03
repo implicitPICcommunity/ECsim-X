@@ -21,8 +21,8 @@ The following dependencies are required to build and run the project:
 - [PETSc](https://petsc.org/release/): Version >= 3.20.1 (optional, recommended).
 - [CMake](https://cmake.org/): Version >= 2.8.5.
 
-Building ECsim
---------------
+Building ECsim-X for CPU
+------------------------
 ```bash
 mkdir build
 cd build
@@ -37,3 +37,11 @@ If you need to build the dependencies from source, the following configuration o
 - HDF5: `--enable-parallel --enable-hl --enable-shared CC=mpicc CXX=mpicxx`
 - H5hut: `--with-hdf5=$HDF5_HOME  --enable-parallel --enable-large-indices --enable-shared --enable-static CC=mpicc CXX=mpicxx`
 - PETSc: `--with-mpi-dir=$MPI_HOME --with-fc=0 --with-debugging=0 --with-blas-lapack-lib=$OPENBLAS_HOME/lib/libopenblas.a COPTFLAGS='-O3 -march=native -mtune=native' CXXOPTFLAGS='-O3 -march=native -mtune=native'`
+
+Running ECsim-X
+---------------
+- Create the output folder
+`mkdir data`
+- Run the code
+`mpirun -n <np> ECsim inputfile.inp`
+where `np = XLEN * YLEN * ZLEN` from `inputfile.inp`
